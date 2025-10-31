@@ -1,11 +1,11 @@
 <template>
   <div v-if="$store.state.menu">
-    <!-- <el-breadcrumb separator="/">
+    <el-breadcrumb separator="/"  class="pageTitle">
       <el-breadcrumb-item v-for="(item,index) in $store.state.menu.activeBreadcrumb" :key="index">
         <span :class="index===$store.state.menu.activeBreadcrumb.length-1?'breadTail':''">{{item}}</span>
       </el-breadcrumb-item>
-    </el-breadcrumb> -->
-    <div class="pageTitle">{{ $store.state.menu.activeBreadcrumb[$store.state.menu.activeBreadcrumb.length-1] }}</div>
+    </el-breadcrumb>
+    <!-- <div class="pageTitle">{{ $store.state.menu.activeBreadcrumb[$store.state.menu.activeBreadcrumb.length-1] }}</div> -->
   </div>
 </template>
 
@@ -44,7 +44,7 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #3B3E3B;
-  height: 56px;
+  height: 100%;
   line-height: 56px;
 }
 </style>

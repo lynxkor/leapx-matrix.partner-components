@@ -1,0 +1,43 @@
+/* css override */
+html[data-vxe-ui-theme="light"] {
+  --vxe-ui-font-primary-color: var(--themColor);
+  --vxe-ui-font-primary-lighten-color: var(--themColor)
+}
+
+.vxe-table--render-default {
+  font-family: "PingFang SC"!important;
+}
+.el-button--medium {
+  padding: 8px 15px;
+}
+.vxe-table--render-default .vxe-body--row.row--stripe > .vxe-body--column {
+  background-color: #FCFBFB!important;
+}
+.vxe-table--render-default .vxe-body--row.row--hover > .vxe-body--column {
+  background-color: var(--themLightColor)!important;
+}
+
+/* 通用列表页样式 */
+.page-common {
+  height: 100%;
+  .ais-table-c {
+    height: calc(100% - 150px);
+  }
+  /* 列表页-搜索项 */
+  .ais-search-form {
+    border-bottom: 1px solid #e6e6e5;
+    padding-bottom: 2px;
+    .el-form-item__content {
+      min-width: 230px;
+    }
+    .el-date-editor--daterange.el-input,
+    .el-date-editor--daterange.el-input__inner,
+    .el-date-editor--timerange.el-input,
+    .el-date-editor--timerange.el-input__inner {
+      width: 230px;
+    }
+  }
+  .ais-actions {
+    padding: 20px 0 15px 0;
+  }
+}
