@@ -7,9 +7,6 @@ html[data-vxe-ui-theme="light"] {
 .vxe-table--render-default {
   font-family: "PingFang SC"!important;
 }
-.el-button--medium {
-  padding: 8px 15px;
-}
 .vxe-table--render-default .vxe-body--row.row--stripe > .vxe-body--column {
   background-color: #FCFBFB!important;
 }
@@ -20,6 +17,7 @@ html[data-vxe-ui-theme="light"] {
 /* 通用列表页样式 */
 .page-common {
   height: 100%;
+  padding: 20px;
   .ais-table-c {
     height: calc(100% - 150px);
   }
@@ -29,15 +27,131 @@ html[data-vxe-ui-theme="light"] {
     padding-bottom: 2px;
     .el-form-item__content {
       min-width: 230px;
+      width: 60% !important;
     }
     .el-date-editor--daterange.el-input,
     .el-date-editor--daterange.el-input__inner,
     .el-date-editor--timerange.el-input,
     .el-date-editor--timerange.el-input__inner {
-      width: 230px;
+      min-width: 230px;
+      width: 100%
+    }
+    .el-form-item{
+      width: 33.3%;
+      margin-right: 0;
     }
   }
   .ais-actions {
     padding: 20px 0 15px 0;
+  }
+}
+
+/* 通用新增页样式 */
+.page-common-add {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  .el-container{
+    width: 700px;
+    flex-grow: 0;
+  }
+  .el-select{
+    width: 100%;
+  }
+  .el-date-editor{
+    width: 100%;
+  }
+  .el-footer{
+    text-align: center;
+  }
+}
+
+/* 通用详情页样式 */
+.page-common-detail {
+ padding: 20px;
+}
+
+/* 高级表单页样式 */
+.page-common-edit {
+  width: 100%;
+  height: 100%;
+  .common-section{
+    margin-bottom: 20px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #E6E6E5;
+    &-header{
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      h2{
+        font-size: 16px;
+        color: #333;
+      }
+    }
+  }
+  .common-section-table{
+    height: 360px;
+    padding-bottom: 20px;
+  }
+
+  .el-form-item{
+    width: 33.3%;
+    margin-right: 0;
+  }
+  .el-form-item__label {
+    color: #333;
+  }
+  .el-form-item__content{
+    min-width: 230px;
+    width: 60%;
+  }
+  .el-input-group{
+    min-width: 230px;
+  }
+  .el-date-editor--daterange.el-input,
+  .el-date-editor--daterange.el-input__inner,
+  .el-date-editor--timerange.el-input,
+  .el-date-editor--timerange.el-input__inner {
+    width: 230px;
+    width: 100%;
+  }
+  .el-select{
+    width: 100%;
+  }
+  .el-date-editor{
+    width: 100%;
+  }
+  .el-footer{
+    text-align: center;
+    line-height: 60px;
+  }
+  .form-item-full{
+    width: 100% !important;
+    .el-form-item__content{
+      width: calc(100% - 200px);
+    }
+    .el-form-item__content{
+      height: auto;
+    }
+  }
+}
+
+/* 根据屏幕宽度适配 */
+@media screen and (min-width: 1920px) {
+  .page-common {
+    .ais-search-form {
+      .el-form-item {
+        width: 25%;
+        margin-right: 0;
+      }
+    }
+  }
+  .page-common-edit {
+    .el-form-item {
+      width: 25%;
+      margin-right: 0;
+    }
   }
 }
