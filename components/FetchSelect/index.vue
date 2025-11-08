@@ -5,8 +5,8 @@
     :value="value"
     @input="handleInput"
     @change="handleChange"
+    @blur="handleBlur"
     :loading="loading"
-    v-loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
   >
@@ -44,12 +44,12 @@ export default {
     // 选项数据中作为值的键名
     valueKey: {
       type: String,
-      default: 'value'
+      default: 'code'
     },
     // 选项数据中作为标签的键名
     labelKey: {
       type: String,
-      default: 'label'
+      default: 'message'
     },
     // 直接传入选项数据，如果有这个值则不调用request方法
     options: {
@@ -113,6 +113,9 @@ export default {
     handleChange (val) {
       this.$emit('change', val);
     },
+    handleBlur () {
+      this.$emit('blur');
+    }
 
     // 手动刷新选项数据
     // refresh () {

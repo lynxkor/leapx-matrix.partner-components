@@ -59,7 +59,7 @@ html[data-vxe-ui-theme="light"] {
   .el-select{
     width: 100%;
   }
-  .el-date-editor{
+.el-date-editor{
     width: 100%;
   }
   .el-footer{
@@ -70,6 +70,9 @@ html[data-vxe-ui-theme="light"] {
 /* 通用详情页样式 */
 .page-common-detail {
  padding: 20px;
+ .el-descriptions-item__label{
+  color: #0A0E0A;
+ }
 }
 
 /* 高级表单页样式 */
@@ -89,6 +92,9 @@ html[data-vxe-ui-theme="light"] {
         font-size: 16px;
         color: #333;
       }
+    }
+    &:last-child{
+      border-bottom: none;
     }
   }
   .common-section-table{
