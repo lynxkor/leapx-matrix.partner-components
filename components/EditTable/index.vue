@@ -37,9 +37,11 @@
         <template #edit="{ row, column }">
           <component
             :is="getEditorComponent(column.editRender.name)"
+            popper-class="vxe-table--ignore-clear"
             v-bind="column.editRender.props"
             v-model="row[column.field]"
             @change="onValueChange(row, column)"
+            @select="d => onValueSelect(row, column, d)"
           />
         </template>
 
@@ -154,7 +156,7 @@ export default {
   watch: {
     data: {
       handler (newVal) {
-        this.tableData = [...newVal];
+        this.tableData = [...(newVal || [])];
       },
       immediate: true,
       deep: true
@@ -176,7 +178,8 @@ export default {
         ElSelect: 'el-select',
         ElDatePicker: 'el-date-picker',
         ElSwitch: 'el-switch',
-        ElRate: 'el-rate'
+        ElRate: 'el-rate',
+        ElAutocomplete: 'el-autocomplete'
       };
       return componentMap[name] || 'input';
     },
@@ -192,6 +195,7 @@ export default {
         }
       });
       this.editRules = rules;
+      console.log('校验规则初始化:', rules);
     },
 
     /**
@@ -215,7 +219,7 @@ export default {
       }
 
       this.tableData.unshift(newRow);
-
+      this.$refs.editTable.setEditRow(newRow);
       // 触发事件通知父组件
       this.$emit('add-row', newRow);
     },
@@ -227,7 +231,7 @@ export default {
       // 只有当行中有可编辑字段时才激活编辑
       if (this.isRowEditable(row)) {
         // 激活行编辑
-        this.$refs.editTable.setActiveRow(row);
+        this.$refs.editTable.setEditRow(row);
         this.$emit('edit-row', { row, rowIndex });
       }
     },
@@ -238,7 +242,7 @@ export default {
     removeRow (index) {
       const removedRow = this.tableData.splice(index, 1)[0];
       this.$emit('remove-row', removedRow, index);
-      this.$message.success('删除成功');
+      // this.$message.success('删除成功');
     },
 
     /**
@@ -246,9 +250,9 @@ export default {
      */
     saveAll () {
       // 验证所有编辑过的单元格
-      return this.$refs.editTable.validate().then((errMap) => {
+      return this.$refs.editTable.validate(true).then((errMap) => {
         if (errMap) {
-          this.$message.error('请检查输入项是否正确');
+          // this.$message.error('请检查输入项是否正确');
           return Promise.reject(new Error('验证失败'));
         }
 
@@ -313,6 +317,18 @@ export default {
       this.$emit('value-change', { row, column, value: row[column.property] });
     },
 
+    /**
+     * 值选择事件（专门处理autocomplete的选中事件）
+     */
+    onValueSelect (row, column, data) {
+      // 更新行数据
+      // const editableCols = this.columns.filter(col => col.editable).map(col => { return col.field; });
+      for (const key in row) {
+        const keyLowercase = key.toLowerCase();
+        row[key] = data[key] || data[keyLowercase];
+      }
+      this.$emit('value-select', { row, column, data });
+    },
     /**
      * 分页大小改变
      */

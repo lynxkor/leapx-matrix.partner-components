@@ -116,6 +116,9 @@ html[data-vxe-ui-theme="light"] {
   .el-input-group{
     min-width: 230px;
   }
+  .el-autocomplete {
+    width: 100%;
+  }
   .el-date-editor--daterange.el-input,
   .el-date-editor--daterange.el-input__inner,
   .el-date-editor--timerange.el-input,
