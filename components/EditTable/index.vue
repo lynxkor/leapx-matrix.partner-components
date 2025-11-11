@@ -40,9 +40,18 @@
             popper-class="vxe-table--ignore-clear"
             v-bind="column.editRender.props"
             v-model="row[column.field]"
-            @change="onValueChange(row, column)"
+            @change="d => onValueChange(row, column, d)"
             @select="d => onValueSelect(row, column, d)"
-          />
+          >
+            <template v-if="column.editRender.name === 'ElSelect'">
+              <el-option
+                v-for="option in options[column.field]"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              ></el-option>
+            </template>
+          </component>
         </template>
 
         <template #default="{ row, column }">
@@ -145,6 +154,11 @@ export default {
     showToolbar: {
       type: Boolean,
       default: false
+    },
+    // 编辑项的下拉框内容集合
+    options: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
@@ -313,7 +327,12 @@ export default {
     /**
      * 值变更事件
      */
-    onValueChange (row, column) {
+    onValueChange (row, column, d) {
+      const option = this.options[column.property].find(option => option.value === d);
+      for (const key in row) {
+        const keyLowercase = key.toLowerCase();
+        row[key] = option[key] || option[keyLowercase];
+      }
       this.$emit('value-change', { row, column, value: row[column.property] });
     },
 

@@ -1,50 +1,48 @@
 <template>
   <div v-if="$store.state.menu">
     <el-breadcrumb separator="/"  class="pageTitle">
-      <el-breadcrumb-item v-for="(item,index) in $store.state.menu.activeBreadcrumb" :key="index">
-        <span :class="index===$store.state.menu.activeBreadcrumb.length-1?'breadTail':''">{{item}}</span>
+      <i v-if="list.length > 1" class="icon-back el-icon-arrow-left" @click="handleBack"></i>
+      <el-breadcrumb-item v-for="(item,index) in list" :key="index" :to="index === 0 ? {path: parentPath} : null">
+        <span :class="index===list.length-1?'breadTail':''">{{item}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
-    <!-- <div class="pageTitle">{{ $store.state.menu.activeBreadcrumb[$store.state.menu.activeBreadcrumb.length-1] }}</div> -->
   </div>
 </template>
 
 <script>
 export default {
-  created () {
-    // console.log(this.$store.state.menu.activeBreadcrumb, '333333');
+  computed: {
+    list () {
+      return this.$store.state.menu.activeBreadcrumb || [];
+    },
+    parentPath () {
+      return this.$route.path.split('/').slice(0, -1).join('/');
+    }
+  },
+  methods: {
+    handleBack () {
+      this.$router.back();
+    }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-// .el-breadcrumb {
-//   /* line-height: inherit!important; */
-//   border-radius: .6rem;
-//   padding-left: 0rem;
-//   font-size: 1.4rem;
-//   padding-top: 24px;
-//   padding-bottom: 19px;
-//   line-height: 19px;
-// }
-
-// .el-breadcrumb__separator {
-//   color: #7A837B;
-// }
-
-// ::v-deep .el-breadcrumb__inner {
-//     color: #7A837B;
-// }
-
-// ::v-deep .el-breadcrumb__item:last-child .el-breadcrumb__inner {
-//   color: #000;
-// }
-
+::v-deep .el-breadcrumb__inner {
+    color: #6C6E6C;
+    font-weight: normal;
+}
 .pageTitle {
   font-size: 16px;
   font-weight: 600;
   color: #3B3E3B;
   height: 100%;
   line-height: 56px;
+  .icon-back {
+    cursor: pointer;
+    margin-right: 10px;
+    float: left;
+    line-height: 56px;
+  }
 }
 </style>
