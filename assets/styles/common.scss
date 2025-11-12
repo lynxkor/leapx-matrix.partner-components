@@ -32,6 +32,7 @@ html[data-vxe-ui-theme="light"] {
     .el-date-editor--daterange.el-input,
     .el-date-editor--daterange.el-input__inner,
     .el-date-editor--timerange.el-input,
+    .el-date-editor--datetimerange.el-input__inner,
     .el-date-editor--timerange.el-input__inner {
       min-width: 230px;
       width: 100%
@@ -40,6 +41,9 @@ html[data-vxe-ui-theme="light"] {
       width: 33.3%;
       margin-right: 0;
     }
+  }
+  .el-button--small{
+    font-size: 14px;
   }
   .ais-actions {
     padding: 20px 0 15px 0;
@@ -59,8 +63,11 @@ html[data-vxe-ui-theme="light"] {
   .el-select{
     width: 100%;
   }
-.el-date-editor{
+  .el-date-editor{
     width: 100%;
+  }
+  .el-input__inner {
+    height: 32px!important;
   }
   .el-footer{
     text-align: center;
