@@ -37,6 +37,9 @@ html[data-vxe-ui-theme="light"] {
       min-width: 230px;
       width: 100%
     }
+    .el-input__inner {
+      height: 32px!important;
+    }
     .el-form-item{
       width: 33.3%;
       margin-right: 0;
