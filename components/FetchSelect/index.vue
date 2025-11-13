@@ -111,7 +111,11 @@ export default {
 
     // 处理值变更事件
     handleChange (val) {
-      this.$emit('change', val);
+      // 查找完整的选项对象
+      const selectedOption = this.computedOptions.find(
+        option => option[this.valueKey] === val
+      );
+      this.$emit('change', val, selectedOption);
     },
     handleBlur () {
       this.$emit('blur');
