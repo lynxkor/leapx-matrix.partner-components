@@ -333,6 +333,7 @@ export default {
         const keyLowercase = key.toLowerCase();
         row[key] = option[key] || option[keyLowercase];
       }
+      row[column.property] = d;
       this.$emit('value-change', { row, column, value: row[column.property] });
     },
 
