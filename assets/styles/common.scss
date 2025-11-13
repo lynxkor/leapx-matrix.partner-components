@@ -3,7 +3,7 @@ html[data-vxe-ui-theme="light"] {
   --vxe-ui-font-primary-color: var(--themColor);
   --vxe-ui-font-primary-lighten-color: var(--themColor)
 }
-
+// vxe-table 样式
 .vxe-table--render-default {
   font-family: "PingFang SC"!important;
 }
@@ -12,6 +12,25 @@ html[data-vxe-ui-theme="light"] {
 }
 .vxe-table--render-default .vxe-body--row.row--hover > .vxe-body--column {
   background-color: var(--themLightColor)!important;
+}
+// 分页样式
+.el-pagination__total {
+  // float: left;
+  color: var(--aisDefaultTextColor);
+}
+.el-pagination__jump{
+  margin-left: 0;
+}
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background: none;
+  color: var(--themColor);
+  border: 1px solid var(--themColor);
+}
+.el-pagination.is-background .btn-prev, .el-pagination.is-background .btn-next, .el-pagination.is-background .el-pager li {
+  border: 1px solid #E6E6E5;
+  background: none;
+  color: var(--aisDefaultTextColor);
+  font-weight: normal;
 }
 
 /* 通用列表页样式 */
@@ -44,6 +63,9 @@ html[data-vxe-ui-theme="light"] {
       width: 33.3%;
       margin-right: 0;
     }
+    .el-select{
+      width: 100%;
+    }
   }
   .el-button--small{
     font-size: 14px;
@@ -59,9 +81,35 @@ html[data-vxe-ui-theme="light"] {
   width: 100%;
   height: 100%;
   justify-content: center;
-  .el-container{
+  .common-section{
     width: 700px;
-    flex-grow: 0;
+    margin-bottom: 20px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #E6E6E5;
+    &-header{
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      h2{
+        font-size: 16px;
+        color: #333;
+      }
+    }
+    &:last-child{
+      border-bottom: none;
+    }
+  }
+  .common-section-table{
+    height: 360px;
+    padding-bottom: 20px;
+  }
+  .el-main{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .el-container{
   }
   .el-select{
     width: 100%;
@@ -74,6 +122,9 @@ html[data-vxe-ui-theme="light"] {
   }
   .el-footer{
     text-align: center;
+  }
+  .el-form-item{
+    margin-bottom: 16px;
   }
 }
 
