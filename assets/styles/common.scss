@@ -277,3 +277,9 @@ html[data-vxe-ui-theme="light"] {
     }
   }
 }
+
+@media screen and (max-width: 1139px) {
+  .el-form-item__label {
+    text-align: left!important;
+  }
+}
