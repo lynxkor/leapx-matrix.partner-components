@@ -85,7 +85,7 @@ html[data-vxe-ui-theme="light"] {
     width: 700px;
     margin-bottom: 20px;
     padding-bottom: 6px;
-    border-bottom: 1px solid #E6E6E5;
+    // border-bottom: 1px solid #E6E6E5;
     &-header{
       margin-bottom: 15px;
       display: flex;
@@ -109,8 +109,6 @@ html[data-vxe-ui-theme="light"] {
     flex-direction: column;
     align-items: center;
   }
-  .el-container{
-  }
   .el-select{
     width: 100%;
   }
@@ -130,10 +128,64 @@ html[data-vxe-ui-theme="light"] {
 
 /* 通用详情页样式 */
 .page-common-detail {
- padding: 20px;
- .el-descriptions-item__label{
-  color: #0A0E0A;
- }
+  padding: 20px;
+  .el-descriptions-item__label{
+    color: #0A0E0A;
+  }
+  .common-title{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    h2 {
+      color: #0A0E0A;
+      font-size: 20px;
+      font-weight: 500;
+    }
+  }
+  .common-section{
+    margin-bottom: 20px;
+    padding-bottom: 6px;
+    &-header{
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      h2{
+        font-size: 16px;
+        color: #333;
+    }
+  }
+  &:last-child{
+      border-bottom: none;
+    }
+  }
+  .common-section-table{
+    height: 360px;
+    padding-bottom: 20px;
+  }
+
+  .el-form-item{
+    width: 33.3%;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  .el-form-item__label {
+    color: #9D9F9D;
+  }
+  .el-form-item__content{
+    min-width: 230px;
+    width: 60%;
+  }
+  .form-item-full{
+    width: 100% !important;
+    .el-form-item__content{
+      width: calc(100% - 200px);
+    }
+    .el-form-item__content{
+      height: auto;
+    }
+  }
 }
 
 /* 高级表单页样式 */
@@ -143,7 +195,7 @@ html[data-vxe-ui-theme="light"] {
   .common-section{
     margin-bottom: 20px;
     padding-bottom: 6px;
-    border-bottom: 1px solid #E6E6E5;
+    // border-bottom: 1px solid #E6E6E5;
     &-header{
       margin-bottom: 15px;
       display: flex;
