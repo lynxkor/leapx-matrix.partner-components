@@ -60,7 +60,7 @@
         </template>
       </vxe-column>
 
-      <vxe-column v-if="defaultNewRow" title="操作" width="120" align="center" fixed="right">
+      <vxe-column v-if="defaultNewRow" title="操作" width="120" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <span
             class="action-button btn-edit"

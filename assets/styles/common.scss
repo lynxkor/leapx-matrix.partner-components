@@ -17,6 +17,11 @@ html[data-vxe-ui-theme="light"] {
 .vxe-table--render-default .vxe-body--row.row--hover > .vxe-body--column {
   background-color: var(--themLightColor)!important;
 }
+// 按钮
+.el-button--default:hover, .el-button--default:focus {
+  background: none;
+  border-color: var(--themColor);
+}
 .el-form-item__label {
   color: var(--aisDefaultTextColor);
 }
@@ -127,6 +132,8 @@ html[data-vxe-ui-theme="light"] {
   }
   .el-footer{
     text-align: center;
+    line-height: 60px;
+    border-top: 1px solid #E6E6E5;
   }
   .el-form-item{
     margin-bottom: 16px;
@@ -259,6 +266,7 @@ html[data-vxe-ui-theme="light"] {
   .el-footer{
     text-align: center;
     line-height: 60px;
+    border-top: 1px solid #E6E6E5;
   }
   .form-item-full{
     width: 100% !important;
