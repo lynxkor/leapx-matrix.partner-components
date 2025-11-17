@@ -34,7 +34,7 @@ export default {
 }
 .pageTitle {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500!important;
   color: #3B3E3B;
   height: 100%;
   line-height: 56px;
