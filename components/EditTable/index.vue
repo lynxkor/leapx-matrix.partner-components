@@ -60,7 +60,7 @@
         </template>
       </vxe-column>
 
-      <vxe-column title="操作" width="120" align="center" fixed="right">
+      <vxe-column v-if="defaultNewRow" title="操作" width="120" align="center" fixed="right">
         <template #default="{ row, rowIndex }">
           <span
             class="action-button btn-edit"
@@ -148,7 +148,7 @@ export default {
     // 新增行默认值
     defaultNewRow: {
       type: Object,
-      default: () => ({})
+      default: () => (null)
     },
     // 是否显示顶部工具栏
     showToolbar: {
