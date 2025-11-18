@@ -1,5 +1,5 @@
 <template>
-  <el-form-item label="" style="text-align: right;">
+  <el-form-item label=" " class="form-item-action">
     <el-button :loading="Loading" size="medium" class="btn-search" @click="$emit('submit')">查询</el-button>
     <el-button size="medium" class="btn-reset" @click="$emit('reset')">重置</el-button>
     <span v-if="isExpandable" class="icon-expand curPoint" @click="$emit('input', !value)">

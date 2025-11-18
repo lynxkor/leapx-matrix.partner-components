@@ -84,6 +84,11 @@ html[data-vxe-ui-theme="light"] {
     .el-select{
       width: 100%;
     }
+    .form-item-action {
+      .el-form-item__content{
+        text-align: right;
+      }
+    }
   }
   .el-button--small{
     font-size: 14px;
