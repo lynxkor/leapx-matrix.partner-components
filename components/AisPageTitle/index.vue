@@ -16,7 +16,11 @@ export default {
       return this.$store.state.menu.activeBreadcrumb || [];
     },
     parentPath () {
-      return this.$route.path.split('/').slice(0, -1).join('/');
+      const path = this.$route.path.split('/').slice(0, -1).join('/');
+      if (window.__POWERED_BY_QIANKUN__) {
+        return `/${process.env.VUE_APP_ROUTER_BASE}/${path}`;
+      }
+      return path;
     }
   },
   methods: {
