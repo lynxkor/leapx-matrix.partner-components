@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4983741 */
-  src: url('iconfont.woff2?t=1761875449356') format('woff2'),
-       url('iconfont.woff?t=1761875449356') format('woff'),
-       url('iconfont.ttf?t=1761875449356') format('truetype'),
-       url('iconfont.svg?t=1761875449356#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1763466960359') format('woff2'),
+       url('iconfont.woff?t=1763466960359') format('woff'),
+       url('iconfont.ttf?t=1763466960359') format('truetype'),
+       url('iconfont.svg?t=1763466960359#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,134 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-lxppc-a-t-vehiclelogistics:before {
+  content: "\e661";
+}
+
+.icon-lxppc-t-service:before {
+  content: "\e660";
+}
+
+.icon-lxppc-t-sales:before {
+  content: "\e65f";
+}
+
+.icon-lxppc-t-report:before {
+  content: "\e65e";
+}
+
+.icon-lxppc-t-other:before {
+  content: "\e65d";
+}
+
+.icon-lxppc-t-operation:before {
+  content: "\e65c";
+}
+
+.icon-lxppc-t-channel:before {
+  content: "\e65b";
+}
+
+.icon-lxppc-headphones:before {
+  content: "\e65a";
+}
+
+.icon-lxppc-error:before {
+  content: "\e659";
+}
+
+.icon-lxppc-t-more:before {
+  content: "\e650";
+}
+
+.icon-lxppc-down:before {
+  content: "\e651";
+}
+
+.icon-lxppc-t-collect:before {
+  content: "\e652";
+}
+
+.icon-lxppc-success:before {
+  content: "\e653";
+}
+
+.icon-lxppc-new-avatar:before {
+  content: "\e654";
+}
+
+.icon-lxppc-search:before {
+  content: "\e655";
+}
+
+.icon-lxppc-download:before {
+  content: "\e656";
+}
+
+.icon-lxppc-license:before {
+  content: "\e657";
+}
+
+.icon-lxppc-settings:before {
+  content: "\e658";
+}
+
+.icon-lxppc-t-myapplication:before {
+  content: "\e64f";
+}
+
+.icon-lxppc-change:before {
+  content: "\e642";
+}
+
+.icon-lxppc-t-search:before {
+  content: "\e645";
+}
+
+.icon-lxppc-t-home:before {
+  content: "\e643";
+}
+
+.icon-lxppc-star-filled:before {
+  content: "\e646";
+}
+
+.icon-lxppc-drag:before {
+  content: "\e647";
+}
+
+.icon-lxppc-t-market:before {
+  content: "\e648";
+}
+
+.icon-lxppc-up:before {
+  content: "\e649";
+}
+
+.icon-lxppc-right:before {
+  content: "\e64a";
+}
+
+.icon-lxppc-star:before {
+  content: "\e64b";
+}
+
+.icon-lxppc-yes:before {
+  content: "\e64c";
+}
+
+.icon-lxppc-left:before {
+  content: "\e64d";
+}
+
+.icon-lxppc-close:before {
+  content: "\e64e";
+}
+
+.icon-lxppc-new-logo:before {
+  content: "\e644";
 }
 
 .icon-lxppc-DPIlog_op:before {
