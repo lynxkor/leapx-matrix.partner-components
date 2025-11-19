@@ -2,7 +2,7 @@
   <div class="edit-table-container">
     <vxe-toolbar v-if="showToolbar">
       <template #buttons>
-        <el-button size="small" type="primary" icon="el-icon-plus" @click="addRow">新增行</el-button>
+        <el-button v-if="auth.add" size="small" type="primary" icon="el-icon-plus" @click="addRow">新增行</el-button>
         <el-button size="small" type="success" icon="el-icon-circle-check" @click="saveAll">保存全部</el-button>
         <el-button size="small" type="warning" icon="el-icon-refresh" @click="resetTable">重置</el-button>
       </template>
@@ -66,6 +66,7 @@
             class="action-button btn-edit"
             @click="editRow(row, rowIndex)"
             :disabled="!isRowEditable(row)"
+            v-if="auth.edit"
           >
             编辑
           </span>
@@ -73,6 +74,7 @@
           <el-popconfirm
             title="确定要删除这条记录吗？"
             @confirm="removeRow(rowIndex)"
+            v-if="auth.delete"
           >
             <span
               slot="reference"
@@ -110,6 +112,15 @@
 export default {
   name: 'EditTable',
   props: {
+    // 表格列配置
+    auth: {
+      type: Object,
+      default: () => ({
+        edit: true,
+        delete: true,
+        add: true
+      })
+    },
     // 表格列配置
     columns: {
       type: Array,
