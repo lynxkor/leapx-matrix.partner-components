@@ -2,8 +2,8 @@
   <div v-if="$store.state.menu">
     <el-breadcrumb separator="/"  class="pageTitle">
       <i v-if="list.length > 1" class="icon-back el-icon-arrow-left" @click="handleBack"></i>
-      <el-breadcrumb-item v-for="(item,index) in list" :key="index" :to="index === 0 ? {path: parentPath} : null">
-        <span :class="index===list.length-1?'breadTail':''">{{item}}</span>
+      <el-breadcrumb-item v-for="(item,index) in list" :key="index">
+        <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':''">{{item}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
   </div>
@@ -14,16 +14,28 @@ export default {
   computed: {
     list () {
       return this.$store.state.menu.activeBreadcrumb || [];
-    },
-    parentPath () {
-      const path = this.$route.path.split('/').slice(0, -1).join('/');
-      if (window.__POWERED_BY_QIANKUN__) {
-        return `/${process.env.VUE_APP_ROUTER_BASE}/${path}`;
-      }
-      return path;
     }
   },
   methods: {
+    handleClick (index) {
+      if (index === this.list.length - 1) {
+        return;
+      }
+      const path = this.$route.path.split('/').slice(0, -1).join('/');
+      if (window.__POWERED_BY_QIANKUN__) {
+        if (window.__PARENT_ROUTER__) {
+          window.__PARENT_ROUTER__.push({
+            path: `${process.env.VUE_APP_ROUTER_BASE}${path}`
+          });
+        } else {
+          window.location.href = `${process.env.VUE_APP_ROUTER_BASE}${path}`;
+        }
+      } else {
+        this.$router.push({
+          path
+        });
+      }
+    },
     handleBack () {
       this.$router.back();
     }
@@ -37,6 +49,7 @@ export default {
     font-weight: normal;
 }
 .pageTitle {
+  height: 56px!important;
   font-size: 16px;
   font-weight: 500!important;
   color: #3B3E3B;
@@ -47,6 +60,12 @@ export default {
     margin-right: 10px;
     float: left;
     line-height: 56px;
+  }
+  span {
+    cursor: pointer;
+  }
+  .breadTail{
+    cursor: default;
   }
 }
 </style>

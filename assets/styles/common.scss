@@ -18,8 +18,9 @@ html[data-vxe-ui-theme="light"] {
   background-color: var(--themLightColor)!important;
 }
 // 按钮
-.el-button--default:hover, .el-button--default:focus {
-  background: none;
+.el-button--default:not(.el-button--primary):hover, 
+.el-button--default:not(.el-button--primary):focus {
+  background-color: #fff;
   border-color: var(--themColor);
 }
 .el-popconfirm {
