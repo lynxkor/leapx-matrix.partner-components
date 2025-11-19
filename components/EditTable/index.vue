@@ -328,12 +328,16 @@ export default {
      * 值变更事件
      */
     onValueChange (row, column, d) {
-      const option = this.options[column.property].find(option => option.value === d);
-      for (const key in row) {
-        const keyLowercase = key.toLowerCase();
-        row[key] = option[key] || option[keyLowercase];
+      const option = this.options[column.property]?.find(option => option.value === d);
+      if (option) {
+        for (const key in option) {
+          const keyLowercase = key.toLowerCase();
+          row[key] = option[key] || option[keyLowercase];
+        }
       }
-      row[column.property] = d;
+      if (!row[column.property]) {
+        row[column.property] = d;
+      }
       this.$emit('value-change', { row, column, value: row[column.property] });
     },
 
