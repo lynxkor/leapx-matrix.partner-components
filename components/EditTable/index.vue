@@ -20,8 +20,11 @@
       show-overflow
       keep-source
       :edit-rules="editRules"
+      :cell-config="{height: 40}"
+      :header-cell-config="{height: 40}"
       height="100%"
       min-height="360px"
+      max-height="500px"
       @edit-closed="handleEditClosed"
       @edit-actived="handleEditActived"
     >
