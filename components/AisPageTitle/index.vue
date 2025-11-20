@@ -3,7 +3,7 @@
     <el-breadcrumb separator="/"  class="pageTitle">
       <i v-if="list.length > 1" class="icon-back el-icon-arrow-left" @click="handleBack"></i>
       <el-breadcrumb-item v-for="(item,index) in list" :key="index">
-        <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':''">{{item}}</span>
+        <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':'breadLink'">{{item}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
   </div>
@@ -61,8 +61,12 @@ export default {
     float: left;
     line-height: 56px;
   }
-  span {
+  .breadLink {
     cursor: pointer;
+    &:hover {
+      color: var(--themColor);
+      text-decoration: underline;
+    }
   }
   .breadTail{
     cursor: default;
