@@ -17,6 +17,9 @@ html[data-vxe-ui-theme="light"] {
 .vxe-table--render-default .vxe-body--row.row--hover > .vxe-body--column {
   background-color: var(--themLightColor)!important;
 }
+.vxe-header--column .vxe-cell--edit-icon {
+  display: none;
+}
 // 按钮
 .el-button--default:not(.el-button--primary):hover, 
 .el-button--default:not(.el-button--primary):focus {
