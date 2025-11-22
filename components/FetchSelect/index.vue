@@ -36,6 +36,11 @@ export default {
       type: Function,
       default: null
     },
+    // 枚举key值
+    enumCode: {
+      type: String,
+      default: ''
+    },
     // 请求参数
     params: {
       type: Object,
@@ -91,11 +96,23 @@ export default {
     async loadOptions () {
       // 如果没有request方法或者传入了options，则不执行远程请求
       if (!this.request || this.options) return;
+      if (this.enumCode) {
+        // 获取枚举数据
+        const enumData = this.$store.getters['enum/getEnum'](this.enumCode);
+        if (enumData) {
+          this.remoteOptions = enumData || [];
+          return;
+        }
+      }
 
       this.loading = true;
       try {
-        const response = await this.request(this.params);
+        const response = await this.request(this.enumCode);
         this.remoteOptions = response.data || response || [];
+        if (this.enumCode && response) {
+          // 缓存枚举数据
+          this.$store.dispatch('enum/setEnum', { code: this.enumCode, data: response });
+        }
       } catch (error) {
         console.error('Failed to load options:', error);
         this.remoteOptions = [];
