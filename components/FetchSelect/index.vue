@@ -106,7 +106,11 @@ export default {
 
     // 处理输入事件
     handleInput (val) {
-      this.$emit('input', val);
+      if (val && val.length === 0) {
+        this.$emit('input', '');
+      } else {
+        this.$emit('input', val);
+      }
     },
 
     // 处理值变更事件
