@@ -49,3 +49,58 @@ export function shallowEqual (obj1, obj2) {
 
   return true;
 }
+
+/**
+ * 下载文件公共方法
+ * @param {string} url 文件下载地址
+ * @param {string} fileName 文件名
+ * @returns {boolean} 是否成功触发下载
+ */
+export function downloadFile (url, fileName = '文件') {
+  if (!url) {
+    console.error('下载地址不能为空');
+    return false;
+  }
+
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    link.rel = 'noopener noreferrer'; // 安全优化
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log(`文件下载已触发: ${fileName}`);
+    return true;
+  } catch (error) {
+    console.error('下载失败:', error);
+    return false;
+  }
+}
+
+/**
+ * 下载Excel文件（专用方法）
+ * @param {Object|string} rowOrUrl 行数据对象或文件URL
+ * @param {string} defaultName 默认文件名
+ */
+export function downloadExcel (rowOrUrl, defaultName = '模板') {
+  let url, fileName;
+
+  if (typeof rowOrUrl === 'string') {
+    url = rowOrUrl;
+    fileName = defaultName;
+  } else {
+    url = rowOrUrl.excelModelUrl;
+    fileName = rowOrUrl.fileName || defaultName;
+  }
+
+  // 确保文件有扩展名
+  if (!fileName.includes('.')) {
+    fileName += '.xlsx';
+  }
+
+  return downloadFile(url, fileName);
+}
