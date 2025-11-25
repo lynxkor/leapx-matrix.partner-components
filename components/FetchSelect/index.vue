@@ -1,3 +1,47 @@
+<script>
+/**
+ * 带自动加载枚举选项的下拉框组件
+ * @author wangtao
+ * @description 支持静态选项、动态API请求、枚举数据三种数据源方式，具备自动加载、枚举缓存、参数监听、加载状态显示等特性
+ *
+ * @param {String|Number|Boolean|Object|Array} value - v-model绑定的值
+ * @param {Function} request - 获取选项数据的API请求方法，返回Promise
+ * @param {String} enumCode - 枚举类型代码，用于从Vuex store中获取预定义的枚举数据
+ * @param {Object} params - 请求参数对象，变化时会自动重新加载数据
+ * @param {String} valueKey - 选项数据中作为值的键名，默认'code'
+ * @param {String} labelKey - 选项数据中作为标签的键名，默认'message'
+ * @param {Array} options - 直接传入的静态选项数据，优先级最高
+ *
+ * @event $attrs - 绑定所有父组件的属性到子组件的select元素上
+ * @event input - 值变化时触发，用于v-model双向绑定
+ * @event change - 值变化时触发，返回选中的值和完整的选项对象
+ * @event blur - 失去焦点时触发
+ *
+ * @example
+ *  使用静态选项
+ * <fetch-select
+ *   v-model="form.gender"
+ *   :options="[{ code: '1', message: '男' }, { code: '2', message: '女' }]"
+ * />
+ *
+ * @example
+ * 使用API请求
+ * <fetch-select
+ *   v-model="form.city"
+ *   :request="getCityList"
+ *   :params="{ type: 'province' }"
+ *   value-key="areaCode"
+ *   label-key="areaName"
+ * />
+ *
+ * @example
+ * 使用枚举数据
+ * <fetch-select
+ *   v-model="form.status"
+ *   enumCode="StatusEnum"
+ * />
+ */
+</script>
 <!-- 带自动加载枚举选项的下拉框 -->
 <template>
   <el-select

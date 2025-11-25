@@ -1,3 +1,53 @@
+<script>
+/**
+ * 可编辑表格组件
+ * @author wangtao
+ * @description 基于vxe-table和element-ui的可编辑表格组件，支持行内编辑、数据验证、动态列配置等功能
+ *
+ * @param {Object} auth - 操作权限配置
+ * @param {Boolean} auth.add - 是否显示新增按钮
+ * @param {Boolean} auth.edit - 是否显示编辑按钮
+ * @param {Boolean} auth.delete - 是否显示删除按钮
+ * @param {Array} columns - 表格列配置数组
+ * @param {String} columns[].field - 列字段名
+ * @param {String} columns[].title - 列标题
+ * @param {Number} columns[].width - 列宽度
+ * @param {Number} columns[].minWidth - 列最小宽度
+ * @param {Boolean} columns[].editable - 是否可编辑
+ * @param {Object} columns[].editRender - 编辑渲染器配置
+ * @param {String} columns[].editRender.name - 编辑组件名称
+ * @param {Object} columns[].editRender.props - 编辑组件属性
+ * @param {Function} columns[].formatter - 列数据格式化函数
+ * @param {Array} columns[].rules - 列验证规则
+ * @param {any} columns[].defaultValue - 列默认值
+ * @param {Array} data - 表格数据
+ * @param {Boolean} showPagination - 是否显示分页组件
+ * @param {Number} total - 数据总数
+ * @param {Number} currentPage - 当前页码
+ * @param {Number} pageSize - 每页显示数量
+ * @param {Boolean} loading - 加载状态
+ * @param {Object} defaultNewRow - 新增行默认数据
+ * @param {Boolean} showToolbar - 是否显示工具栏
+ * @param {Object} options - 下拉选项数据集合，key为字段名，value为选项数组
+ *
+ * @event add-row - 新增行时触发，参数为新行数据
+ * @event edit-row - 编辑行时触发，参数为{row, rowIndex}
+ * @event remove-row - 删除行时触发，参数为被删除的行数据和索引
+ * @event save-all - 保存全部数据时触发，参数为所有表格数据
+ * @event reset - 重置表格时触发
+ * @event cell-change - 单元格值变化时触发，参数为{row, column, value}
+ * @event cell-edit - 单元格进入编辑状态时触发，参数为{row, column}
+ * @event value-change - 编辑组件值变化时触发，参数为{row, column, value}
+ * @event value-select - 编辑组件选择选项时触发，参数为{row, column, data}
+ * @event page-size-change - 分页大小改变时触发，参数为新的大小
+ * @event current-page-change - 当前页码改变时触发，参数为新的页码
+ *
+ * @method getData - 获取当前表格数据
+ * @method setData - 设置表格数据
+ * @method clearValidate - 清除验证状态
+ * @method validate - 验证表格数据
+ */
+</script>
 <template>
   <div class="edit-table-container">
     <vxe-toolbar v-if="showToolbar">
