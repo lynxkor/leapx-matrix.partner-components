@@ -1,8 +1,10 @@
 /* css override */
 html[data-vxe-ui-theme="light"] {
   --vxe-ui-font-primary-color: var(--themColor);
-  --vxe-ui-font-primary-lighten-color: var(--themColor)
+  --vxe-ui-font-primary-lighten-color: var(--themColor);
+  --vxe-ui-font-color: var(--aisDefaultTextColor);
 }
+
 // vxe-table 样式
 .vxe-table--render-default {
   font-family: "PingFang SC"!important;
@@ -21,10 +23,23 @@ html[data-vxe-ui-theme="light"] {
   display: none;
 }
 // 按钮
+.el-button--default {
+  border-color: #E6E6E5;
+  color: #3B3E3B;
+}
 .el-button--default:not(.el-button--primary):hover, 
 .el-button--default:not(.el-button--primary):focus {
   background-color: #fff;
   border-color: var(--themColor);
+}
+.el-button.is-disabled, .el-button.is-disabled:hover, .el-button.is-disabled:focus {
+  color: #CECFCE;
+  border-color: #EBEEF5;
+}
+.el-button--small{
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 .el-popconfirm {
   margin: 6px;
@@ -32,8 +47,36 @@ html[data-vxe-ui-theme="light"] {
     margin-bottom: 10px;
   }
 }
+// 表单公共样式
+.el-form-item--small.el-form-item {
+  margin-bottom: 16px;
+}
 .el-form-item__label {
   color: var(--aisDefaultTextColor);
+  padding-right: 10px;
+}
+.el-input__inner, .el-range-input {
+  border-color: #e6e6e5;
+  padding: 0 8px;
+  &::placeholder {
+    color: #9D9F9D !important;
+    font-weight: 400 !important;
+  }
+  &:hover {
+    border-color: #9D9F9D;
+  }
+  &:focus {
+    border-color: var(--themColor);
+  }
+}
+.el-select__input {
+  margin-left: 8px;
+}
+.el-date-editor .el-range__icon { 
+  color: #9D9F9D;
+}
+.el-range-editor--small .el-range-separator {
+  width: 20px;
 }
 // 分页样式
 .el-pagination__total {
@@ -58,7 +101,7 @@ html[data-vxe-ui-theme="light"] {
 /* 通用列表页样式 */
 .page-common {
   height: 100%;
-  padding: 20px;
+  padding: 16px;
   .ais-table-c {
     height: calc(100% - 120px);
   }
@@ -76,14 +119,18 @@ html[data-vxe-ui-theme="light"] {
     .el-date-editor--datetimerange.el-input__inner,
     .el-date-editor--timerange.el-input__inner {
       min-width: 230px;
-      width: 100%
+      width: 100%;
     }
     .el-input__inner {
       height: 32px!important;
+      &::placeholder {
+        color: red;
+      }
     }
     .el-form-item{
       width: 33.3%;
       margin-right: 0;
+      height: 32px;
     }
     .el-select{
       width: 100%;
@@ -99,6 +146,13 @@ html[data-vxe-ui-theme="light"] {
   }
   .ais-actions {
     padding: 20px 0 15px 0;
+    button{
+      font-weight: 400;
+    }
+    .iconfont {
+      margin-right: 4px;
+      font-size: 14px;
+    }
   }
 }
 
@@ -121,6 +175,10 @@ html[data-vxe-ui-theme="light"] {
       h2{
         font-size: 16px;
         color: #333;
+      }
+      .iconfont {
+        font-size: 14px;
+        margin-right: 4px;
       }
     }
     &:last-child{
@@ -150,6 +208,7 @@ html[data-vxe-ui-theme="light"] {
     border-top: 1px solid #E6E6E5;
     .el-button{
       width: 150px;
+      font-weight: 400;
     }
   }
   .el-form-item{
@@ -177,6 +236,10 @@ html[data-vxe-ui-theme="light"] {
       text-overflow: ellipsis;
       overflow: hidden;
     }
+    .iconfont{
+      margin-right: 4px;
+      font-size: 14px;
+    }
   }
   .common-section{
     margin-bottom: 20px;
@@ -189,7 +252,7 @@ html[data-vxe-ui-theme="light"] {
       h2{
         font-size: 16px;
         color: #333;
-    }
+      }
   }
   &:last-child{
       border-bottom: none;
@@ -239,6 +302,10 @@ html[data-vxe-ui-theme="light"] {
         font-size: 16px;
         color: #333;
       }
+      .iconfont {
+        font-size: 14px;
+        margin-right: 4px;
+      }
     }
     &:last-child{
       border-bottom: none;
@@ -284,6 +351,7 @@ html[data-vxe-ui-theme="light"] {
     border-top: 1px solid #E6E6E5;
     .el-button{
       width: 150px;
+      font-weight: 400;
     }
   }
   .form-item-full{

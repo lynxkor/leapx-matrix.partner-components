@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "46179469",
+      "name": "calendar",
+      "font_class": "calendar",
+      "unicode": "e665",
+      "unicode_decimal": 58981
+    },
+    {
+      "icon_id": "46176779",
+      "name": "prompt",
+      "font_class": "prompt",
+      "unicode": "e664",
+      "unicode_decimal": 58980
+    },
+    {
+      "icon_id": "46176508",
+      "name": "edit",
+      "font_class": "edit",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "46176181",
+      "name": "plus",
+      "font_class": "plus",
+      "unicode": "e662",
+      "unicode_decimal": 58978
+    },
+    {
       "icon_id": "46018000",
       "name": "t-vehicle logistics",
       "font_class": "a-t-vehiclelogistics",

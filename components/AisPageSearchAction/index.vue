@@ -4,7 +4,7 @@
     <el-button size="medium" class="btn-reset" @click="$emit('reset')">重置</el-button>
     <span v-if="isExpandable" class="icon-expand curPoint" @click="$emit('input', !value)">
       {{ value ? "收起" : "展开"}}
-      <i :class="value ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+      <i :class="value ? 'iconfont icon-lxppc-up' : 'iconfont icon-lxppc-down'"></i>
     </span>
   </el-form-item>
 </template>
@@ -48,6 +48,7 @@ export default {
 .btn-search{
   border: 1px solid var(--themColor);
   color: var(--themColor);
+  font-weight: 400;
   &:hover, &:focus{
     background-color: var(--themColor);
     color: #fff;
@@ -56,6 +57,7 @@ export default {
 .btn-reset{
   color: var(--aisDefaultTextColor);
   font-weight: normal;
+  font-weight: 400;
   &:hover, &:focus{
     background-color: #fff;
     color: var(--themColor);
