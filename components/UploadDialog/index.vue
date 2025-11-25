@@ -9,12 +9,11 @@
   >
     <div class="upload-modal-step">
       1.模版下载：
-      <el-link
-        type="primary"
-        :underline="false"
+      <el-button
+        type="text"
         style="vertical-align: baseline"
-        @click="importTemplate"
-      >模板文件</el-link>
+        @click="downloadTemplate"
+      >模板文件</el-button>
     </div>
     <div class="upload-modal-step">2.上传填好的模版</div>
     <el-upload
@@ -23,10 +22,9 @@
       accept=".xlsx, .xls"
       :disabled="isUploading"
       :headers="headers"
-      :action="uploadUrl"
+      :action="uploadAction"
       :data="form"
       :on-success="handleFileSuccess"
-      :auto-upload="false"
       :file-list="fileList"
       drag
     >
@@ -51,6 +49,9 @@
 </template>
 
 <script>
+import { getTemplateUrl } from '@/api/common';
+import { downloadFile, downloadExcel } from '../../../utils';
+
 export default {
   name: 'UploadModal',
   props: {
@@ -58,18 +59,22 @@ export default {
       type: Boolean,
       default: false
     },
+    id: {
+      type: Number,
+      default: 0
+    },
     title: {
       type: String,
       default: '导入'
     },
-    templateUrl: {
-      type: String,
-      default: ''
-    },
-    uploadUrl: {
-      type: String,
-      default: ''
-    }
+    // templateUrl: {
+    //   type: String,
+    //   default: ''
+    // },
+    // uploadUrl: {
+    //   type: String,
+    //   default: ''
+    // }
   },
   data () {
     return {
@@ -82,6 +87,12 @@ export default {
       form: {},
       fileList: []
     };
+  },
+  computed: {
+  // 使用计算属性动态获取上传地址
+    uploadAction () {
+      return process.env.VUE_APP_WORK_ORDER_URL + '/file/fileService/uploadMultipartFile';
+    }
   },
   methods: {
     handleClose () {
@@ -96,7 +107,6 @@ export default {
           message: '导入成功',
           type: 'success'
         });
-        this.handleClose();
       } else {
         this.$message({
           message: `${response.msg}`,
@@ -109,6 +119,7 @@ export default {
     submitFileForm () {
       const submit = () => {
         const file = this.$refs.upload.uploadFiles;
+        console.log('file', file);
         if (file.length < 1) {
           return this.$message({
             message: '请选择文件',
@@ -128,14 +139,11 @@ export default {
         submit();
       }
     },
-    importTemplate () {
-      if (this.templateUrl) {
-        this.download(
-          this.templateUrl,
-          {},
-          '导入模板.xlsx'
-        );
-      }
+    // 获取接口方法下载模板
+    async downloadTemplate () {
+      console.log(this.id);
+      const res = await getTemplateUrl(this.id);
+      downloadExcel(res?.excelModelUrl, res.fileName || '模板');
     },
   }
 };
