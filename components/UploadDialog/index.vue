@@ -9,11 +9,10 @@
   >
     <div class="upload-modal-step">
       1.模版下载：
-      <el-button
-        type="text"
-        style="vertical-align: baseline"
+      <span
+        class="upload-modal-link"
         @click="downloadTemplate"
-      >模板文件</el-button>
+      >模板文件</span>
     </div>
     <div class="upload-modal-step">2.上传填好的模版</div>
     <el-upload
@@ -23,8 +22,8 @@
       :disabled="isUploading"
       :headers="headers"
       :action="uploadAction"
-      :data="form"
-      :on-success="handleFileSuccess"
+      :auto-upload="false"
+      :on-change="handleFileChange"
       :file-list="fileList"
       drag
     >
@@ -49,8 +48,9 @@
 </template>
 
 <script>
-import { getTemplateUrl } from '@/api/common';
-import { downloadFile, downloadExcel } from '../../../utils';
+import { getTemplateUrl, importExcelConfirmFile } from '@/api/common';
+import { downloadExcel } from '../../../utils';
+import api from '@/axios';
 
 export default {
   name: 'UploadModal',
@@ -85,7 +85,8 @@ export default {
       // 设置上传的请求头部
       headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
       form: {},
-      fileList: []
+      fileList: [],
+      currentFile: null,
     };
   },
   computed: {
@@ -99,51 +100,72 @@ export default {
       this.$refs.upload.clearFiles();
       this.$emit('close');
     },
-    // 文件上传校验成功处理
-    handleFileSuccess (response, file, fileList) {
-      if (response.code === 200) {
-        this.$emit('success', response);
-        this.$message({
-          message: '导入成功',
-          type: 'success'
-        });
-      } else {
-        this.$message({
-          message: `${response.msg}`,
-          type: 'error'
-        });
-        this.$refs.upload.clearFiles();
-      }
-      this.isUploading = false;
-    },
-    submitFileForm () {
-      const submit = () => {
-        const file = this.$refs.upload.uploadFiles;
+    // 文件选择变化
+    handleFileChange (file, fileList) {
+      if (fileList.length > 0) {
+        this.currentFile = file.raw;
         console.log('file', file);
-        if (file.length < 1) {
-          return this.$message({
-            message: '请选择文件',
-            type: 'error'
-          });
-        }
-        this.isUploading = true;
-        this.$refs.upload.submit();
-      };
-      if (this.$refs.uploadRef) {
-        this.$refs.uploadRef.validate(valid => {
-          if (valid) {
-            submit();
+      }
+    },
+
+    // 手动上传
+    async submitFileForm () {
+      if (!this.currentFile) {
+        return this.$message.error('请选择文件');
+      }
+      console.log('this.currentFile', this.currentFile);
+      // 文件校验
+      const isExcel = this.currentFile.name.endsWith('.xls') || this.currentFile.name.endsWith('.xlsx');
+      const isLt20M = this.currentFile.size / 1024 / 1024 < 20;
+
+      if (!isExcel) {
+        this.$message.error('只能上传 Excel 文件!');
+        return;
+      }
+      if (!isLt20M) {
+        this.$message.error('文件大小不能超过 20MB!');
+        return;
+      }
+
+      this.isUploading = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', this.currentFile);
+        //  1  2种方法都可 暂时使用第二种 第一种需要手动拼接参数
+        // const params = new URLSearchParams({
+        //   id: this.id,
+        //   token: localStorage.getItem('token') || ''
+        // }).toString();
+        // const url = `/data/ExcelManage/importExcelConfirm?${params}`;
+        // const response = await api.postExport(url, formData, 'post', '', '', {
+        //   headers: {
+        //     'Content-Type': 'multipart/form-data',
+        //     Authorization: `Bearer ${localStorage.getItem('token')}`
+        //   }
+        // });
+        await importExcelConfirmFile(formData, {
+          id: this.id,
+          token: localStorage.getItem('token'),
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-      } else {
-        submit();
+
+        this.$message.success('文件上传成功');
+        this.fileList = [];
+        this.currentFile = null;
+        this.handleClose();
+      } catch (error) {
+        this.$message.error('文件上传失败');
+      } finally {
+        this.isUploading = false;
       }
     },
     // 获取接口方法下载模板
     async downloadTemplate () {
-      console.log(this.id);
       const res = await getTemplateUrl(this.id);
-      downloadExcel(res?.excelModelUrl, res.fileName || '模板');
+      downloadExcel(res?.excelModelUrl, res.fileName || '模板.xlsx');
     },
   }
 };
@@ -155,6 +177,7 @@ export default {
   .el-dialog__header {
     border-bottom: 1px solid #E6E6E5;
     padding: 12px 20px;
+    font-weight: 700;
     .el-dialog__title{
       font-size: 14px;
       color: var(--aisDefaultTextColor);
@@ -187,6 +210,10 @@ export default {
   }
   .upload-modal-step{
     margin-bottom: 12px;
+  }
+  .upload-modal-link {
+    color: var(--themColor);
+    cursor: pointer;
   }
 }
 </style>
