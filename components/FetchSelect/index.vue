@@ -11,6 +11,7 @@
  * @param {String} valueKey - 选项数据中作为值的键名，默认'code'
  * @param {String} labelKey - 选项数据中作为标签的键名，默认'message'
  * @param {Array} options - 直接传入的静态选项数据，优先级最高
+ * @param {Array} filterable - 是否可搜索
  *
  * @event $attrs - 绑定所有父组件的属性到子组件的select元素上
  * @event input - 值变化时触发，用于v-model双向绑定
@@ -53,6 +54,7 @@
     :loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
+    :filterable="filterable"
   >
     <el-option
       v-for="item in computedOptions"
@@ -104,7 +106,11 @@ export default {
     options: {
       type: Array,
       default: null
-    }
+    },
+    filterable: {
+      type: Boolean,
+      default: false
+    },
   },
   data () {
     return {
