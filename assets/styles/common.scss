@@ -50,8 +50,12 @@ html[data-vxe-ui-theme="light"] {
 
 // 按钮
 .el-button--default {
-  border-color: #E6E6E5;
-  color: #3B3E3B;
+  &:not(.el-button--primary):hover,
+  &:not(.el-button--primary):focus,
+  &:not(.el-button--primary) {
+    border-color: #E6E6E5;
+    color: #3B3E3B;
+  }
 }
 .el-button--default:not(.el-button--primary):hover, 
 .el-button--default:not(.el-button--primary):focus {
@@ -79,7 +83,7 @@ html[data-vxe-ui-theme="light"] {
 
 // 表单公共样式
 .el-form-item--small.el-form-item {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 .el-form-item__label {
   color: var(--aisDefaultTextColor);
@@ -140,7 +144,7 @@ html[data-vxe-ui-theme="light"] {
 }
 .el-textarea .el-input__count {
   line-height: 1;
-  bottom: 8px;
+  bottom: 12px;
   right: 12px;
 }
 .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label:before {
@@ -166,6 +170,49 @@ html[data-vxe-ui-theme="light"] {
       background-color: #F8F7F7;
       color: var(--aisDefaultTextColor);
     }
+  }
+}
+
+// 提示框
+.el-popconfirm {
+  .el-popconfirm__icon {
+    display: none;
+  }
+  .el-popconfirm__action {
+    .el-button--text{
+      color: #9D9F9D !important;
+    }
+    .el-button--primary{
+      padding: 7px 11px;
+    }
+  }
+}
+.ais-leave-tips {
+  color: var(--aisDefaultTextColor);
+  font-size: 14px;
+  padding: 16px;
+  .el-message-box__header {
+    display: none;
+  }
+  .el-message-box__btns {
+    padding: 0;
+  }
+  .el-message-box__content {
+    padding: 10px;
+  }
+  .iconfont{
+    font-size: 16px;
+    margin-right: 5px;
+    color: var(--themColor);
+    font-weight: normal;
+  }
+  &-main {
+    font-weight: 700;
+  }
+  &-sub {
+    color: #9D9F9D;
+    font-size: 14px;
+    margin-top: 3px;
   }
 }
 
@@ -196,6 +243,21 @@ html[data-vxe-ui-theme="light"] {
   font-weight: normal;
 }
 
+// 提示信息
+.el-message--success {
+  background-color: #E9FAEB;
+  color: var(--themColor);
+  min-width: 100px;
+  border-radius: 8px;
+  border: 0;
+  .el-icon-success, .el-message__content{
+    color: var(--themColor);
+  }
+  .el-icon-success {
+    font-size: 16px;
+  }
+}
+
 /* 通用列表页样式 */
 .page-common {
   height: 100%;
@@ -206,7 +268,6 @@ html[data-vxe-ui-theme="light"] {
   /* 列表页-搜索项 */
   .ais-search-form {
     border-bottom: 1px solid #e6e6e5;
-    padding-bottom: 2px;
     .el-form-item__content {
       min-width: 230px;
       width: 60% !important;
