@@ -177,6 +177,7 @@ export default {
   .el-dialog__header {
     border-bottom: 1px solid #E6E6E5;
     padding: 12px 20px;
+    font-weight: 700;
     .el-dialog__title{
       font-size: 14px;
       color: var(--aisDefaultTextColor);

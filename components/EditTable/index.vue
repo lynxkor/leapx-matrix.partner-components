@@ -298,6 +298,13 @@ export default {
 
       this.tableData.unshift(newRow);
       this.$refs.editTable.setEditRow(newRow);
+      // 聚焦到第一个input
+      setTimeout(() => {
+        const firstInput = this.$refs.editTable.$el.querySelector('input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+      }, 300);
       // 触发事件通知父组件
       this.$emit('add-row', newRow);
     },
