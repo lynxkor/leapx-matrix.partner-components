@@ -46,7 +46,7 @@
 <template>
   <el-select
     v-bind="$attrs"
-    :value="value"
+    :value="showValue"
     @input="handleInput"
     @change="handleChange"
     @blur="handleBlur"
@@ -109,7 +109,8 @@ export default {
   data () {
     return {
       remoteOptions: [],
-      loading: false
+      loading: false,
+      showValue: this.value
     };
   },
   computed: {
@@ -127,6 +128,13 @@ export default {
         }
       },
       deep: true
+    },
+    value: {
+      handler (val) {
+        // 枚举值只能是string，此处统一处理
+        this.showValue = String(val);
+      },
+      immediate: true
     }
   },
   mounted () {
