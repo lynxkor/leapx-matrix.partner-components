@@ -15,13 +15,10 @@ export default {
     };
   },
   mounted () {
-    const pageSource = this.$store.state.pageSource?.pageSource || [];
+    const pageSource = this.$store.state.pageSource?.aisPageSource || [];
     const permissionSet = new Set();
-    // 一次性遍历，提取所有相关权限
     pageSource.forEach(item => {
-      if (item.startsWith('AIS')) {
-        permissionSet.add(item);
-      }
+      permissionSet.add(item);
     });
     const key = this.moduleKey;
     this.canList = permissionSet.has(`${key}-list`);
