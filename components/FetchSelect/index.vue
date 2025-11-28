@@ -137,8 +137,12 @@ export default {
     },
     value: {
       handler (val) {
-        // 枚举值只能是string，此处统一处理
-        this.showValue = String(val);
+        // 枚举值只能是string，如果是number进行转换
+        if (Object.prototype.toString.call(val) === '[object Number]') {
+          this.showValue = String(val);
+        } else {
+          this.showValue = val;
+        }
       },
       immediate: true
     }

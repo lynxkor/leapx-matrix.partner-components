@@ -18,6 +18,11 @@ html[data-vxe-ui-theme="light"] {
   color: var(--aisDefaultTextColor);
   font-weight: 600;
 }
+.vxe-table--render-default.size--medium .vxe-header--column.is--padding .vxe-cell, 
+.vxe-table--render-default .vxe-body--column:not(.col--active).col--ellipsis > .vxe-cell,
+.vxe-table--render-default.size--medium .vxe-body--column.is--padding .vxe-cell {
+  padding: 8px 24px!important;
+}
 .vxe-table--render-default.border--inner .vxe-header--column {
   background-color: #F8F7F7;
 }
@@ -269,9 +274,11 @@ html[data-vxe-ui-theme="light"] {
   /* 列表页-搜索项 */
   .ais-search-form {
     border-bottom: 1px solid #e6e6e5;
+    display: flex;
+    flex-wrap: wrap;
     .el-form-item__content {
       min-width: 230px;
-      width: 60% !important;
+      flex: 1;
     }
     .el-date-editor--daterange.el-input,
     .el-date-editor--daterange.el-input__inner,
@@ -286,8 +293,9 @@ html[data-vxe-ui-theme="light"] {
     }
     .el-form-item{
       width: 33.3%;
+      display: flex;
       margin-right: 0;
-      height: 32px;
+      padding-left: 16px;
     }
     .el-select{
       width: 100%;
@@ -553,5 +561,8 @@ html[data-vxe-ui-theme="light"] {
 @media screen and (max-width: 1139px) {
   .el-form-item__label {
     text-align: left!important;
+  }
+  .page-common .ais-search-form .el-form-item {
+    flex-direction: column;
   }
 }

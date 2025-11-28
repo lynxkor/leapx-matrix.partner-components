@@ -67,6 +67,7 @@
       stripe
       resizable
       :row-config="{isHover: true}"
+      size="medium"
       show-overflow
       keep-source
       :edit-rules="editRules"
@@ -113,7 +114,7 @@
         </template>
       </vxe-column>
 
-      <vxe-column v-if="defaultNewRow" title="操作" width="120" align="center" fixed="right" :resizable="false">
+      <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <span
             class="action-button btn-edit"
