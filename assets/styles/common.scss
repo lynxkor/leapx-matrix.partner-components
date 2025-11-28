@@ -65,6 +65,7 @@ html[data-vxe-ui-theme="light"] {
 .el-button.is-disabled, .el-button.is-disabled:hover, .el-button.is-disabled:focus {
   color: #CECFCE;
   border-color: #EBEEF5;
+  background-color: #fff;
 }
 .el-button--small{
   border-radius: 4px;
@@ -302,6 +303,7 @@ html[data-vxe-ui-theme="light"] {
   }
   .ais-actions {
     padding: 20px 0 15px 0;
+    min-height: 67px;
     button{
       font-weight: 400;
     }
