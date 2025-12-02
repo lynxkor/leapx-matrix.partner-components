@@ -157,11 +157,18 @@ export function handleBatchStatusChange ({
     }
 
     this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
+      if (!value && statusText === '停用') {
+        this.$message({
+          type: 'error',
+          message: `${statusText}说明不能为空!`
+        });
+        return;
+      };
       const params = {
         idSet: ids,
         status: targetStatus,
-        StatusDesc: value
-        // ...(requireInput && value && { StatusDesc: value })
+        statusDesc: value
+        // ...(requireInput && value && { statusDesc: value })
       };
 
       apiFunc(params)
