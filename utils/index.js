@@ -157,7 +157,7 @@ export function handleBatchStatusChange ({
     }
 
     this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
-      if (!value && statusText === '停用') {
+      if (!value && statusText === '停用') { // 做一个效验,为停用时一定要有说明,否则驳回,可用时,可没有说明
         this.$message({
           type: 'error',
           message: `${statusText}说明不能为空!`
