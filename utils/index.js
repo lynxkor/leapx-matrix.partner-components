@@ -104,3 +104,84 @@ export function downloadExcel (rowOrUrl, defaultName = '模板') {
 
   return downloadFile(url, fileName);
 }
+
+/**
+ * 批量启用/禁用通用方法
+ * @param {Array} selectionList - 选中的列表
+ * @param {Boolean} targetStatus - 目标状态
+ * @param {Function} apiFunc - API调用函数
+ * @param {Function} refreshFunc - 刷新数据的函数
+ * @param {Object} options - 配置选项
+ */
+export function handleBatchStatusChange ({
+  selectionList,
+  targetStatus,
+  apiFunc,
+  refreshFunc,
+  options = {}
+}) {
+  const {
+    successMessage = '操作成功!',
+    errorMessage = '操作失败!',
+    confirmTitle = '提示',
+    statusName = 'status',
+    requireInput = true
+  } = options;
+
+  const statusText = targetStatus ? '启用' : '停用';
+
+  // 检查是否所有项的状态都相同
+  const isDifferentStatus = this.selectionList.find(item => item.status === targetStatus);
+
+  if (isDifferentStatus) {
+    this.$message({
+      type: 'warning',
+      message: `存在不是${statusText}的数据，请确认!`
+    });
+    return Promise.reject(new Error('状态不一致'));
+  }
+
+  const ids = selectionList.map(item => item.id) || [];
+
+  return new Promise((resolve, reject) => {
+    const promptConfig = {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      title: confirmTitle,
+      message: `此操作将${statusText}选中项，是否继续?`
+    };
+
+    if (requireInput) {
+      promptConfig.inputPlaceholder = `请输入${statusText}说明`;
+    }
+
+    this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
+      const params = {
+        idSet: ids,
+        status: targetStatus,
+        StatusDesc: value
+        // ...(requireInput && value && { StatusDesc: value })
+      };
+
+      apiFunc(params)
+        .then(() => {
+          this.$message({
+            type: 'success',
+            message: successMessage
+          });
+          refreshFunc && refreshFunc();
+          resolve();
+        })
+        .catch((error) => {
+          this.$message({
+            type: 'error',
+            message: errorMessage
+          });
+          reject(error);
+        });
+    }).catch(() => {
+      reject(new Error('用户取消操作'));
+    });
+  });
+}
