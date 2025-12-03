@@ -192,3 +192,20 @@ export function handleBatchStatusChange ({
     });
   });
 }
+
+/**
+ * 获取一天的最后时刻
+ * @param {string} dateStr 时间
+ * @returns {string} 时间 xx-xx-xx 23:59:59
+ */
+export function getEndOfDayString (dateStr) {
+  const date = new Date(dateStr);
+  date.setHours(23, 59, 59, 999);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
