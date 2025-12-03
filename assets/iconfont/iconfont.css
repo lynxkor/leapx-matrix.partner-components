@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4983741 */
-  src: url('iconfont.woff2?t=1764725037700') format('woff2'),
-       url('iconfont.woff?t=1764725037700') format('woff'),
-       url('iconfont.ttf?t=1764725037700') format('truetype'),
-       url('iconfont.svg?t=1764725037700#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1764760179113') format('woff2'),
+       url('iconfont.woff?t=1764760179113') format('woff'),
+       url('iconfont.ttf?t=1764760179113') format('truetype'),
+       url('iconfont.svg?t=1764760179113#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-lxppc-plus:before {
+  content: "\e662";
 }
 
 .icon-lxppc-calendar:before {
@@ -24,10 +28,6 @@
 
 .icon-lxppc-edit:before {
   content: "\e663";
-}
-
-.icon-lxppc-plus:before {
-  content: "\e662";
 }
 
 .icon-lxppc-a-t-vehiclelogistics:before {
