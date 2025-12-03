@@ -55,15 +55,15 @@ html[data-vxe-ui-theme="light"] {
 
 // 按钮
 .el-button--default {
-  &:not(.el-button--primary):hover,
-  &:not(.el-button--primary):focus,
   &:not(.el-button--primary) {
     border-color: #E6E6E5;
     color: #3B3E3B;
   }
 }
+
 .el-button--default:not(.el-button--primary):hover, 
 .el-button--default:not(.el-button--primary):focus {
+  color: var(--themColor);
   background-color: #fff;
   border-color: var(--themColor);
 }
@@ -78,6 +78,7 @@ html[data-vxe-ui-theme="light"] {
   font-size: 14px;
 }
 .el-button--primary:hover, .el-button--primary:focus {
+  background-color: #008200;
   background-color: #008200;
 }
 .el-popconfirm {
@@ -124,6 +125,13 @@ html[data-vxe-ui-theme="light"] {
 .el-range-editor--small .el-range-separator {
   width: 20px;
 }
+.el-select-dropdown__item {
+  color: var(--aisDefaultTextColor);
+  padding: 0 8px;
+}
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
+  right: 8px;
+}
 .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
   background-color: rgba($color: #009100, $alpha: 0.1);
   border-radius: 4px;
@@ -133,9 +141,6 @@ html[data-vxe-ui-theme="light"] {
 }
 .el-select-dropdown__item.selected {
   font-weight: normal;
-  &::after {
-    color: var(--aisDefaultTextColor)!important;
-  }
 }
 .el-select-dropdown__list {
   padding: 8px 4px;
@@ -214,6 +219,7 @@ html[data-vxe-ui-theme="light"] {
   }
   &-main {
     font-weight: 700;
+    color: var(--aisDefaultTextColor);
   }
   &-sub {
     color: #9D9F9D;
@@ -270,12 +276,21 @@ html[data-vxe-ui-theme="light"] {
   padding: 16px;
   .ais-table-c {
     height: calc(100% - 120px);
+    ::v-deep {
+      .el-input__icon {
+        line-height: 32px;
+      }
+    }
+    .el-input__icon {
+      line-height: 32px;
+    }
   }
   /* 列表页-搜索项 */
   .ais-search-form {
     border-bottom: 1px solid #e6e6e5;
     display: flex;
     flex-wrap: wrap;
+    padding-bottom: 4px;
     .el-form-item__content {
       min-width: 230px;
       flex: 1;
@@ -304,6 +319,9 @@ html[data-vxe-ui-theme="light"] {
       .el-form-item__content{
         text-align: right;
       }
+    }
+    .el-form-item--small.el-form-item {
+      margin-bottom: 12px;
     }
   }
   .el-button--small{
@@ -353,6 +371,10 @@ html[data-vxe-ui-theme="light"] {
   }
   .common-section-table{
     padding-bottom: 20px;
+    .el-select .el-input .el-select__caret {
+      position: relative;
+      top: 3px;
+    }
   }
   .el-main{
     display: flex;
@@ -484,6 +506,10 @@ html[data-vxe-ui-theme="light"] {
   }
   .common-section-table{
     padding-bottom: 20px;
+    .el-select .el-input .el-select__caret {
+      position: relative;
+      top: 3px;
+    }
   }
 
   .el-form-item{
