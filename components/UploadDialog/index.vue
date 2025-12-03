@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { getTemplateUrl, importExcelConfirmFile } from '@/api/common';
+import { getTemplateCode, importExcelConfirmFile } from '@/api/common';
 import { downloadExcel } from '../../../utils';
 import api from '@/axios';
 
@@ -60,8 +60,8 @@ export default {
       default: false
     },
     id: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ''
     },
     title: {
       type: String,
@@ -169,7 +169,7 @@ export default {
     },
     // 获取接口方法下载模板
     async downloadTemplate () {
-      const res = await getTemplateUrl(this.id);
+      const res = await getTemplateCode(this.id);
       downloadExcel(res?.excelModelUrl, res.fileName || '模板.xlsx');
     },
   }
