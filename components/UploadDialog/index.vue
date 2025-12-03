@@ -104,7 +104,6 @@ export default {
     handleFileChange (file, fileList) {
       if (fileList.length > 0) {
         this.currentFile = file.raw;
-        console.log('file', file);
       }
     },
 
@@ -113,7 +112,6 @@ export default {
       if (!this.currentFile) {
         return this.$message.error('请选择文件');
       }
-      console.log('this.currentFile', this.currentFile);
       // 文件校验
       const isExcel = this.currentFile.name.endsWith('.xls') || this.currentFile.name.endsWith('.xlsx');
       const isLt20M = this.currentFile.size / 1024 / 1024 < 20;
@@ -144,15 +142,22 @@ export default {
         //     Authorization: `Bearer ${localStorage.getItem('token')}`
         //   }
         // });
-        await importExcelConfirmFile(formData, {
+        const res = await importExcelConfirmFile(formData, {
           id: this.id,
           token: localStorage.getItem('token'),
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-
-        this.$message.success('文件上传成功');
+        if (res.failExcelUrl) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
+          this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
+          setTimeout(() => {
+            downloadExcel(res?.failExcelUrl, res.fileName || '模板.xlsx');
+          }, 2000);
+        } else {
+          this.$message.success('文件上传成功');
+        }
+        // 公共清理逻辑
         this.fileList = [];
         this.currentFile = null;
         this.handleClose();
