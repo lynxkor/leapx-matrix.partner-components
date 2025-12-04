@@ -49,7 +49,7 @@
 
 <script>
 import { getTemplateCode, importExcelConfirmFile } from '@/api/common';
-import { downloadExcel } from '../../../utils';
+import { downloadExcel } from '../../utils';
 import api from '@/axios';
 
 export default {
