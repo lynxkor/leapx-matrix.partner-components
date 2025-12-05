@@ -1,0 +1,271 @@
+<!--
+
+查询组件使用:
+<el-form-item label="车系名称">
+        <list-select
+          listUrl="/datacenter/web/materials/vehicleSeries/list"
+          placeholder="请选择"
+          v-model="form.seriesIds"
+          query-key="seriesNameLike"
+          clearable
+          collapseTags
+          auto-load-options
+          no-param-load
+          multiple
+          filterable
+          :params="{}" />
+      </el-form-item>
+      <el-form-item label="车型名称"  v-show="this.visibleCount === 3 || show">
+        <list-select
+          listUrl="/datacenter/web/materials/vehicleModel/list"
+          placeholder="请选择"
+          v-model="form.modelIds"
+          query-key="modelNameLike"
+          clearable
+          auto-load-options
+          collapseTags
+          multiple
+          filterable
+          :params="{seriesIdList: form.seriesIds}" />
+      </el-form-item>
+       <el-form-item label="车辆年款">
+          <list-select
+            listUrl="/datacenter/web/materials/vehicleModelYearTypeRelation/list"
+            placeholder="请选择"
+            v-model="form.yearTypeIds"
+            clearable
+            multiple
+            collapseTags
+            auto-load-options
+            filterable
+            label-key="yearTypeName"
+            value-key="yearTypeId"
+            :params="{modelIdList: form.modelIds}" />
+        </el-form-item>
+
+编辑页面回写使用, 必须加v-if,必须加v-if,必须加v-if
+<el-form-item label="车系" prop="seriesId">
+  <list-select
+    v-if="form.id"
+    listUrl="/datacenter/web/materials/vehicleSeries/list"
+    placeholder="请选择"
+    v-model="form.seriesId"
+    query-key="seriesNameLike"
+    auto-load-options
+    no-param-load
+    filterable
+    :params="{}" />
+  </el-form-item>
+<el-form-item label="车型" prop="modelId">
+  <list-select
+    v-if="form.id"
+    listUrl="/datacenter/web/materials/vehicleModel/list"
+    placeholder="请选择"
+    v-model="form.modelId"
+    query-key="modelNameLike"
+    auto-load-options
+    collapseTags
+    filterable
+    :params="{seriesIdList: form.seriesId?[form.seriesId]:[]}" />
+</el-form-item>
+
+-->
+<template>
+  <fetch-select
+    ref="select"
+    :options="options"
+    :remote="true"
+    :remoteMethod="remoteMethod"
+    placeholder="请选择"
+    v-bind="$attrs"
+    v-model="ids"
+    @change="handleChange"
+    valueKey="id"
+    labelKey="name"
+    @focus="handleFocus"
+  />
+</template>
+<script>
+import xeUtils from 'xe-utils';
+import FetchSelect from '@/libs/components/FetchSelect';
+import api from '@/axios';
+function hasParam (params) {
+  let keys = Object.keys(params);
+  for (let key of keys) {
+    if (params[key] instanceof Array) {
+      if (params[key].length > 0) {
+        for (const p of params[key]) {
+          if (p) {
+            return true;
+          }
+        }
+      }
+    } else {
+      if (params[key]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export default {
+  name: 'ListSelect',
+  components: {
+    FetchSelect
+  },
+  props: {
+    value: {
+      type: [Array, String],
+      default: () => null
+    },
+    listUrl: {
+      type: String,
+      default: ''
+    },
+    params: {
+      type: Object,
+      default: () => {}
+    },
+    queryKey: {
+      type: String,
+      default: 'name'
+    },
+    valueKey: {
+      type: String,
+      default: 'id'
+    },
+    labelKey: {
+      type: String,
+      default: 'name'
+    },
+    /**
+     * 是否自动加载数据(默认需要输入关键字)
+     */
+    autoLoadOptions: {
+      type: Boolean,
+      default: false
+    },
+    /**
+     * 无参数是否加载
+     */
+    noParamLoad: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data () {
+    return {
+      ids: [],
+      options: []
+    };
+  },
+  watch: {
+    params: {
+      // 监听是否变化
+      deep: true,
+      handler (val, oldVal) {
+        if (!xeUtils.isEqual(val, oldVal)) {
+          this.ids = null;
+          this.options = [];
+          this.$emit('input', null);
+          if (this.autoLoadOptions) {
+            if (this.noParamLoad) {
+              this.remoteMethod();
+            } else {
+              // 判断是否有参
+              console.log('hasParam', hasParam(val), this.listUrl);
+              if (hasParam(val)) {
+                this.remoteMethod();
+              }
+            }
+          }
+        }
+      }
+    },
+    value: {
+      // 监听是否变化
+      deep: true,
+      handler (val, oldVal) {
+        this.ids = val;
+        console.log('value', val, 'old', oldVal, this.listUrl);
+        if (val && !oldVal && this.options.length === 0) {
+          this.remoteMethod();
+        }
+      }
+    }
+  },
+  mounted () {
+    if (this.hasValue(this.value)) {
+      // mounted时带值,是回写, 理论上也一定有参数
+      this.ids = this.value;
+      this.remoteMethod();
+      this.$refs.select.$forceUpdate();
+    } else if (this.noParamLoad) {
+      this.remoteMethod();
+    }
+  },
+  methods: {
+    remoteMethod (query) {
+      this.options = [];
+      let data = { ...this.params };
+      if (query) {
+        data[this.queryKey] = query;
+      }
+      api.jsonPost(this.listUrl, data).then(dataList => {
+        if (dataList.length !== 0) {
+          this.options = [];
+          for (let ele of dataList) {
+            this.options.push({ id: ele[this.valueKey], name: ele[this.labelKey] });
+          }
+        }
+        this.$forceUpdate();
+      });
+    },
+    handleChange (val, selectedOption) {
+      console.log(val, selectedOption);
+      this.$emit('change', val, selectedOption);
+      this.$emit('input', val);
+    },
+    handleFocus () {
+
+    },
+    /**
+     * 判断值是否存在且不为空
+     */
+    hasValue (value) {
+      // 处理 null 或 undefined
+      if (value === null || value === undefined) {
+        return false;
+      }
+
+      // 处理数组
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+
+      // 处理字符串
+      if (typeof value === 'string') {
+        return value.trim().length > 0;
+      }
+
+      // 处理数字
+      if (typeof value === 'number') {
+        return true;
+      }
+
+      // 处理对象（包括空的 Observer 对象）
+      if (typeof value === 'object') {
+        // 检查是否是普通的空对象
+        return Object.keys(value).length > 0;
+      }
+
+      return true;
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+
+</style>
