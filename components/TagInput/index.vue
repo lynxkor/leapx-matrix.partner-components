@@ -26,7 +26,7 @@
         :closable="false"
       >
         <span>
-          +{{ tagList.length - 1 }}
+          + {{ tagList.length - 1 }}
         </span>
       </tag>
 
