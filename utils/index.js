@@ -124,7 +124,7 @@ export function handleBatchStatusChange ({
     successMessage = '操作成功!',
     errorMessage = '操作失败!',
     confirmTitle = '提示',
-    statusName = 'status',
+    // statusName = 'status',
     requireInput = true
   } = options;
 
@@ -208,4 +208,31 @@ export function getEndOfDayString (dateStr) {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * 通用接口调用与数据格式化
+ * @param {Object} context Vue组件实例
+ * @param {Function} apiFunc 接口函数
+ * @param {Object} params 请求参数
+ * @param {string} targetField 存储结果的目标字段
+ * @param {Object} mapping 数据映射规则，默认为 { label: 'name', value: 'id' }
+ */
+export async function fetchAndFormatData (context, apiFunc, params, targetField, mapping = {}) {
+  const defaultMapping = { label: 'name', value: 'id' }; // 默认映射规则
+  const finalMapping = { ...defaultMapping, ...mapping }; // 合并默认值和自定义值
+
+  try {
+    const res = await apiFunc(params);
+    if (res && Array.isArray(res)) {
+      context[targetField] = res.map(item => ({
+        ...item,
+        label: item[finalMapping.label],
+        value: item[finalMapping.value]
+      }));
+    }
+  } catch (error) {
+    console.error(`Failed to fetch data for ${targetField}:`, error);
+    context.$message.error(`加载${targetField}数据失败，请稍后重试！`);
+  }
 }
