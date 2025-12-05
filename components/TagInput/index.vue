@@ -23,7 +23,6 @@
 
       <tag
         v-if="tagList.length > 1"
-        :key="index"
         :closable="false"
       >
         <span>
