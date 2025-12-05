@@ -94,7 +94,7 @@ export function downloadExcel (rowOrUrl, defaultName = '模板') {
     fileName = defaultName;
   } else {
     url = rowOrUrl.excelModelUrl;
-    fileName = rowOrUrl.fileName || defaultName;
+    fileName = rowOrUrl.fileName || rowOrUrl.businessType || defaultName;
   }
 
   // 确保文件有扩展名

@@ -170,7 +170,7 @@ export default {
     // 获取接口方法下载模板
     async downloadTemplate () {
       const res = await getTemplateCode(this.id);
-      downloadExcel(res?.excelModelUrl, res.fileName || '模板.xlsx');
+      downloadExcel(res?.excelModelUrl, res?.fileName || res?.businessType || '模板.xlsx');
     },
   }
 };
