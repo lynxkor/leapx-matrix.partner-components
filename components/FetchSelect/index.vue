@@ -44,6 +44,20 @@
  *   v-model="form.status"
  *   enumCode="StatusEnum"
  * />
+ *
+ * @example
+ * 使用远程搜索，带反显功能
+ * <fetch-select
+      filterable
+      clearable
+      remote
+      v-model="form.repairItemTypeId"
+      :remote-method="repairItemSearch" // 远程搜索方法：repairItemSearch (query) {return listItem({ nameLike: query });}
+      :params="form.repairItemTypeName" // 搜索参数：反显时需要要传入，反显原理是通过name搜出列表
+      @change="handleRepairItemChange" // 可选：选中时触发，返回选中的值和完整的选项对象，用于处理额外数据（默认只修改id，如需同步修改name），handleRepairItemChange (val, record) { if (record) {this.form.checkoutTypeName = record.name;}}
+      value-key="id" // 可选，默认值 value
+      label-key="name" // 可选，默认值 label
+    />
  */
 </script>
 <!-- 带自动加载枚举选项的下拉框 -->
@@ -54,13 +68,14 @@
     @input="handleInput"
     @change="handleChange"
     @blur="handleBlur"
+    @focus="handleFocus"
     :loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
     :filterable="filterable"
     collapse-tags
     :remote="remote"
-    :remote-method="remoteMethod"
+    :remote-method="loadRemoteMethod"
   >
     <el-option
       v-for="item in computedOptions"
@@ -95,8 +110,8 @@ export default {
     },
     // 请求参数
     params: {
-      type: Object,
-      default: () => ({})
+      type: [String, Number, Boolean, Object, Array],
+      default: null
     },
     // 选项key值
     optionKey: {
@@ -135,7 +150,8 @@ export default {
     return {
       remoteOptions: [],
       loading: false,
-      showValue: this.value
+      showValue: this.value,
+      initialLoaded : false
     };
   },
   computed: {
@@ -162,6 +178,9 @@ export default {
         } else {
           this.showValue = val;
         }
+        if (this.remote && !this.initialLoaded && val) {
+          this.loadRemoteMethod(this.params);
+        }
       },
       immediate: true
     }
@@ -173,6 +192,24 @@ export default {
     }
   },
   methods: {
+    // 加载远程搜索方法
+    async loadRemoteMethod (v) {
+      this.loading = true;
+      try {
+        const response = await this.remoteMethod(v || this.params);
+        this.remoteOptions = (response.data || response || []).slice(0, 100); // 远程模糊搜索最多100条
+        this.initialLoaded = true;
+        if (this.enumCode && response) {
+          // 缓存枚举数据
+          this.$store.dispatch('enum/setEnum', { code: this.enumCode, data: response });
+        }
+      } catch (error) {
+        console.error('Failed to load options:', error);
+        this.remoteOptions = [];
+      } finally {
+        this.loading = false;
+      }
+    },
     // 加载选项数据
     async loadOptions () {
       // 如果没有request方法或者传入了options，则不执行远程请求
@@ -188,7 +225,7 @@ export default {
 
       this.loading = true;
       try {
-        const response = await this.request(this.enumCode);
+        const response = await this.request(this.enumCode || this.params);
         this.remoteOptions = response.data || response || [];
         if (this.enumCode && response) {
           // 缓存枚举数据
@@ -221,8 +258,12 @@ export default {
     },
     handleBlur () {
       this.$emit('blur');
+    },
+    handleFocus () {
+      if (this.remote && !this.initialLoaded) {
+        this.loadRemoteMethod();
+      }
     }
-
     // 手动刷新选项数据
     // refresh () {
     //   // 只有在没有传入options时才能刷新
