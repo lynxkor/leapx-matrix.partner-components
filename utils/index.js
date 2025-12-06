@@ -236,3 +236,20 @@ export async function fetchAndFormatData (context, apiFunc, params, targetField,
     context.$message.error(`加载${targetField}数据失败，请稍后重试！`);
   }
 }
+
+// 防抖函数防止多次提交
+export function debounce (fn, wait = 500) {
+  var timeout;
+  return function () {
+    var that = this;
+    var args = arguments;
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    var callNow = !timeout;
+    timeout = setTimeout(() => {
+      timeout = null;
+    }, wait);
+    if (callNow) fn.apply(that, args);
+  };
+}

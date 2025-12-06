@@ -8,6 +8,7 @@
  * @param {Function} request - 获取选项数据的API请求方法，返回Promise
  * @param {String} enumCode - 枚举类型代码，用于从Vuex store中获取预定义的枚举数据
  * @param {Object} params - 请求参数对象，变化时会自动重新加载数据
+ * @param {String} optionKey - 选项数据key值，默认没有用valueKey代替
  * @param {String} valueKey - 选项数据中作为值的键名，默认'code'
  * @param {String} labelKey - 选项数据中作为标签的键名，默认'message'
  * @param {Array} options - 直接传入的静态选项数据，优先级最高
@@ -62,7 +63,7 @@
   >
     <el-option
       v-for="item in computedOptions"
-      :key="item[valueKey]"
+      :key="item[optionKey | valueKey]"
       :label="item[labelKey]"
       :value="item[valueKey]"
       :disabled="item.disabled"
@@ -95,6 +96,11 @@ export default {
     params: {
       type: Object,
       default: () => ({})
+    },
+    // 选项key值
+    optionKey: {
+      type: String,
+      default: null
     },
     // 选项数据中作为值的键名
     valueKey: {
