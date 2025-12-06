@@ -58,6 +58,7 @@
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
     :filterable="filterable"
+    collapse-tags
     :remote="remote"
     :remote-method="remoteMethod"
   >
@@ -119,7 +120,7 @@ export default {
     },
     filterable: {
       type: Boolean,
-      default: false
+      default: true
     },
     remote: {
       type: Boolean,

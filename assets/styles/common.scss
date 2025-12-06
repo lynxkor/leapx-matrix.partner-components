@@ -456,6 +456,7 @@ html[data-vxe-ui-theme="light"] {
     margin-bottom: 0;
     line-height: 1.5;
     padding: 8px 0;
+    display: inline-flex;
   }
   .el-form-item__label {
     color: #6C6E6C;
@@ -463,7 +464,7 @@ html[data-vxe-ui-theme="light"] {
   }
   .el-form-item__content{
     min-width: 230px;
-    width: 70%;
+    flex: 1;
     color: var(--aisDefaultTextColor);
     line-height: 1.5;
   }
@@ -581,6 +582,12 @@ html[data-vxe-ui-theme="light"] {
       width: 25%;
       margin-right: 0;
     }
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  .page-common-detail .el-form-item {
+    width: 50%;
   }
 }
 
