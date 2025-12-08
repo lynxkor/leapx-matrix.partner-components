@@ -71,9 +71,23 @@
 
 -->
 <template>
-  <fetch-select
+<!--  <fetch-select-->
+<!--    ref="select"-->
+<!--    :remote="true"-->
+<!--    :remoteMethod="remoteMethod"-->
+<!--    :options="options"-->
+<!--    placeholder="请选择"-->
+<!--    v-bind="$attrs"-->
+<!--    v-model="ids"-->
+<!--    @change="handleChange"-->
+<!--    valueKey="id"-->
+<!--    labelKey="name"-->
+<!--    @focus="handleFocus"-->
+<!--  >-->
+<!--  </fetch-select>-->
+
+  <el-select
     ref="select"
-    :options="options"
     :remote="true"
     :remoteMethod="remoteMethod"
     placeholder="请选择"
@@ -82,12 +96,20 @@
     @change="handleChange"
     valueKey="id"
     labelKey="name"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(255, 255, 255, 0.7)"
     @focus="handleFocus"
-  />
+  >
+    <el-option
+      v-for="item in options"
+      :key="item.id"
+      :label="item.name"
+      :value="item.id" />
+  </el-select>
 </template>
 <script>
 import xeUtils from 'xe-utils';
-import FetchSelect from '@/libs/components/FetchSelect';
+// import FetchSelect from '@/libs/components/FetchSelect';
 import api from '@/axios';
 /**
  * 判断值是否存在且不为空
@@ -143,7 +165,7 @@ function hasParam (params) {
 export default {
   name: 'ListSelect',
   components: {
-    FetchSelect
+    // FetchSelect
   },
   props: {
     value: {
@@ -229,6 +251,7 @@ export default {
     }
   },
   mounted () {
+    console.log('mounted', hasValue(this.value), this.noParamLoad, this.listUrl);
     if (hasValue(this.value)) {
       // mounted时带值,是回写, 理论上也一定有参数
       this.ids = this.value;
@@ -239,6 +262,7 @@ export default {
   },
   methods: {
     remoteMethod (query) {
+      console.log('remoteMethod', query);
       this.options = [];
       let data = { ...this.params };
       if (query) {
