@@ -237,8 +237,7 @@ export default {
       handler (newVal) {
         this.tableData = [...(newVal || [])];
       },
-      immediate: true,
-      deep: true
+      immediate: true
     }
   },
   mounted () {
