@@ -118,6 +118,9 @@ function hasValue (value) {
   return true;
 }
 function hasParam (params) {
+  if (!params) {
+    return false;
+  }
   let keys = Object.keys(params);
   for (let key of keys) {
     if (params[key] instanceof Array) {
@@ -166,6 +169,10 @@ export default {
     labelKey: {
       type: String,
       default: 'name'
+    },
+    limitSize: {
+      type: Number,
+      default: 20
     },
     /**
      * 是否自动加载数据(默认需要输入关键字)
@@ -226,7 +233,6 @@ export default {
       // mounted时带值,是回写, 理论上也一定有参数
       this.ids = this.value;
       this.remoteMethod();
-      this.$refs.select.$forceUpdate();
     } else if (this.noParamLoad) {
       this.remoteMethod();
     }
@@ -238,6 +244,10 @@ export default {
       if (query) {
         data[this.queryKey] = query;
       }
+      if (hasValue(this.ids)) {
+        data[this.valueKey] = this.ids;
+      }
+      data.limitSize = this.limitSize;
       api.jsonPost(this.listUrl, data).then(dataList => {
         if (dataList.length !== 0) {
           this.options = [];
@@ -251,6 +261,16 @@ export default {
     handleChange (val, selectedOption) {
       this.$emit('change', val, selectedOption);
       this.$emit('input', val);
+      if (!hasValue(val)) {
+        if (this.noParamLoad) {
+          this.remoteMethod();
+        } else {
+          // 判断是否有参
+          if (hasParam(this.params)) {
+            this.remoteMethod();
+          }
+        }
+      }
     },
     handleFocus () {
 
