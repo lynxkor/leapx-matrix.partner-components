@@ -128,7 +128,7 @@ export function handleBatchStatusChange ({
     requireInput = true
   } = options;
 
-  const statusText = targetStatus ? '启用' : '停用';
+  const statusText = targetStatus ? '停用' : '启用';
 
   // 检查是否所有项的状态都相同
   const isDifferentStatus = this.selectionList.find(item => item.status === targetStatus);
