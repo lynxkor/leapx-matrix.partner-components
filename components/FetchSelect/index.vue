@@ -70,6 +70,7 @@
     @change="handleChange"
     @blur="handleBlur"
     @focus="handleFocus"
+    @clear="handleClear"
     :loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
@@ -197,7 +198,7 @@ export default {
     async loadRemoteMethod (v) {
       this.loading = true;
       try {
-        const response = await this.remoteMethod(v || this.params);
+        const response = await this.remoteMethod(v ?? this.params);
         this.remoteOptions = (response.data || response || []).slice(0, 100); // 远程模糊搜索最多100条
         this.initialLoaded = true;
         if (this.enumCode && response) {
@@ -261,8 +262,13 @@ export default {
       this.$emit('blur');
     },
     handleFocus () {
-      if (this.remote && !this.initialLoaded) {
+      if (this.remote && (!this.initialLoaded || this.computedOptions.length === 0)) {
         this.loadRemoteMethod();
+      }
+    },
+    handleClear () {
+      if (this.remote) {
+        this.loadRemoteMethod('');
       }
     }
     // 手动刷新选项数据
