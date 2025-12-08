@@ -311,6 +311,9 @@ html[data-vxe-ui-theme="light"] {
       display: flex;
       margin-right: 0;
       padding-left: 16px;
+      &:last-child{
+        margin-left: auto;
+      }
     }
     .el-select{
       width: 100%;
