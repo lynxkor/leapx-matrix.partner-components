@@ -57,13 +57,7 @@ export default {
       } else {
         // 如果不是有效URL，尝试在当前域名下导航
         const routePath = this.link.startsWith('/') ? this.link : '/' + this.link;
-        if (this.$router) {
-          this.$router.push(routePath).catch(err => {
-            console.warn('Navigation failed:', err);
-          });
-        } else {
-          window.location.href = routePath;
-        }
+        window.open(routePath, '_blank');
       }
     },
     isValidUrl (string) {
