@@ -79,7 +79,7 @@
   >
     <el-option
       v-for="item in computedOptions"
-      :key="item[optionKey | valueKey]"
+      :key="item[valueKey]"
       :label="item[labelKey]"
       :value="item[valueKey]"
       :disabled="item.disabled"
