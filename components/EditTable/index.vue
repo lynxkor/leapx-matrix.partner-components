@@ -29,6 +29,7 @@
  * @param {Object} defaultNewRow - 新增行默认数据
  * @param {Boolean} showToolbar - 是否显示工具栏
  * @param {Object} options - 下拉选项数据集合，key为字段名，value为选项数组
+ * @param {String} delTitle - 删除确认标题
  *
  * @event add-row - 新增行时触发，参数为新行数据
  * @event edit-row - 编辑行时触发，参数为{row, rowIndex}
@@ -126,7 +127,7 @@
           </span>
 
           <el-popconfirm
-            title="确定要删除这条记录吗？"
+            :title="delTitle"
             @confirm="removeRow(rowIndex)"
             v-if="auth.delete"
           >
@@ -209,6 +210,11 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    // 删除确认标题
+    delTitle: {
+      type: String,
+      default: '确定要删除这条记录吗？'
     },
     // 新增行默认值
     defaultNewRow: {
