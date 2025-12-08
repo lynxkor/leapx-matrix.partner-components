@@ -51,6 +51,7 @@
       filterable
       clearable
       remote
+      reserve-keyword
       v-model="form.repairItemTypeId"
       :remote-method="repairItemSearch" // 远程搜索方法：repairItemSearch (query) {return listItem({ nameLike: query });}
       :params="form.repairItemTypeName" // 搜索参数：反显时需要要传入，反显原理是通过name搜出列表
@@ -79,7 +80,7 @@
   >
     <el-option
       v-for="item in computedOptions"
-      :key="item[optionKey | valueKey]"
+      :key="item[optionKey || valueKey]"
       :label="item[labelKey]"
       :value="item[valueKey]"
       :disabled="item.disabled"
