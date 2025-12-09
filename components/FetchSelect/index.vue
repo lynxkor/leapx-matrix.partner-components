@@ -51,6 +51,7 @@
       filterable
       clearable
       remote
+      reserve-keyword
       v-model="form.repairItemTypeId"
       :remote-method="repairItemSearch" // 远程搜索方法：repairItemSearch (query) {return listItem({ nameLike: query });}
       :params="form.repairItemTypeName" // 搜索参数：反显时需要要传入，反显原理是通过name搜出列表
@@ -69,6 +70,7 @@
     @change="handleChange"
     @blur="handleBlur"
     @focus="handleFocus"
+    @clear="handleClear"
     :loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
@@ -79,7 +81,7 @@
   >
     <el-option
       v-for="item in computedOptions"
-      :key="item[optionKey | valueKey]"
+      :key="item[optionKey || valueKey]"
       :label="item[labelKey]"
       :value="item[valueKey]"
       :disabled="item.disabled"
@@ -196,8 +198,16 @@ export default {
     async loadRemoteMethod (v) {
       this.loading = true;
       try {
-        const response = await this.remoteMethod(v || this.params);
-        this.remoteOptions = (response.data || response || []).slice(0, 100); // 远程模糊搜索最多100条
+        const response = await this.remoteMethod(v ?? this.params);
+        const responseData = response.data || response || [];
+        this.remoteOptions = responseData.slice(0, 100); // 远程模糊搜索最多100条
+        // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
+        if (!this.initialLoaded && this.params) {
+          const target = responseData.find(item => item[this.valueKey] === this.value);
+          if (!target) {
+            this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params })
+          }
+        }
         this.initialLoaded = true;
         if (this.enumCode && response) {
           // 缓存枚举数据
@@ -260,8 +270,13 @@ export default {
       this.$emit('blur');
     },
     handleFocus () {
-      if (this.remote && !this.initialLoaded) {
+      if (this.remote && (!this.initialLoaded || this.computedOptions.length === 0)) {
         this.loadRemoteMethod();
+      }
+    },
+    handleClear () {
+      if (this.remote) {
+        this.loadRemoteMethod('');
       }
     }
     // 手动刷新选项数据
