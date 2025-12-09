@@ -133,14 +133,24 @@ export function handleBatchStatusChange ({
   // 检查是否所有项的状态都相同
   const isDifferentStatus = this.selectionList.find(item => item.status === targetStatus);
 
-  if (isDifferentStatus) {
+  if (!isDifferentStatus) {
     this.$message({
       type: 'warning',
       message: `存在不是${statusText}的数据，请确认!`
     });
     return Promise.reject(new Error('状态不一致'));
   }
+  // 检查是否有混合选择状态
+  const enabledCount = this.selectionList.filter(item => item.status).length;
+  const disabledCount = this.selectionList.filter(item => !item.status).length;
 
+  if (enabledCount > 0 && disabledCount > 0) {
+    this.$message({
+      type: 'warning',
+      message: `选中的数据中包含了${enabledCount}个启用状态和${disabledCount}个停用状态的数据，无法批量操作！请选择状态相同的数据。`
+    });
+    return Promise.reject(new Error('状态不一致'));
+  }
   const ids = selectionList.map(item => item.id) || [];
 
   return new Promise((resolve, reject) => {
