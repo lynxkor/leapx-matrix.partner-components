@@ -96,6 +96,7 @@
     @change="handleChange"
     valueKey="id"
     labelKey="name"
+    :multiple="multiple"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
     @focus="handleFocus"
@@ -209,6 +210,10 @@ export default {
     noParamLoad: {
       type: Boolean,
       default: false
+    },
+    multiple: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -267,10 +272,14 @@ export default {
       let data = { ...this.params };
       if (query) {
         data[this.queryKey] = query;
+      } else if (hasValue(this.ids)) {
+        if (this.multiple) {
+          data.ids = this.ids;
+        } else {
+          data.id = this.ids;
+        }
       }
-      if (hasValue(this.ids)) {
-        data[this.valueKey] = this.ids;
-      }
+
       data.limitSize = this.limitSize;
       api.jsonPost(this.listUrl, data).then(dataList => {
         if (dataList.length !== 0) {
@@ -286,6 +295,7 @@ export default {
       this.$emit('change', val, selectedOption);
       this.$emit('input', val);
       if (!hasValue(val)) {
+        // 清除时，重新拉
         if (this.noParamLoad) {
           this.remoteMethod();
         } else {
