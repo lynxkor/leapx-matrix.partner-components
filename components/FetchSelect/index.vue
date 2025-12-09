@@ -199,7 +199,15 @@ export default {
       this.loading = true;
       try {
         const response = await this.remoteMethod(v ?? this.params);
-        this.remoteOptions = (response.data || response || []).slice(0, 100); // 远程模糊搜索最多100条
+        const responseData = response.data || response || [];
+        this.remoteOptions = responseData.slice(0, 100); // 远程模糊搜索最多100条
+        // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
+        if (!this.initialLoaded && this.params) {
+          const target = responseData.find(item => item[this.valueKey] === this.value);
+          if (!target) {
+            this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params })
+          }
+        }
         this.initialLoaded = true;
         if (this.enumCode && response) {
           // 缓存枚举数据
