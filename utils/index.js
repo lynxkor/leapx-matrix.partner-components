@@ -91,7 +91,7 @@ export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
  */
 export function handleBatchStatusChange ({
   selectionList,
-  targetStatus,
+  targetStatus, // 1表示启用，0表示停用
   apiFunc,
   refreshFunc,
   options = {}
@@ -100,21 +100,43 @@ export function handleBatchStatusChange ({
     successMessage = '操作成功!',
     errorMessage = '操作失败!',
     confirmTitle = '提示',
-    // statusName = 'status',
-    requireInput = true
+    statusName = 'status',
+    requireInput = true,
+    statusMapping = { 1: '启用', 0: '停用' } // 调整映射关系
   } = options;
 
-  const statusText = targetStatus ? '停用' : '启用';
+  // 使用状态映射获取文本
+  const statusText = statusMapping[targetStatus] || (targetStatus === 1 ? '启用' : '停用');
 
-  // 检查是否所有项的状态都相同
-  const isDifferentStatus = this.selectionList.find(item => item.status === targetStatus);
-
-  if (isDifferentStatus) {
+  // 检查是否有选中的数据
+  if (!selectionList || selectionList.length === 0) {
     this.$message({
       type: 'warning',
-      message: `存在不是${statusText}的数据，请确认!`
+      message: '请先选择要操作的数据!'
     });
-    return Promise.reject(new Error('状态不一致'));
+    return Promise.reject(new Error('未选择数据'));
+  }
+
+  // 检查所有选中项的状态是否都与要操作的目标状态不同
+  // 如果目标状态是1(启用)，那么所有项当前必须是0(停用)
+  // 如果目标状态是0(停用)，那么所有项当前必须是1(启用)
+  const isAllCanOperate = selectionList.every(item => {
+    const currentStatus = item[statusName];
+    // 如果当前状态和目标状态相同，说明已经是要操作的状态，不能操作
+    return currentStatus !== targetStatus;
+  });
+
+  if (!isAllCanOperate) {
+    // 找出当前状态与目标状态相同的项
+    const sameStatusItems = selectionList.filter(item => item[statusName] === targetStatus);
+
+    this.$message({
+      type: 'warning',
+      message: sameStatusItems.length === selectionList.length
+        ? `选中的数据已经是${statusText}状态，无需重复操作！`
+        : `选中的数据中存在${statusText}状态的数据，无法批量${statusText}！`
+    });
+    return Promise.reject(new Error('状态不满足操作条件'));
   }
 
   const ids = selectionList.map(item => item.id) || [];
@@ -133,18 +155,19 @@ export function handleBatchStatusChange ({
     }
 
     this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
-      if (!value && statusText === '停用') { // 做一个效验,为停用时一定要有说明,否则驳回,可用时,可没有说明
+      // 停用操作(targetStatus为0)需要说明，启用操作(targetStatus为1)可以没有说明
+      if (!value && targetStatus === 0) { // targetStatus为0表示停用操作
         this.$message({
           type: 'error',
           message: `${statusText}说明不能为空!`
         });
-        return;
-      };
+        return reject(new Error(`${statusText}说明不能为空`));
+      }
+
       const params = {
         idSet: ids,
-        status: targetStatus,
-        statusDesc: value
-        // ...(requireInput && value && { statusDesc: value })
+        status: targetStatus, // 直接传1或0
+        ...(value && { statusDesc: value }) // 如果有说明则添加
       };
 
       apiFunc(params)
