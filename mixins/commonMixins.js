@@ -6,6 +6,7 @@ export default {
     // keep-alive 缓存过的页面，激活时重新设置面包屑
     if (this.$route.meta.keepAlive && this.pageTitle) {
       this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
+      this.getData();
     }
   },
 };
