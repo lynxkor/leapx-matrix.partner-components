@@ -51,58 +51,34 @@ export function shallowEqual (obj1, obj2) {
 }
 
 /**
- * 下载文件公共方法
- * @param {string} url 文件下载地址
- * @param {string} fileName 文件名
- * @returns {boolean} 是否成功触发下载
+ * 下载excel文件
+ * @param {string} fileUrl - 文件地址
+ * @param {string} fileName - 文件名
  */
-export function downloadFile (url, fileName = '文件') {
-  if (!url) {
-    console.error('下载地址不能为空');
-    return false;
-  }
-
-  try {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.style.display = 'none';
-    link.rel = 'noopener noreferrer'; // 安全优化
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    console.log(`文件下载已触发: ${fileName}`);
-    return true;
-  } catch (error) {
-    console.error('下载失败:', error);
-    return false;
-  }
-}
-
-/**
- * 下载Excel文件（专用方法）
- * @param {Object|string} rowOrUrl 行数据对象或文件URL
- * @param {string} defaultName 默认文件名
- */
-export function downloadExcel (rowOrUrl, defaultName = '模板') {
-  let url, fileName;
-
-  if (typeof rowOrUrl === 'string') {
-    url = rowOrUrl;
-    fileName = defaultName;
-  } else {
-    url = rowOrUrl.excelModelUrl;
-    fileName = rowOrUrl.fileName || rowOrUrl.businessType || defaultName;
-  }
-
-  // 确保文件有扩展名
-  if (!fileName.includes('.')) {
-    fileName += '.xlsx';
-  }
-
-  return downloadFile(url, fileName);
+export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
+  return new Promise((resolve, reject) => {
+    fetch(fileUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        // const now = new Date();  暂时注释未使用到这个方法
+        // const date = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+        // fileName = fileName + date + '.xlsx';
+        fileName = fileName + '.xlsx';
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        resolve({ success: true, fileName });
+      })
+      .catch(error => {
+        console.error('下载失败:', error);
+        reject(error);
+      });
+  });
 }
 
 /**
@@ -115,7 +91,7 @@ export function downloadExcel (rowOrUrl, defaultName = '模板') {
  */
 export function handleBatchStatusChange ({
   selectionList,
-  targetStatus, // 1表示启用，0表示停用
+  targetStatus,
   apiFunc,
   refreshFunc,
   options = {}
@@ -124,43 +100,21 @@ export function handleBatchStatusChange ({
     successMessage = '操作成功!',
     errorMessage = '操作失败!',
     confirmTitle = '提示',
-    statusName = 'status',
-    requireInput = true,
-    statusMapping = { 1: '启用', 0: '停用' } // 调整映射关系
+    // statusName = 'status',
+    requireInput = true
   } = options;
 
-  // 使用状态映射获取文本
-  const statusText = statusMapping[targetStatus] || (targetStatus === 1 ? '启用' : '停用');
+  const statusText = targetStatus ? '停用' : '启用';
 
-  // 检查是否有选中的数据
-  if (!selectionList || selectionList.length === 0) {
+  // 检查是否所有项的状态都相同
+  const isDifferentStatus = this.selectionList.find(item => item.status === targetStatus);
+
+  if (isDifferentStatus) {
     this.$message({
       type: 'warning',
-      message: '请先选择要操作的数据!'
+      message: `存在不是${statusText}的数据，请确认!`
     });
-    return Promise.reject(new Error('未选择数据'));
-  }
-
-  // 检查所有选中项的状态是否都与要操作的目标状态不同
-  // 如果目标状态是1(启用)，那么所有项当前必须是0(停用)
-  // 如果目标状态是0(停用)，那么所有项当前必须是1(启用)
-  const isAllCanOperate = selectionList.every(item => {
-    const currentStatus = item[statusName];
-    // 如果当前状态和目标状态相同，说明已经是要操作的状态，不能操作
-    return currentStatus !== targetStatus;
-  });
-
-  if (!isAllCanOperate) {
-    // 找出当前状态与目标状态相同的项
-    const sameStatusItems = selectionList.filter(item => item[statusName] === targetStatus);
-
-    this.$message({
-      type: 'warning',
-      message: sameStatusItems.length === selectionList.length
-        ? `选中的数据已经是${statusText}状态，无需重复操作！`
-        : `选中的数据中存在${statusText}状态的数据，无法批量${statusText}！`
-    });
-    return Promise.reject(new Error('状态不满足操作条件'));
+    return Promise.reject(new Error('状态不一致'));
   }
 
   const ids = selectionList.map(item => item.id) || [];
@@ -179,19 +133,18 @@ export function handleBatchStatusChange ({
     }
 
     this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
-      // 停用操作(targetStatus为0)需要说明，启用操作(targetStatus为1)可以没有说明
-      if (!value && targetStatus === 0) { // targetStatus为0表示停用操作
+      if (!value && statusText === '停用') { // 做一个效验,为停用时一定要有说明,否则驳回,可用时,可没有说明
         this.$message({
           type: 'error',
           message: `${statusText}说明不能为空!`
         });
-        return reject(new Error(`${statusText}说明不能为空`));
-      }
-
+        return;
+      };
       const params = {
         idSet: ids,
-        status: targetStatus, // 直接传1或0
-        ...(value && { statusDesc: value }) // 如果有说明则添加
+        status: targetStatus,
+        statusDesc: value
+        // ...(requireInput && value && { statusDesc: value })
       };
 
       apiFunc(params)
