@@ -55,7 +55,7 @@ export function shallowEqual (obj1, obj2) {
  * @param {string} fileUrl - 文件地址
  * @param {string} fileName - 文件名
  */
-export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
+export function downloadExcel (fileUrl, fileName) {
   return new Promise((resolve, reject) => {
     fetch(fileUrl)
       .then(response => response.blob())
