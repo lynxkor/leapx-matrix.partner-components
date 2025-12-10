@@ -66,7 +66,6 @@ export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
         // const now = new Date();  暂时注释未使用到这个方法
         // const date = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
         // fileName = fileName + date + '.xlsx';
-        fileName = fileName + '.xlsx';
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
