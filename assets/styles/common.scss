@@ -344,7 +344,6 @@ html[data-vxe-ui-theme="light"] {
     flex-wrap: wrap;
     padding-bottom: 4px;
     .el-form-item__content {
-      min-width: 230px;
       flex: 1;
     }
     .el-date-editor--daterange.el-input,
@@ -352,7 +351,6 @@ html[data-vxe-ui-theme="light"] {
     .el-date-editor--timerange.el-input,
     .el-date-editor--datetimerange.el-input__inner,
     .el-date-editor--timerange.el-input__inner {
-      min-width: 230px;
       width: 100%;
     }
     .el-input__inner {
@@ -519,7 +517,6 @@ html[data-vxe-ui-theme="light"] {
     line-height: 1.5;
   }
   .el-form-item__content{
-    min-width: 230px;
     flex: 1;
     color: var(--aisDefaultTextColor);
     line-height: 1.5;
@@ -578,14 +575,12 @@ html[data-vxe-ui-theme="light"] {
     color: #333;
   }
   .el-form-item__content{
-    min-width: 230px;
     width: 60%;
   }
   .el-input__inner {
     height: 32px!important;
   }
   .el-input-group{
-    min-width: 230px;
   }
   .el-autocomplete {
     width: 100%;
