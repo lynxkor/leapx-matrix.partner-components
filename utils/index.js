@@ -55,7 +55,7 @@ export function shallowEqual (obj1, obj2) {
  * @param {string} fileUrl - 文件地址
  * @param {string} fileName - 文件名
  */
-export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
+export function downloadExcel (fileUrl, fileName) {
   return new Promise((resolve, reject) => {
     fetch(fileUrl)
       .then(response => response.blob())
@@ -66,7 +66,6 @@ export function downloadExcel (fileUrl, fileName = '模板.xlsx') {
         // const now = new Date();  暂时注释未使用到这个方法
         // const date = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
         // fileName = fileName + date + '.xlsx';
-        fileName = fileName + '.xlsx';
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
