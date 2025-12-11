@@ -202,6 +202,9 @@ export default {
   .el-dialog__footer {
     padding: 12px 20px;
     border-top: 1px solid #E6E6E5;
+    .el-button {
+      font-weight: 400;
+    }
   }
   .el-upload {
     width: 100%;

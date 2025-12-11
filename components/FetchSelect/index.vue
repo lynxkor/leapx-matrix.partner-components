@@ -15,6 +15,7 @@
  * @param {Boolean} filterable - 是否可搜索
  * @param {Boolean} remote - 是否可远程搜索
  * @param {Function} remoteMethod - 远程搜索方法
+ * @param {Function} format - 适用于：需要缓存所有数据，使用时需要根据业务处理数据的场景
  *
  * @event $attrs - 绑定所有父组件的属性到子组件的select元素上
  * @event input - 值变化时触发，用于v-model双向绑定
@@ -147,6 +148,10 @@ export default {
       type: Function,
       default: () => ({})
     },
+    format:{
+      type: Function,
+      default: v => v,
+    },
   },
   data () {
     return {
@@ -228,7 +233,7 @@ export default {
         // 获取枚举数据
         const enumData = this.$store.getters['enum/getEnum'](this.enumCode);
         if (enumData) {
-          this.remoteOptions = enumData || [];
+          this.remoteOptions = (this.format ? this.format(enumData) : enumData) || [];
           return;
         }
       }
@@ -236,7 +241,8 @@ export default {
       this.loading = true;
       try {
         const response = await this.request(this.enumCode || this.params);
-        this.remoteOptions = response.data || response || [];
+        const responseData = response.data || response || [];
+        this.remoteOptions = this.format ?  this.format(responseData) : responseData;
         if (this.enumCode && response) {
           // 缓存枚举数据
           this.$store.dispatch('enum/setEnum', { code: this.enumCode, data: response });
