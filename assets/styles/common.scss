@@ -198,6 +198,37 @@ html[data-vxe-ui-theme="light"] {
     }
   }
 }
+// 对话框
+.el-dialog {
+  border-radius: 8px;
+  .el-dialog__header{
+    border-bottom: 1px solid #E6E6E5;
+    padding: 13px 20px;
+  }
+  .el-dialog__title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--aisDefaultTextColor);
+  }
+  .el-dialog__headerbtn {
+    top: 16px;
+    .el-dialog__close {
+      color: var(--aisDefaultTextColor);
+    }
+  }
+  .el-dialog__body {
+    color: var(--aisDefaultTextColor);
+    padding: 20px 20px 30px 20px;
+  }
+  .el-dialog__footer {
+    border-top: 1px solid #E6E6E5;
+    padding: 13px 20px;
+    .el-button {
+      font-weight: 400;
+    }
+  }
+}
+
 .ais-leave-tips {
   color: var(--aisDefaultTextColor);
   font-size: 14px;
