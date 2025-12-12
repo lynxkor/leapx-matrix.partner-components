@@ -98,9 +98,10 @@ export function handleBatchStatusChange ({
   const {
     successMessage = '操作成功!',
     errorMessage = '操作失败!',
-    confirmTitle = '提示',
+    confirmTitle = '',
     statusName = 'status',
     requireInput = true,
+    showClose = false,
     statusMapping = { 1: '启用', 0: '停用' } // 调整映射关系
   } = options;
 
@@ -144,8 +145,9 @@ export function handleBatchStatusChange ({
     const promptConfig = {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
       title: confirmTitle,
+      showClose: showClose,
+      customClass: 'ais-enable-tips',
       message: `此操作将${statusText}选中项，是否继续?`
     };
 

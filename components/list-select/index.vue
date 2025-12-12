@@ -110,7 +110,7 @@
 </template>
 <script>
 import xeUtils from 'xe-utils';
-// import FetchSelect from '@/libs/components/FetchSelect';
+import FetchSelect from '@/libs/components/FetchSelect';
 import api from '@/axios';
 /**
  * 判断值是否存在且不为空
@@ -291,8 +291,12 @@ export default {
         this.$forceUpdate();
       });
     },
-    handleChange (val, selectedOption) {
-      this.$emit('change', val, selectedOption);
+    handleChange (val) {
+      if (!this.multiple) {
+        let selectedItemList = this.dataList.filter(item => item[this.valueKey] === val);
+        let selectedItem = selectedItemList[0];
+        this.$emit('change', val, selectedItem);
+      }
       this.$emit('input', val);
       if (!hasValue(val)) {
         // 清除时，重新拉

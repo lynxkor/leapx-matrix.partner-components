@@ -229,10 +229,11 @@ html[data-vxe-ui-theme="light"] {
   }
 }
 
-.ais-leave-tips {
+.ais-leave-tips, .ais-enable-tips {
   color: var(--aisDefaultTextColor);
   font-size: 14px;
   padding: 16px;
+  border-radius: 8px;
   .el-message-box__header {
     display: none;
   }
@@ -241,6 +242,7 @@ html[data-vxe-ui-theme="light"] {
   }
   .el-message-box__content {
     padding: 10px;
+    color: var(--aisDefaultTextColor);
   }
   .iconfont{
     font-size: 16px;
@@ -256,6 +258,13 @@ html[data-vxe-ui-theme="light"] {
     color: #9D9F9D;
     font-size: 14px;
     margin-top: 3px;
+  }
+  .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+  }
+  .el-button{
+    font-weight: 400;
   }
 }
 
@@ -366,7 +375,6 @@ html[data-vxe-ui-theme="light"] {
     flex-wrap: wrap;
     padding-bottom: 4px;
     .el-form-item__content {
-      min-width: 230px;
       flex: 1;
     }
     .el-date-editor--daterange.el-input,
@@ -374,7 +382,6 @@ html[data-vxe-ui-theme="light"] {
     .el-date-editor--timerange.el-input,
     .el-date-editor--datetimerange.el-input__inner,
     .el-date-editor--timerange.el-input__inner {
-      min-width: 230px;
       width: 100%;
     }
     .el-input__inner {
@@ -541,7 +548,6 @@ html[data-vxe-ui-theme="light"] {
     line-height: 1.5;
   }
   .el-form-item__content{
-    min-width: 230px;
     flex: 1;
     color: var(--aisDefaultTextColor);
     line-height: 1.5;
@@ -600,14 +606,12 @@ html[data-vxe-ui-theme="light"] {
     color: #333;
   }
   .el-form-item__content{
-    min-width: 230px;
     width: 60%;
   }
   .el-input__inner {
     height: 32px!important;
   }
   .el-input-group{
-    min-width: 230px;
   }
   .el-autocomplete {
     width: 100%;
