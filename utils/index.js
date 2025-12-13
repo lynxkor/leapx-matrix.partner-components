@@ -253,3 +253,38 @@ export function debounce (fn, wait = 500) {
     if (callNow) fn.apply(that, args);
   };
 }
+
+// 简单审批流程提示框
+/**
+ * 批量审计操作的通用方法
+ * @param {Array} selectionList - 当前选中的记录列表
+ * @param {Function} messageError - 提示错误信息的方法 (如 this.$message.error)
+ * @param {Function} confirm - 确认框方法 (如 this.$confirm)
+ * @param {Object} options - 配置项
+ * @param {number} options.expectedStatus - 期望的 auditStatus 值
+ * @param {string} options.errorMessage - 不符合期望状态时的错误提示
+ * @param {string} options.confirmMessage - 确认框的提示信息
+ * @param {Function} refreshFunc - 刷新数据的函数
+ */
+export function batchAuditHandler (selectionList, messageError, confirm, options) {
+  const { expectedStatus, errorMessage, confirmMessage, refreshFunc } = options;
+  console.log('selectionList:', selectionList);
+  // 检查是否有选中数据
+  if (selectionList.length === 0) {
+    messageError('请选择数据提交');
+    return;
+  }
+  // 检查是否符合期望的状态
+  if (selectionList.some(item => item.auditStatus !== expectedStatus)) {
+    messageError(errorMessage);
+    return;
+  }
+  // 弹出确认框
+  confirm(confirmMessage).then(() => {
+    // 确认后的逻辑可以在这里扩展
+    refreshFunc && refreshFunc();
+  }).catch(() => {
+    // 用户取消操作
+    refreshFunc && refreshFunc();
+  });
+}
