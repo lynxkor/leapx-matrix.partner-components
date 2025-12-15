@@ -19,26 +19,11 @@
  * <date-range-picker
  *   v-model="createTime"
  *   ref="createTime"
+ *   :limtNum="12"
+ *   :setDefault="true"
  *   deftTime="本周"
  *   @changeNewTime="(value) => changeNewTime(value, 'createTime')"
  * />
- * methods
- *  changeNewTime (value, key) {
- *    if (value) {
- *      this.form[`${key}Start`] = value[0];
- *     this.form[`${key}End`] = value[1];
- *   } else {
- *      this.form[`${key}Start`] = '';
- *      this.form[`${key}End`] = '';
- *    }
- *  },
- *
- *  onReset () {
- *    this.form = { ...defaultForm };
- *    this.createTime = [];
- *    this.$refs.createTime.clearTime();
- *    this.getData();
- *   },
  *
  * @example
  * 使用自定义时间范围限制
@@ -58,6 +43,23 @@
  *   :setDefault="false"
  *   @changeNewTime="(value) => changeNewTime(value, 'timeRange')"
  * />
+ * methods
+ *  changeNewTime (value, key) {
+ *    if (value) {
+ *      this.form[`${key}Start`] = value[0];
+ *     this.form[`${key}End`] = value[1];
+ *   } else {
+ *      this.form[`${key}Start`] = '';
+ *      this.form[`${key}End`] = '';
+ *    }
+ *  },
+ *
+ *  onReset () {
+ *    this.form = { ...defaultForm };
+ *    this.createTime = [];
+ *    this.$refs.createTime.clearTime();
+ *    this.getData();
+ *   },
  */
 </script>
 <template>
