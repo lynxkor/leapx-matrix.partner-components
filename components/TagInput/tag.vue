@@ -1,7 +1,7 @@
 <template>
   <div class="tag">
     <div class="content"> <slot /></div>
-    <div class="close" v-if="closable"><i class="el-tag__close el-icon-close" @click="handleClose" /></div>
+    <div class="close" v-if="closable"><i class="el-tag__close el-icon-close" @click.stop="handleClose" /></div>
   </div>
 </template>
 <script>

@@ -1,8 +1,73 @@
+<script>
+/**
+ * 时间范围选择器组件
+ * @author sihongyu
+ * @description 基于 `el-date-picker` 实现的时间范围选择器组件，支持多种快捷时间选项（如本周、本月、最近一周等），
+ *              并提供时间范围限制、默认时间设置、时间变化回调等功能。
+ * @param {Object} form - 父组件传递的表单对象，用于绑定表单数据。
+ * @param {Number} limtNum - 时间范围限制，默认限制为12个月。
+ * @param {Function} changeNewTime - 暴露给父组件的时间变化回调函数，当时间范围变化时触发。
+ * @param {Boolean} setDefault - 是否设置默认时间，默认为 `false`。
+ * @param {String} deftTime - 默认时间类型（如 "本周"、"本月" 等），仅在 `setDefault` 为 `true` 时生效。
+ * @param {Number} upToTodayStart - 截至到今天的起始时间，默认为 2018-01-01 的时间戳。
+ *
+ * @event $attrs - 绑定所有父组件的属性到子组件的 `el-date-picker` 元素上。
+ * @event changeNewTime - 时间范围变化时触发，返回选中的时间范围值。
+ *
+ * @example
+ * 使用默认时间设置
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   :limtNum="12"
+ *   :setDefault="true"
+ *   deftTime="本周"
+ *   @changeNewTime="(value) => changeNewTime(value, 'createTime')"
+ * />
+ *
+ * @example
+ * 使用自定义时间范围限制
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   :limtNum="6"
+ *   @changeNewTime="(value) => changeNewTime(value, 'createTime')"
+ * />
+ *
+ * @example
+ * 使用快捷选项和时间范围限制
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   :limtNum="12"
+ *   :setDefault="false"
+ *   @changeNewTime="(value) => changeNewTime(value, 'timeRange')"
+ * />
+ * methods
+ *  changeNewTime (value, key) {
+ *    if (value) {
+ *      this.form[`${key}Start`] = value[0];
+ *     this.form[`${key}End`] = value[1];
+ *   } else {
+ *      this.form[`${key}Start`] = '';
+ *      this.form[`${key}End`] = '';
+ *    }
+ *  },
+ *
+ *  onReset () {
+ *    this.form = { ...defaultForm };
+ *    this.createTime = [];
+ *    this.$refs.createTime.clearTime();
+ *    this.getData();
+ *   },
+ */
+</script>
 <template>
+  <el-col :span="24" style="height: 100%">
     <el-date-picker
       :default-time="['00:00:00', '23:59:59']"
-      format="yyyy-MM-dd HH:mm"
-      value-format="yyyy-MM-dd HH:mm"
+      format="yyyy-MM-dd HH:mm:ss"
+      value-format="yyyy-MM-dd HH:mm:ss"
       v-model="time2"
       type="datetimerange"
       range-separator="/"
@@ -16,6 +81,7 @@
       v-bind="$attrs"
     >
     </el-date-picker>
+  </el-col>
 </template>
 
 <script>
@@ -44,11 +110,6 @@ export default {
     },
     // 截至到今天的起始时间外部处理
     upToTodayStart: {
-      type: Number,
-      default: () => new Date(2018, 0, 1).getTime()
-    },
-    // 最小选中时间
-    setDisabledDateForMin: {
       type: Number,
       default: () => new Date(2018, 0, 1).getTime()
     }
@@ -179,7 +240,7 @@ export default {
           this.minDate = minDate;
         },
         disabledDate: (time) => {
-          var mindate2 = this.setDisabledDateForMin;
+          var mindate2 = new Date('2018/01/01').getTime();
           return time.getTime() < mindate2;
         }
       }
@@ -218,9 +279,9 @@ export default {
         // console.log('time1', time1);
         const time2 = formatDateTime(time[1], 'data');
         // eslint-disable-next-line no-useless-concat
-        this.time2.splice(0, 1, time1 + ' ' + '00' + ':00');
+        this.time2.splice(0, 1, time1 + ' ' + '00' + ':00' + ':00');
         // eslint-disable-next-line no-useless-concat
-        this.time2.splice(1, 1, time2 + ' ' + '23' + ':59');
+        this.time2.splice(1, 1, time2 + ' ' + '23' + ':59' + ':59');
         this.changeTime(this.time2);
       }
     },

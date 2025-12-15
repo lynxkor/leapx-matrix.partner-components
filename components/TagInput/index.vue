@@ -1,92 +1,93 @@
 <template>
   <div :class="disabled?'tag-input disabled':'tag-input'">
-    <div class="tag-list">
-      <!-- 最大渲染100条，避免数据量过大页面卡死情况 -->
-      <tag
-        v-for="(item, index) in tagList.slice(0, 1)"
-        :key="index"
-        closable
-        :disable-transitions="false"
-        @close="handleClose(item)"
-      >
-        <span>
-          <el-tooltip
-            class="item"
-            effect="dark"
-            :content="item"
-            placement="top-start"
-          >
-            <span>{{ item }}</span>
-          </el-tooltip>
-        </span>
-      </tag>
-
-      <tag
-        v-if="tagList.length > 1"
-        :closable="false"
-      >
-        <span>
-          + {{ tagList.length - 1 }}
-        </span>
-      </tag>
-
-      <div
-        v-if="tagList.length===0"
-        class="placeholder"
-      >
-        {{ placeholder }}
-      </div>
-    </div>
-    <div
-      class="action"
-      :class="disabled?'disabled':''"
+    <el-popover
+      placement="bottom"
+      width="400"
+      trigger="click"
+      @hide="handleHide"
+      @show="handleShow"
     >
-      <el-popover
-        placement="bottom"
-        width="400"
-        trigger="click"
-        @hide="handleHide"
-        @show="handleShow"
-      >
+      <div>
+        <el-input
+          v-model="inputValue"
+          type="textarea"
+          :clearable="true"
+          :autosize="{ minRows: 2, maxRows: 8}"
+          placeholder="请输入内容"
+        />
         <div>
-          <el-input
-            v-model="inputValue"
-            type="textarea"
-            :clearable="true"
-            :autosize="{ minRows: 2, maxRows: 8}"
-            placeholder="请输入内容"
-          />
-          <div>
-            <div style="display: inline">
-              <el-button
-                type="primary"
-                size="mini"
-                style="margin-top: 10px"
-                @click="handleInput"
-              >
-                确定
-              </el-button>
-              <el-button
-                type="warning"
-                size="mini"
-                style="margin-top: 10px"
-                @click="handleClear"
-              >
-                清空
-              </el-button>
-            </div>
-            <div style="float: right;margin-top: 5px">
-              已输入{{ inputSize }}条
-            </div>
+          <div style="display: inline">
+            <el-button
+              type="primary"
+              size="mini"
+              style="margin-top: 10px"
+              @click="handleInput"
+            >
+              确定
+            </el-button>
+            <el-button
+              type="warning"
+              size="mini"
+              style="margin-top: 10px"
+              @click="handleClear"
+            >
+              清空
+            </el-button>
+          </div>
+          <div style="float: right;margin-top: 5px">
+            已输入{{ inputSize }}条
           </div>
         </div>
-        <i
-          slot="reference"
-          class="el-icon-document-copy"
-          style="color: #909399"
-        />
-      </el-popover>
+      </div>
+      <div class="tag-input"  slot="reference">
+        <div class="tag-list">
+          <!-- 最大渲染100条，避免数据量过大页面卡死情况 -->
+          <tag
+            v-for="(item, index) in tagList.slice(0, 1)"
+            :key="index"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(item)"
+          >
+            <span>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                :content="item"
+                placement="top-start"
+              >
+                <span>{{ item }}</span>
+              </el-tooltip>
+            </span>
+          </tag>
+
+          <tag
+            v-if="tagList.length > 1"
+            :closable="false"
+          >
+            <span>
+              + {{ tagList.length - 1 }}
+            </span>
+          </tag>
+
+          <div
+            v-if="tagList.length===0"
+            class="placeholder"
+          >
+            {{ placeholder }}
+          </div>
+        </div>
+        <div
+          class="action"
+          :class="disabled?'disabled':''"
+        >
+        <el-button :disabled="disabled">
+          <i class="el-icon-document-copy"/>
+          <!-- <i class="iconfont icon-lxppc-search"></i> -->
+        </el-button>
+      </div>
     </div>
+  </el-popover>
   </div>
 </template>
 
@@ -171,11 +172,7 @@ export default {
 
 <style scoped lang="scss">
 .tag-input {
-  height: 32px;
   width: 100%;
-  min-height: 12px;
-  border: 1px solid #e6e6e5;
-  border-radius: 4px;
   overflow: hidden;
   display: flex;
   flex-direction: row;
@@ -186,14 +183,26 @@ export default {
   &:hover {
     border-color: #9D9F9D;
   }
+  &>span {
+    display: inline-block;
+    width: 100%;
+  }
 
   .tag-list {
+    flex: 1;
+    border: 1px solid #e6e6e5;
+    border-radius: 4px;
+    height: 32px;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
     max-height: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: text;
+    &:hover {
+      border-color: #9D9F9D;
+    }
     .tag {
       height: 24px;
     }
@@ -205,15 +214,20 @@ export default {
     margin-left: 8px;
   }
   .action {
-    margin-right: 4px;
+    margin-left: 4px;
     cursor: pointer;
+  }
+  .el-button {
+    padding: 6px 8px;
+    font-size: 16px;
   }
 }
 
 .disabled {
   pointer-events: none;
-  background-color: #F5F7FA;
-  border-color: #E4E7ED;
+  background-color: #F8F7F7;
+  border-color: #E6E6E5;
+  color: #CECFCE;
 }
 .disabled:hover {
   cursor: not-allowed;
