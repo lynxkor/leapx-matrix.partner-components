@@ -4,7 +4,40 @@
 export default {
   data () {
     return {
-      isFirstActivated: true
+      isFirstActivated: true,
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近一周',
+          onClick (picker) {
+            const end = new Date();
+            end.setHours(23, 59, 59, 999); // 设置为当天的 23:59:59
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            start.setHours(0, 0, 0, 0); // 设置为前七天的 00:00:00
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近一个月',
+          onClick (picker) {
+            const end = new Date();
+            end.setHours(23, 59, 59, 999); // 设置为当天的 23:59:59
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+            start.setHours(0, 0, 0, 0); // 设置为前30天的 00:00:00
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近三个月',
+          onClick (picker) {
+            const end = new Date();
+            end.setHours(23, 59, 59, 999); // 设置为当天的 23:59:59
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+            start.setHours(0, 0, 0, 0); // 设置为前90天的 00:00:00
+            picker.$emit('pick', [start, end]);
+          }
+        }]
+      }
     };
   },
   activated () {
@@ -18,5 +51,5 @@ export default {
       this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
       this.getData();
     }
-  },
+  }
 };
