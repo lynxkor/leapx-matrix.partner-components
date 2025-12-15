@@ -14,7 +14,7 @@ export default {
       canLog: true,
     };
   },
-  mounted () {
+  created () {
     const pageSource = this.$store.state.pageSource?.aisPageSource || [];
     const permissionSet = new Set();
     pageSource.forEach(item => {
