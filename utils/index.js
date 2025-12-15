@@ -288,3 +288,26 @@ export function batchAuditHandler (selectionList, messageError, confirm, options
     refreshFunc && refreshFunc();
   });
 }
+
+/**
+ * 时间格式化
+ * @export
+ * @param {*} val
+ * @param {*} type 日期类型，data：年月日，datatime：年月日时分秒, time:时分秒
+ * @returns
+ */
+export function formatDateTime (val, type) {
+  var date = '';
+  if (val) {
+    date = new Date(val);
+  } else {
+    date = new Date();
+  };
+  var Y = date.getFullYear();
+  var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1);
+  var D = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+  var h = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+  var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+  var s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+  return type === 'data' ? Y + '-' + M + '-' + D : type === 'time' ? h + ':' + m + ':' + s : Y + '-' + M + '-' + D + ' ' + h + ':' + m + ':' + s;
+};

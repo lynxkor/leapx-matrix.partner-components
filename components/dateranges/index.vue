@@ -1,8 +1,9 @@
 <template>
+  <el-col :span="24" style="height: 100%">
     <el-date-picker
       :default-time="['00:00:00', '23:59:59']"
-      format="yyyy-MM-dd HH:mm"
-      value-format="yyyy-MM-dd HH:mm"
+      format="yyyy-MM-dd HH:mm:ss"
+      value-format="yyyy-MM-dd HH:mm:ss"
       v-model="time2"
       type="datetimerange"
       range-separator="/"
@@ -16,6 +17,7 @@
       v-bind="$attrs"
     >
     </el-date-picker>
+  </el-col>
 </template>
 
 <script>
@@ -44,11 +46,6 @@ export default {
     },
     // 截至到今天的起始时间外部处理
     upToTodayStart: {
-      type: Number,
-      default: () => new Date(2018, 0, 1).getTime()
-    },
-    // 最小选中时间
-    setDisabledDateForMin: {
       type: Number,
       default: () => new Date(2018, 0, 1).getTime()
     }
@@ -179,7 +176,7 @@ export default {
           this.minDate = minDate;
         },
         disabledDate: (time) => {
-          var mindate2 = this.setDisabledDateForMin;
+          var mindate2 = new Date('2018/01/01').getTime();
           return time.getTime() < mindate2;
         }
       }
@@ -218,9 +215,9 @@ export default {
         // console.log('time1', time1);
         const time2 = formatDateTime(time[1], 'data');
         // eslint-disable-next-line no-useless-concat
-        this.time2.splice(0, 1, time1 + ' ' + '00' + ':00');
+        this.time2.splice(0, 1, time1 + ' ' + '00' + ':00' + ':00');
         // eslint-disable-next-line no-useless-concat
-        this.time2.splice(1, 1, time2 + ' ' + '23' + ':59');
+        this.time2.splice(1, 1, time2 + ' ' + '23' + ':59' + ':59');
         this.changeTime(this.time2);
       }
     },
