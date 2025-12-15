@@ -1,3 +1,65 @@
+<script>
+/**
+ * 时间范围选择器组件
+ * @author sihongyu
+ * @description 基于 `el-date-picker` 实现的时间范围选择器组件，支持多种快捷时间选项（如本周、本月、最近一周等），
+ *              并提供时间范围限制、默认时间设置、时间变化回调等功能。
+ * @param {Object} form - 父组件传递的表单对象，用于绑定表单数据。
+ * @param {Number} limtNum - 时间范围限制，默认限制为12个月。
+ * @param {Function} changeNewTime - 暴露给父组件的时间变化回调函数，当时间范围变化时触发。
+ * @param {Boolean} setDefault - 是否设置默认时间，默认为 `false`。
+ * @param {String} deftTime - 默认时间类型（如 "本周"、"本月" 等），仅在 `setDefault` 为 `true` 时生效。
+ * @param {Number} upToTodayStart - 截至到今天的起始时间，默认为 2018-01-01 的时间戳。
+ *
+ * @event $attrs - 绑定所有父组件的属性到子组件的 `el-date-picker` 元素上。
+ * @event changeNewTime - 时间范围变化时触发，返回选中的时间范围值。
+ *
+ * @example
+ * 使用默认时间设置
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   deftTime="本周"
+ *   @changeNewTime="(value) => changeNewTime(value, 'createTime')"
+ * />
+ * methods
+ *  changeNewTime (value, key) {
+ *    if (value) {
+ *      this.form[`${key}Start`] = value[0];
+ *     this.form[`${key}End`] = value[1];
+ *   } else {
+ *      this.form[`${key}Start`] = '';
+ *      this.form[`${key}End`] = '';
+ *    }
+ *  },
+ *
+ *  onReset () {
+ *    this.form = { ...defaultForm };
+ *    this.createTime = [];
+ *    this.$refs.createTime.clearTime();
+ *    this.getData();
+ *   },
+ *
+ * @example
+ * 使用自定义时间范围限制
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   :limtNum="6"
+ *   @changeNewTime="(value) => changeNewTime(value, 'createTime')"
+ * />
+ *
+ * @example
+ * 使用快捷选项和时间范围限制
+ * <date-range-picker
+ *   v-model="createTime"
+ *   ref="createTime"
+ *   :limtNum="12"
+ *   :setDefault="false"
+ *   @changeNewTime="(value) => changeNewTime(value, 'timeRange')"
+ * />
+ */
+</script>
 <template>
   <el-col :span="24" style="height: 100%">
     <el-date-picker
