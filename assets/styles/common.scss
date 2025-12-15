@@ -504,7 +504,7 @@ html[data-vxe-ui-theme="light"] {
       color: #0A0E0A;
       font-size: 20px;
       font-weight: 500;
-      max-width: 420px;
+      max-width: 600px;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -674,10 +674,12 @@ html[data-vxe-ui-theme="light"] {
 }
 
 @media screen and (max-width: 1139px) {
-  .el-form-item__label {
-    text-align: left!important;
-  }
-  .page-common .ais-search-form .el-form-item {
-    flex-direction: column;
+  .page-common {
+    .el-form-item__label {
+      text-align: left!important;
+    }
+    .ais-search-form .el-form-item {
+      flex-direction: column;
+    }
   }
 }
