@@ -63,9 +63,36 @@ export function downloadExcel (fileUrl, fileName) {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        // const now = new Date();  暂时注释未使用到这个方法
-        // const date = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
-        // fileName = fileName + date + '.xlsx';
+        const now = new Date(); // 暂时注释未使用到这个方法
+        const timestamp = [
+          now.getFullYear(),
+          now.getMonth() + 1,
+          now.getDate(),
+          now.getHours(),
+          now.getMinutes(),
+          now.getSeconds()
+        ].map(num => String(num).padStart(2, '0')).join('');
+        // fileName = fileName + timestamp + '.xlsx' || fileName + timestamp + '.xls'; // 文件名添加时间戳
+        // 检查文件名是否以 .xlsx 或 .xls 结尾（不区分大小写）
+        const hasXlsxExtension = /\.xlsx$/i.test(fileName);
+
+        if (hasXlsxExtension) { // 使用这个方法只支持.xlsx 和后端统一
+          const nameWithoutExt = fileName.slice(0, -5);
+          fileName = nameWithoutExt + timestamp + '.xlsx';
+        } else {
+          fileName = fileName + timestamp + '.xlsx';
+        }
+        // if (!hasExcelExtension) { // 目前只支持.xlsx文件 暂注释 其他扩展名
+        //   // 如果没有Excel扩展名，添加 .xlsx
+        //   fileName = fileName + timestamp + '.xlsx';
+        // } else {
+        //   // 如果已有Excel扩展名，只添加时间戳
+        //   // 将时间戳插入到扩展名之前
+        //   const lastDotIndex = fileName.lastIndexOf('.');
+        //   const nameWithoutExt = fileName.substring(0, lastDotIndex);
+        //   const extension = fileName.substring(lastDotIndex);
+        //   fileName = nameWithoutExt + timestamp + extension;
+        // }
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
