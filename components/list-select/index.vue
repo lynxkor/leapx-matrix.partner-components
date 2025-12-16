@@ -219,7 +219,8 @@ export default {
   data () {
     return {
       ids: [],
-      options: []
+      options: [],
+      dataList: []
     };
   },
   watch: {
@@ -269,6 +270,7 @@ export default {
     remoteMethod (query) {
       console.log('remoteMethod', query);
       this.options = [];
+      this.dataList = [];
       let data = { ...this.params };
       if (query) {
         data[this.queryKey] = query;
@@ -284,6 +286,7 @@ export default {
       api.jsonPost(this.listUrl, data).then(dataList => {
         if (dataList.length !== 0) {
           this.options = [];
+          this.dataList = [...dataList];
           for (let ele of dataList) {
             this.options.push({ id: ele[this.valueKey], name: ele[this.labelKey] });
           }
