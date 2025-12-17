@@ -30,6 +30,7 @@
  * @param {Boolean} showToolbar - 是否显示工具栏
  * @param {Object} options - 下拉选项数据集合，key为字段名，value为选项数组
  * @param {String} delTitle - 删除确认标题
+ * @param {Boolean} checkbox - 增加勾选配置
  *
  * @event add-row - 新增行时触发，参数为新行数据
  * @event edit-row - 编辑行时触发，参数为{row, rowIndex}
@@ -42,6 +43,7 @@
  * @event value-select - 编辑组件选择选项时触发，参数为{row, column, data}
  * @event page-size-change - 分页大小改变时触发，参数为新的大小
  * @event current-page-change - 当前页码改变时触发，参数为新的页码
+ * @event selection-change - 增加勾选事件{selection}
  *
  * @method getData - 获取当前表格数据
  * @method setData - 设置表格数据
@@ -79,7 +81,9 @@
       max-height="500px"
       @edit-closed="handleEditClosed"
       @edit-actived="handleEditActived"
+      @selection-change="handleSelectionChange"
     >
+      <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
       <vxe-column
         v-for="column in columns"
         :key="column.field"
@@ -230,6 +234,11 @@ export default {
     options: {
       type: Object,
       default: () => ({})
+    },
+    // 是否默认勾选
+    checkbox: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -251,6 +260,12 @@ export default {
     this.initEditRules();
   },
   methods: {
+    /**
+     * 增加勾选
+     */
+    handleSelectionChange (selection) {
+      this.$emit('handleSelect', selection);
+    },
     /**
      * 获取编辑器组件
      */
