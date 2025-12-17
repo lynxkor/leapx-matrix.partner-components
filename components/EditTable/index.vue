@@ -133,27 +133,46 @@
 
       <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
-          <span
-            class="action-button btn-edit"
-            @click="editRow(row, rowIndex)"
-            :disabled="!isRowEditable(row)"
-            v-if="auth.edit"
-          >
-            编辑
-          </span>
-
-          <el-popconfirm
-            :title="delTitle"
-            @confirm="removeRow(rowIndex)"
-            v-if="auth.delete"
-          >
+          <template v-if="enableSingleRowSave && currentEditRow === row">
             <span
-              slot="reference"
-              class="action-button btn-delete"
+              class="action-button btn-edit"
+              @click="editRow(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
             >
-              删除
+              保存
             </span>
-          </el-popconfirm>
+            <span
+              class="action-button btn-edit"
+              @click="editRow(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
+            >
+              取消
+            </span>
+          </template>
+          <template v-else>
+            <span
+              class="action-button btn-edit"
+              @click="editRow(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
+            >
+              编辑
+            </span>
+            <el-popconfirm
+              :title="delTitle"
+              @confirm="removeRow(rowIndex)"
+              v-if="auth.delete"
+            >
+              <span
+                slot="reference"
+                class="action-button btn-delete"
+              >
+                删除
+              </span>
+            </el-popconfirm>
+          </template>
         </template>
       </vxe-column>
       <template #empty>
@@ -251,15 +270,22 @@ export default {
       type: Object,
       default: () => ({})
     },
-    isFocusNewRow: { // 新增行时，是否需要聚焦
+    // 新增行时，是否需要聚焦，由于旧版是开启的所以默认true
+    isFocusNewRow: {
       type: Boolean,
       default: true,
+    },
+    // 是否开启单行保存功能
+    enableSingleRowSave: {
+      type: Boolean,
+      default: false,
     }
   },
   data () {
     return {
       tableData: [],
-      editRules: {}
+      editRules: {},
+      currentEditRow: null, // 当前编辑的行
     };
   },
   watch: {
@@ -329,6 +355,7 @@ export default {
 
       this.tableData.unshift(newRow);
       this.$refs.editTable.setEditRow(newRow);
+      this.currentEditRow = newRow;
       // 聚焦到第一个input
       if (this.isFocusNewRow) {
         setTimeout(() => {
@@ -350,6 +377,7 @@ export default {
       if (this.isRowEditable(row)) {
         // 激活行编辑
         this.$refs.editTable.setEditRow(row);
+        this.currentEditRow = row;
         this.$emit('edit-row', { row, rowIndex });
       }
     },
@@ -359,7 +387,10 @@ export default {
      */
     removeRow (index) {
       const removedRow = this.tableData.splice(index, 1)[0];
-      this.$emit('remove-row', removedRow, index);
+      this.$emit('remove-row', removedRow, index, (isSuccess) => {}, (isFail) => {
+        // 删除失败恢复数据
+        this.tableData.splice(index, 0, removedRow);
+      });
       // this.$message.success('删除成功');
     },
 
@@ -426,6 +457,7 @@ export default {
      */
     handleEditActived ({ row, column }) {
       this.$emit('cell-edit', { row, column });
+      this.currentEditRow = row;
     },
 
     /**
