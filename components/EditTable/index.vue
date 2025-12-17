@@ -16,6 +16,7 @@
  * @param {Boolean} columns[].editable - 是否可编辑
  * @param {Object} columns[].editRender - 编辑渲染器配置
  * @param {String} columns[].editRender.name - 编辑组件名称
+ * @param {Boolean} columns[].editRender.multiRow - 编辑 选择下拉组件 是否显示两行
  * @param {Object} columns[].editRender.props - 编辑组件属性
  * @param {Function} columns[].formatter - 列数据格式化函数
  * @param {Array} columns[].rules - 列验证规则
@@ -99,12 +100,27 @@
             @select="d => onValueSelect(row, column, d)"
           >
             <template v-if="column.editRender.name === 'ElSelect'">
-              <el-option
-                v-for="option in options[column.field]"
-                :key="option.value"
-                :label="option.label"
-                :value="option.value"
-              ></el-option>
+              <!-- 多行展示 -->
+              <template v-if="column.editRender.multiRow">
+                <el-option
+                  class="multi-row"
+                  v-for="option in options[column.field]"
+                  :key="option.value"
+                  :value="option.value"
+                  :label="option.label"
+                >
+                  <div class="label">{{ option.label }}</div>
+                  <div class="label-desc">{{ option.labelDesc }}</div>
+                </el-option>
+              </template>
+              <template v-else>
+                <el-option
+                  v-for="option in options[column.field]"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                ></el-option>
+              </template>
             </template>
           </component>
         </template>
@@ -166,6 +182,10 @@
 <script>
 export default {
   name: 'EditTable',
+  components: {
+    // 简单异步加载
+    FetchSelect: () => import('../FetchSelect'),
+  },
   props: {
     // 表格列配置
     auth: {
@@ -230,6 +250,10 @@ export default {
     options: {
       type: Object,
       default: () => ({})
+    },
+    isFocusNewRow: { // 新增行时，是否需要聚焦
+      type: Boolean,
+      default: true,
     }
   },
   data () {
@@ -263,7 +287,8 @@ export default {
         ElDatePicker: 'el-date-picker',
         ElSwitch: 'el-switch',
         ElRate: 'el-rate',
-        ElAutocomplete: 'el-autocomplete'
+        ElAutocomplete: 'el-autocomplete',
+        FetchSelect: 'fetch-select',
       };
       return componentMap[name] || 'input';
     },
@@ -305,12 +330,14 @@ export default {
       this.tableData.unshift(newRow);
       this.$refs.editTable.setEditRow(newRow);
       // 聚焦到第一个input
-      setTimeout(() => {
-        const firstInput = this.$refs.editTable.$el.querySelector('input');
-        if (firstInput) {
-            firstInput.focus();
-        }
-      }, 300);
+      if (this.isFocusNewRow) {
+        setTimeout(() => {
+          const firstInput = this.$refs.editTable.$el.querySelector('input');
+          if (firstInput) {
+              firstInput.focus();
+          }
+        }, 300);
+      }
       // 触发事件通知父组件
       this.$emit('add-row', newRow);
     },
@@ -510,6 +537,19 @@ export default {
     &.btn-delete{
       color:#B91919;
     }
+  }
+}
+.el-select-dropdown__item.multi-row{
+  height: 54px;
+  .label{
+    line-height: 25px;
+    height: 25px;
+  }
+  .label-desc{
+    line-height: 25px;
+    height: 25px;
+    color: #999999;
+    font-size: 12px;
   }
 }
 </style>
