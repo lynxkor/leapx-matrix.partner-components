@@ -105,12 +105,17 @@
       v-for="item in options"
       :key="item.id"
       :label="item.name"
-      :value="item.id" />
+      :style="showCode && item.code? 'height: 50px' : ''"
+      :value="item.id" >
+      <div v-if="showCode && item.code">
+        <div class="line_1">{{ item.name }}</div>
+        <div class="line_2">{{ item.code }}</div>
+      </div>
+    </el-option>
   </el-select>
 </template>
 <script>
 import xeUtils from 'xe-utils';
-import FetchSelect from '@/libs/components/FetchSelect';
 import api from '@/axios';
 /**
  * 判断值是否存在且不为空
@@ -214,12 +219,21 @@ export default {
     multiple: {
       type: Boolean,
       default: false
+    },
+    secondLineKey: {
+      type: String,
+      default: 'code'
+    },
+    showCode: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
     return {
       ids: [],
-      options: []
+      options: [],
+      dataList: []
     };
   },
   watch: {
@@ -269,6 +283,7 @@ export default {
     remoteMethod (query) {
       console.log('remoteMethod', query);
       this.options = [];
+      this.dataList = [];
       let data = { ...this.params };
       if (query) {
         data[this.queryKey] = query;
@@ -284,8 +299,11 @@ export default {
       api.jsonPost(this.listUrl, data).then(dataList => {
         if (dataList.length !== 0) {
           this.options = [];
+          this.dataList = [...dataList];
           for (let ele of dataList) {
-            this.options.push({ id: ele[this.valueKey], name: ele[this.labelKey] });
+            let item = { id: ele[this.valueKey], name: ele[this.labelKey] };
+            item.code = ele[this.secondLineKey];
+            this.options.push(item);
           }
         }
         this.$forceUpdate();
@@ -319,5 +337,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+.line_1 {
+  color: #333333;
+  font-size: 14px;
+  height: 20px;
+}
+.line_2 {
+  color: #999999;
+  height: 20px;
+}
 </style>
