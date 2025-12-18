@@ -16,7 +16,7 @@
  * @param {Boolean} columns[].editable - 是否可编辑
  * @param {Object} columns[].editRender - 编辑渲染器配置
  * @param {String} columns[].editRender.name - 编辑组件名称
- * @param {Boolean} columns[].editRender.multiRow - 编辑 选择下拉组件 是否显示两行
+ * @param {Boolean} columns[].editRender.multiRow - 编辑组件 选择下拉组件 是否显示两行
  * @param {Object} columns[].editRender.props - 编辑组件属性
  * @param {Function} columns[].formatter - 列数据格式化函数
  * @param {Array} columns[].rules - 列验证规则
@@ -117,6 +117,7 @@
                   <div class="label-desc">{{ option.labelDesc }}</div>
                 </el-option>
               </template>
+              <!-- 单行展示 -->
               <template v-else>
                 <el-option
                   v-for="option in options[column.field]"
@@ -137,10 +138,10 @@
 
       <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
-          <template v-if="enableSingleRowSave && currentEditRow === row">
+          <template v-if="enableSingleRowSave && isEditByRow(row)">
             <span
               class="action-button btn-edit"
-              @click="editRow(row, rowIndex)"
+              @click="saveRowEdit(row, rowIndex)"
               :disabled="!isRowEditable(row)"
               v-if="auth.edit"
             >
@@ -148,7 +149,7 @@
             </span>
             <span
               class="action-button btn-edit"
-              @click="editRow(row, rowIndex)"
+              @click="cancelEdit(row, rowIndex)"
               :disabled="!isRowEditable(row)"
               v-if="auth.edit"
             >
@@ -203,6 +204,8 @@
 </template>
 
 <script>
+import { createDefer } from '../../utils/defer';
+
 export default {
   name: 'EditTable',
   components: {
@@ -294,13 +297,21 @@ export default {
     return {
       tableData: [],
       editRules: {},
-      currentEditRow: null, // 当前编辑的行
+      // 保存编辑前的数据
+      originalData: [],
     };
   },
   watch: {
     data: {
       handler (newVal) {
-        this.tableData = [...(newVal || [])];
+        this.tableData = [...(newVal || [])].map((item) => this.setKey(item));
+
+        try {
+          // 深拷贝当前行数据
+          this.originalData = JSON.parse(JSON.stringify(this.tableData));
+        } catch(e) {
+          this.originalData = [];
+        }
       },
       immediate: true
     }
@@ -310,6 +321,13 @@ export default {
     this.initEditRules();
   },
   methods: {
+    /**
+     * 设置唯一标识 __key__
+     */
+    setKey(item) {
+      item.__key__ = 'row_' + Math.random();
+      return item;
+    },
     /**
      * 增加勾选
      */
@@ -356,6 +374,11 @@ export default {
       return this.columns.some(column => column.editable);
     },
 
+    // 判断行是否为激活编辑状态
+    isEditByRow(row) {
+      return this.$refs.editTable.isEditByRow(row);
+    },
+
     /**
      * 添加新行
      */
@@ -368,9 +391,9 @@ export default {
         });
       }
 
-      this.tableData.unshift(newRow);
-      this.$refs.editTable.setEditRow(newRow);
-      this.currentEditRow = newRow;
+      const _newRow = this.setKey(newRow);
+      this.tableData.unshift(_newRow);
+      this.$refs.editTable.setEditRow(_newRow);
       // 聚焦到第一个input
       if (this.isFocusNewRow) {
         setTimeout(() => {
@@ -381,7 +404,7 @@ export default {
         }, 300);
       }
       // 触发事件通知父组件
-      this.$emit('add-row', newRow);
+      this.$emit('add-row', _newRow);
     },
 
     /**
@@ -392,7 +415,6 @@ export default {
       if (this.isRowEditable(row)) {
         // 激活行编辑
         this.$refs.editTable.setEditRow(row);
-        this.currentEditRow = row;
         this.$emit('edit-row', { row, rowIndex });
       }
     },
@@ -402,11 +424,14 @@ export default {
      */
     removeRow (index) {
       const removedRow = this.tableData.splice(index, 1)[0];
-      this.$emit('remove-row', removedRow, index, (isSuccess) => {}, (isFail) => {
-        // 删除失败恢复数据
+      const defer = createDefer();
+      this.$emit('remove-row', removedRow, index, defer);
+      defer.promise.then(() => {
+        //
+      }).catch(() => {
+        // 删除失败，数据回退
         this.tableData.splice(index, 0, removedRow);
-      });
-      // this.$message.success('删除成功');
+      })
     },
 
     /**
@@ -472,7 +497,6 @@ export default {
      */
     handleEditActived ({ row, column }) {
       this.$emit('cell-edit', { row, column });
-      this.currentEditRow = row;
     },
 
     /**
@@ -543,6 +567,47 @@ export default {
      */
     validate () {
       return this.$refs.editTable.validate();
+    },
+    /**
+     * 取消编辑，恢复数据
+     */
+    cancelEdit(row, rowIndex) {
+      this.clearEdit();
+      const datum = this.originalData.find(item => item.__key__ === row.__key__);
+      if (datum) {
+        this.tableData.splice(rowIndex, 1, JSON.parse(JSON.stringify(datum)));
+      } else {
+        // 对于新增的行取消操作，直接删除该行
+        this.tableData.splice(rowIndex, 1);
+      }
+    },
+    /**
+     * 关闭编辑状态
+     */
+    clearEdit() {
+      this.$refs.editTable.clearEdit();
+    },
+    /**
+     * 单行保存
+     */
+    saveRowEdit(row, rowIndex) {
+      const defer = createDefer();
+      this.$emit('save-row-edit', row, defer);
+
+      defer.promise.then(id => {
+        if (id && typeof id === 'string') {
+          row.id = id;
+        }
+        // 新增的数据更新到originalData中
+        const datum = this.originalData.find(item => item.__key__ === row.__key__);
+        if (!datum) {
+          this.originalData.splice(rowIndex, 0, row);
+        }
+        //
+        this.clearEdit();
+      }).catch((e) => {
+        //
+      });
     }
   }
 };
