@@ -358,6 +358,7 @@ html[data-vxe-ui-theme="light"] {
   &.default-theme {
     .splitpanes__pane {
       background-color: #fff!important;
+      overflow-x: auto;
     }
   }
 }
@@ -578,6 +579,7 @@ html[data-vxe-ui-theme="light"] {
   width: 100%;
   height: 100%;
   container: card-container / inline-size;
+  min-width: 500px;
   .common-section{
     margin-bottom: 20px;
     // border-bottom: 1px solid #E6E6E5;
