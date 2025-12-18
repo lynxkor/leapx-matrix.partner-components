@@ -123,7 +123,7 @@ export default {
     },
     // 选项数据中作为值的键名
     valueKey: {
-      type: String,
+      type: [String, Number],
       default: 'code'
     },
     // 选项数据中作为标签的键名
