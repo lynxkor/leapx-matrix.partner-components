@@ -82,7 +82,8 @@
       max-height="500px"
       @edit-closed="handleEditClosed"
       @edit-actived="handleEditActived"
-      @selection-change="handleSelectionChange"
+      @checkbox-change="checkboxChange"
+      @checkbox-all="selectAllCheckboxChange"
     >
       <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
       <vxe-column
@@ -287,8 +288,15 @@ export default {
     /**
      * 增加勾选
      */
-    handleSelectionChange (selection) {
-      this.$emit('handleSelect', selection);
+    checkboxChange (selection) {
+      let checkedRows = this.$refs.editTable.getCheckboxRecords();
+      this.$emit('checkboxChange', checkedRows);
+    },
+    /**
+     * 全选
+     */
+    selectAllCheckboxChange (selection) {
+      this.$emit('checkboxChange', selection.records);
     },
     /**
      * 获取编辑器组件
