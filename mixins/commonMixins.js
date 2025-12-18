@@ -51,5 +51,35 @@ export default {
       this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
       this.getData();
     }
-  }
+  },
+  mounted () {
+    // 统一给高级编辑页标题注入展开缩起逻辑
+    if (this.pageType === 'edit') {
+      const el = document.querySelectorAll('.common-section-header h2');
+      for (let i = 0; i < el.length; i++) {
+        el[i].addEventListener('click', this.addHeaderActions);
+      }
+    }
+  },
+  beforeDestroy () {
+    if (this.pageType === 'edit') {
+      const el = document.querySelectorAll('.common-section-header h2');
+      for (let i = 0; i < el.length; i++) {
+        el[i].removeEventListener('click', this.addHeaderActions);
+      }
+    }
+  },
+  methods: {
+    addHeaderActions (e) {
+      const parent = e.target.parentNode;
+      const el = parent.nextSibling;
+      if (parent.className.includes('fold')) {
+        parent.classList.remove('fold');
+        el.style.display = 'block';
+      } else {
+        parent.classList.add('fold');
+        el.style.display = 'none';
+      }
+    },
+  },
 };
