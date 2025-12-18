@@ -123,7 +123,7 @@ export default {
     },
     // 选项数据中作为值的键名
     valueKey: {
-      type: String,
+      type: [String, Number],
       default: 'code'
     },
     // 选项数据中作为标签的键名
@@ -151,6 +151,10 @@ export default {
     format:{
       type: Function,
       default: v => v,
+    },
+    filterNum: {
+      type: Number, // 远程模糊搜索默认展示前100条
+      default: 100,
     },
   },
   data () {
@@ -206,7 +210,7 @@ export default {
         const response = await this.remoteMethod(v ?? this.params);
         const responseData = response.data || response || [];
         const formatedData = this.format ?  this.format(responseData) : responseData;
-        this.remoteOptions = formatedData.slice(0, 100); // 远程模糊搜索最多100条
+        this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
         if (!this.initialLoaded && this.params) {
           const target = formatedData.find(item => item[this.valueKey] === this.value);
