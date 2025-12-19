@@ -183,6 +183,13 @@ html[data-vxe-ui-theme="light"] {
     }
   }
 }
+.el-form-item__content .el-input-group{
+  vertical-align: middle;
+  .el-input__suffix{
+    display: flex;
+    align-items: center;
+  }
+}
 
 // 提示框
 .el-popconfirm {
