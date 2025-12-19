@@ -19,6 +19,7 @@
  * @param {Boolean} columns[].editRender.multiRow - 编辑组件 选择下拉组件 是否显示两行
  * @param {Object} columns[].editRender.props - 编辑组件属性
  * @param {Function} columns[].formatter - 列数据格式化函数
+ * @param {Function} columns[].drag - 开启拖拽排序
  * @param {Array} columns[].rules - 列验证规则
  * @param {any} columns[].defaultValue - 列默认值
  * @param {Array} data - 表格数据
@@ -44,7 +45,7 @@
  * @event value-select - 编辑组件选择选项时触发，参数为{row, column, data}
  * @event page-size-change - 分页大小改变时触发，参数为新的大小
  * @event current-page-change - 当前页码改变时触发，参数为新的页码
- * @event selection-change - 增加勾选事件{selection}
+ * @event checkbox-change - 增加勾选事件{selection}
  *
  * @method getData - 获取当前表格数据
  * @method setData - 设置表格数据
@@ -70,7 +71,7 @@
       border="inner"
       stripe
       resizable
-      :row-config="{isHover: true}"
+      :row-config="{isHover: true,  drag: true}"
       size="medium"
       show-overflow
       keep-source
@@ -93,6 +94,7 @@
         :title="column.title"
         :width="column.width"
         :min-width="column.minWidth"
+        :drag-sort="column.drag"
         :edit-render="column.editable ? (column.editRender || {}) : null"
       >
         <template #edit="{ row, column }">
