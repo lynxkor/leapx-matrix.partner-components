@@ -4,6 +4,7 @@
  * @author wangtao
  * @description 基于vxe-table和element-ui的可编辑表格组件，支持行内编辑、数据验证、动态列配置等功能
  *
+ * @param {Object} editConfig -
  * @param {Object} auth - 操作权限配置
  * @param {Boolean} auth.add - 是否显示新增按钮
  * @param {Boolean} auth.edit - 是否显示编辑按钮
@@ -16,9 +17,10 @@
  * @param {Boolean} columns[].editable - 是否可编辑
  * @param {Object} columns[].editRender - 编辑渲染器配置
  * @param {String} columns[].editRender.name - 编辑组件名称
- * @param {Boolean} columns[].editRender.multiRow - 编辑 选择下拉组件 是否显示两行
+ * @param {Boolean} columns[].editRender.multiRow - 编辑组件 选择下拉组件 是否显示两行
  * @param {Object} columns[].editRender.props - 编辑组件属性
  * @param {Function} columns[].formatter - 列数据格式化函数
+ * @param {Function} columns[].drag - 开启拖拽排序
  * @param {Array} columns[].rules - 列验证规则
  * @param {any} columns[].defaultValue - 列默认值
  * @param {Array} data - 表格数据
@@ -44,7 +46,7 @@
  * @event value-select - 编辑组件选择选项时触发，参数为{row, column, data}
  * @event page-size-change - 分页大小改变时触发，参数为新的大小
  * @event current-page-change - 当前页码改变时触发，参数为新的页码
- * @event selection-change - 增加勾选事件{selection}
+ * @event checkbox-change - 增加勾选事件{selection}
  *
  * @method getData - 获取当前表格数据
  * @method setData - 设置表格数据
@@ -65,12 +67,12 @@
     <vxe-table
       ref="editTable"
       :data="tableData"
-      :edit-config="{trigger: 'click', mode: 'row', showStatus: true}"
+      :edit-config="editConfig"
       :loading="loading"
       border="inner"
       stripe
       resizable
-      :row-config="{isHover: true}"
+      :row-config="{isHover: true,  drag: true}"
       size="medium"
       show-overflow
       keep-source
@@ -93,6 +95,7 @@
         :title="column.title"
         :width="column.width"
         :min-width="column.minWidth"
+        :drag-sort="column.drag"
         :edit-render="column.editable ? (column.editRender || {}) : null"
       >
         <template #edit="{ row, column }">
@@ -118,6 +121,7 @@
                   <div class="label-desc">{{ option.labelDesc }}</div>
                 </el-option>
               </template>
+              <!-- 单行展示 -->
               <template v-else>
                 <el-option
                   v-for="option in options[column.field]"
@@ -136,29 +140,49 @@
         </template>
       </vxe-column>
 
-      <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
+      <template v-if="readonly"></template>
+      <vxe-column v-else-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
-          <span
-            class="action-button btn-edit"
-            @click="editRow(row, rowIndex)"
-            :disabled="!isRowEditable(row)"
-            v-if="auth.edit"
-          >
-            编辑
-          </span>
-
-          <el-popconfirm
-            :title="delTitle"
-            @confirm="removeRow(rowIndex)"
-            v-if="auth.delete"
-          >
+          <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
-              slot="reference"
-              class="action-button btn-delete"
+              class="action-button btn-edit"
+              @click="saveRowEdit(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
             >
-              删除
+              保存
             </span>
-          </el-popconfirm>
+            <span
+              class="action-button btn-edit"
+              @click="cancelEdit(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
+            >
+              取消
+            </span>
+          </template>
+          <template v-else>
+            <span
+              class="action-button btn-edit"
+              @click="editRow(row, rowIndex)"
+              :disabled="!isRowEditable(row)"
+              v-if="auth.edit"
+            >
+              编辑
+            </span>
+            <el-popconfirm
+              :title="delTitle"
+              @confirm="removeRow(rowIndex)"
+              v-if="auth.delete"
+            >
+              <span
+                slot="reference"
+                class="action-button btn-delete"
+              >
+                删除
+              </span>
+            </el-popconfirm>
+          </template>
         </template>
       </vxe-column>
       <template #empty>
@@ -185,6 +209,9 @@
 </template>
 
 <script>
+import { createDefer } from '../../utils/defer';
+import { debounce } from '../../utils/index';
+
 export default {
   name: 'EditTable',
   components: {
@@ -192,6 +219,10 @@ export default {
     FetchSelect: () => import('../FetchSelect'),
   },
   props: {
+    editConfig: {
+      type: [Object, Boolean],
+      default: () => ({ trigger: 'click', mode: 'row', showStatus: true }),
+    },
     // 表格列配置
     auth: {
       type: Object,
@@ -261,23 +292,43 @@ export default {
       type: Boolean,
       default: false
     },
-    isFocusNewRow: { // 新增行时，是否需要聚焦
+    // 新增行时，是否需要聚焦，由于旧版是开启的所以默认true
+    isFocusNewRow: {
       type: Boolean,
       default: true,
+    },
+    // 是否开启单行保存功能
+    enableSingleRowSave: {
+      type: Boolean,
+      default: false,
     }
   },
   data () {
     return {
       tableData: [],
-      editRules: {}
+      editRules: {},
+      // 保存编辑前的数据
+      originalData: [],
     };
   },
   watch: {
     data: {
       handler (newVal) {
-        this.tableData = [...(newVal || [])];
+        this.tableData = [...(newVal || [])].map((item) => this.setKey(item));
+
+        try {
+          // 深拷贝当前行数据
+          this.originalData = JSON.parse(JSON.stringify(this.tableData));
+        } catch(e) {
+          this.originalData = [];
+        }
       },
       immediate: true
+    },
+  },
+  computed: {
+    readonly () {
+      return !Boolean(this.editConfig);
     }
   },
   mounted () {
@@ -285,6 +336,13 @@ export default {
     this.initEditRules();
   },
   methods: {
+    /**
+     * 设置唯一标识 __key__
+     */
+    setKey(item) {
+      item.__key__ = 'row_' + Math.random();
+      return item;
+    },
     /**
      * 增加勾选
      */
@@ -338,6 +396,30 @@ export default {
       return this.columns.some(column => column.editable);
     },
 
+    // 判断行是否为激活编辑状态
+    isEditByRow (row, rowIndex) {
+      return this.$refs.editTable.isEditByRow(row);
+    },
+    /**
+     * 当前行是否需要保存（未保存）
+     */
+    isNeedSave (row, rowIndex) {
+      const datum = this.originalData.find(item => item.__key__ === row.__key__);
+
+      if (!datum) {
+        return true;
+      }
+
+      const keys = Object.keys(this.defaultNewRow || {});
+      for (let key of keys) {
+        if (datum[key] !== row[key]) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+
     /**
      * 添加新行
      */
@@ -350,8 +432,9 @@ export default {
         });
       }
 
-      this.tableData.unshift(newRow);
-      this.$refs.editTable.setEditRow(newRow);
+      const _newRow = this.setKey(newRow);
+      this.tableData.unshift(_newRow);
+      this.$refs.editTable.setEditRow(_newRow);
       // 聚焦到第一个input
       if (this.isFocusNewRow) {
         setTimeout(() => {
@@ -362,7 +445,7 @@ export default {
         }, 300);
       }
       // 触发事件通知父组件
-      this.$emit('add-row', newRow);
+      this.$emit('add-row', _newRow);
     },
 
     /**
@@ -382,8 +465,14 @@ export default {
      */
     removeRow (index) {
       const removedRow = this.tableData.splice(index, 1)[0];
-      this.$emit('remove-row', removedRow, index);
-      // this.$message.success('删除成功');
+      const defer = createDefer();
+      this.$emit('remove-row', removedRow, index, defer);
+      defer.promise.then(() => {
+        //
+      }).catch(() => {
+        // 删除失败，数据回退
+        this.tableData.splice(index, 0, removedRow);
+      })
     },
 
     /**
@@ -519,7 +608,58 @@ export default {
      */
     validate () {
       return this.$refs.editTable.validate();
-    }
+    },
+    /**
+     * 取消编辑，恢复数据
+     */
+    cancelEdit(row, rowIndex) {
+      this.clearEdit();
+      const datum = this.originalData.find(item => item.__key__ === row.__key__);
+      if (datum) {
+        this.tableData.splice(rowIndex, 1, JSON.parse(JSON.stringify(datum)));
+      } else {
+        // 对于新增的行取消操作，直接删除该行
+        this.tableData.splice(rowIndex, 1);
+      }
+    },
+    /**
+     * 关闭编辑状态
+     */
+    clearEdit() {
+      this.$refs.editTable.clearEdit();
+    },
+     /**
+     * 单行保存
+     */
+    saveRowEdit: debounce(function (row, rowIndex) {
+
+      this.$refs.editTable.validate(row).then((errMap) => {
+        if (errMap) {
+          return Promise.reject(new Error('验证失败'));
+        }
+
+        const defer = createDefer();
+        this.$emit('save-row-edit', row, defer);
+
+        defer.promise.then(id => {
+          if (id && typeof id === 'string') {
+            row.id = id;
+          }
+
+          const datum = this.originalData.find(item => item.__key__ === row.__key__);
+          if (!datum) {// 新增
+            this.originalData.splice(rowIndex, 0, row);
+          } else { // 更新
+            this.originalData.splice(rowIndex, 1, row);
+          }
+          //
+          this.clearEdit();
+        }).catch((e) => {
+          //
+        });
+
+      });
+    }, 300),
   }
 };
 </script>
