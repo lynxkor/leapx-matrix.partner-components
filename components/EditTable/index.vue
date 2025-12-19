@@ -4,6 +4,7 @@
  * @author wangtao
  * @description 基于vxe-table和element-ui的可编辑表格组件，支持行内编辑、数据验证、动态列配置等功能
  *
+ * @param {Object} editConfig -
  * @param {Object} auth - 操作权限配置
  * @param {Boolean} auth.add - 是否显示新增按钮
  * @param {Boolean} auth.edit - 是否显示编辑按钮
@@ -66,7 +67,7 @@
     <vxe-table
       ref="editTable"
       :data="tableData"
-      :edit-config="{trigger: 'click', mode: 'row', showStatus: true}"
+      :edit-config="editConfig"
       :loading="loading"
       border="inner"
       stripe
@@ -139,7 +140,8 @@
         </template>
       </vxe-column>
 
-      <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
+      <template v-if="readonly"></template>
+      <vxe-column v-else-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
@@ -217,6 +219,10 @@ export default {
     FetchSelect: () => import('../FetchSelect'),
   },
   props: {
+    editConfig: {
+      type: [Object, Boolean],
+      default: () => ({ trigger: 'click', mode: 'row', showStatus: true }),
+    },
     // 表格列配置
     auth: {
       type: Object,
@@ -318,6 +324,11 @@ export default {
         }
       },
       immediate: true
+    },
+  },
+  computed: {
+    readonly () {
+      return !Boolean(this.editConfig);
     }
   },
   mounted () {
