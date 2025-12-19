@@ -90,7 +90,7 @@ html[data-vxe-ui-theme="light"] {
 
 // 表单公共样式
 .el-form-item--small.el-form-item {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 .el-form-item__label {
   color: var(--aisDefaultTextColor);
@@ -350,16 +350,6 @@ html[data-vxe-ui-theme="light"] {
     position: static!important;
     transform: none!important;
     color: var(--themColor)!important;
-  }
-}
-
-/* splitpanes组件样式 default-theme */
-.splitpanes {
-  &.default-theme {
-    .splitpanes__pane {
-      background-color: #fff!important;
-      overflow-x: auto;
-    }
   }
 }
 
