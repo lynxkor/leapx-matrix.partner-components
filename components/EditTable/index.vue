@@ -139,7 +139,7 @@
 
       <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
-          <template v-if="enableSingleRowSave && isEditByRow(row)">
+          <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
               class="action-button btn-edit"
               @click="saveRowEdit(row, rowIndex)"
@@ -206,6 +206,7 @@
 
 <script>
 import { createDefer } from '../../utils/defer';
+import { debounce } from '../../utils/index';
 
 export default {
   name: 'EditTable',
@@ -383,8 +384,27 @@ export default {
     },
 
     // 判断行是否为激活编辑状态
-    isEditByRow(row) {
+    isEditByRow (row, rowIndex) {
       return this.$refs.editTable.isEditByRow(row);
+    },
+    /**
+     * 当前行是否需要保存（未保存）
+     */
+    isNeedSave (row, rowIndex) {
+      const datum = this.originalData.find(item => item.__key__ === row.__key__);
+
+      if (!datum) {
+        return true;
+      }
+
+      const keys = Object.keys(this.defaultNewRow || {});
+      for (let key of keys) {
+        if (datum[key] !== row[key]) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
@@ -595,28 +615,38 @@ export default {
     clearEdit() {
       this.$refs.editTable.clearEdit();
     },
-    /**
+     /**
      * 单行保存
      */
-    saveRowEdit(row, rowIndex) {
-      const defer = createDefer();
-      this.$emit('save-row-edit', row, defer);
+    saveRowEdit: debounce(function (row, rowIndex) {
 
-      defer.promise.then(id => {
-        if (id && typeof id === 'string') {
-          row.id = id;
+      this.$refs.editTable.validate(row).then((errMap) => {
+        if (errMap) {
+          return Promise.reject(new Error('验证失败'));
         }
-        // 新增的数据更新到originalData中
-        const datum = this.originalData.find(item => item.__key__ === row.__key__);
-        if (!datum) {
-          this.originalData.splice(rowIndex, 0, row);
-        }
-        //
-        this.clearEdit();
-      }).catch((e) => {
-        //
+
+        const defer = createDefer();
+        this.$emit('save-row-edit', row, defer);
+
+        defer.promise.then(id => {
+          if (id && typeof id === 'string') {
+            row.id = id;
+          }
+
+          const datum = this.originalData.find(item => item.__key__ === row.__key__);
+          if (!datum) {// 新增
+            this.originalData.splice(rowIndex, 0, row);
+          } else { // 更新
+            this.originalData.splice(rowIndex, 1, row);
+          }
+          //
+          this.clearEdit();
+        }).catch((e) => {
+          //
+        });
+
       });
-    }
+    }, 300),
   }
 };
 </script>
