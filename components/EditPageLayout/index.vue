@@ -18,7 +18,7 @@
     <pane>
       <slot name="left"></slot>
     </pane>
-    <pane v-if="showPane" size="40">
+    <pane v-if="showPane" :size="width">
       <div class="right-panel">
         <div class="panel-header">
           <div class="header-title">
@@ -60,6 +60,10 @@ export default {
     title: {
       type: String,
       default: ''
+    },
+    width: {
+      type: Number,
+      default: 40
     }
   },
   data () {
@@ -88,7 +92,31 @@ export default {
 };
 </script>
 
+<style>
+  .splitpanes.default-theme .splitpanes__splitter {
+    width: 3px;
+  }
+  .splitpanes.default-theme .splitpanes__splitter:before {
+    background-color: var(--aisDefaultTextColor)!important;
+    border-radius: 10px;
+    width: 3px;
+    height: 24px;
+  }
+  .splitpanes.default-theme .splitpanes__splitter:after {
+    width: 0;
+  }
+</style>
 <style scoped>
+/* splitpanes组件样式 default-theme */
+.splitpanes {
+  &.default-theme {
+    .splitpanes__pane {
+      background-color: #fff!important;
+      overflow-x: auto;
+    }
+  }
+}
+
 .right-panel {
   display: flex;
   flex-direction: column;
@@ -115,7 +143,7 @@ export default {
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
+  padding: 16px;
 }
 
 .panel-footer {

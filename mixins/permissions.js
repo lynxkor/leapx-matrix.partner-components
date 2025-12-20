@@ -12,24 +12,24 @@ export default {
       canImport: true,
       canExport: true,
       canLog: true,
+      permissions: new Set(),
     };
   },
   created () {
-    const pageSource = this.$store.state.pageSource?.aisPageSource || [];
-    const permissionSet = new Set();
+    const pageSource = (this.$store.state.pageSource?.aisPageSource || []).filter(item => item.startsWith(this.moduleKey));
     pageSource.forEach(item => {
-      permissionSet.add(item);
+      this.permissions.add(item);
     });
     const key = this.moduleKey;
-    this.canList = permissionSet.has(`${key}-list`);
-    this.canPage = permissionSet.has(`${key}-page`);
-    this.canDetail = permissionSet.has(`${key}-detail`);
-    this.canAddOrUpdate = permissionSet.has(`${key}-addOrUpdate`);
-    this.canDelete = permissionSet.has(`${key}-delete`);
-    this.canEnableOrDisable = permissionSet.has(`${key}-enableOrDisable`);
-    this.canImport = permissionSet.has(`${key}-import`);
-    this.canExport = permissionSet.has(`${key}-export`);
-    this.canLog = permissionSet.has(`${key}-auditLog`);
+    this.canList = this.permissions.has(`${key}-list`);
+    this.canPage = this.permissions.has(`${key}-page`);
+    this.canDetail = this.permissions.has(`${key}-detail`);
+    this.canAddOrUpdate = this.permissions.has(`${key}-addOrUpdate`);
+    this.canDelete = this.permissions.has(`${key}-delete`);
+    this.canEnableOrDisable = this.permissions.has(`${key}-enableOrDisable`);
+    this.canImport = this.permissions.has(`${key}-import`);
+    this.canExport = this.permissions.has(`${key}-export`);
+    this.canLog = this.permissions.has(`${key}-auditLog`);
     this.fixTableConfig();
   },
   methods: {

@@ -4,6 +4,7 @@
  * @author wangtao
  * @description 基于vxe-table和element-ui的可编辑表格组件，支持行内编辑、数据验证、动态列配置等功能
  *
+ * @param {Object} editConfig -
  * @param {Object} auth - 操作权限配置
  * @param {Boolean} auth.add - 是否显示新增按钮
  * @param {Boolean} auth.edit - 是否显示编辑按钮
@@ -66,7 +67,7 @@
     <vxe-table
       ref="editTable"
       :data="tableData"
-      :edit-config="{trigger: 'click', mode: 'row', showStatus: true}"
+      :edit-config="editConfig"
       :loading="loading"
       border="inner"
       stripe
@@ -139,9 +140,10 @@
         </template>
       </vxe-column>
 
-      <vxe-column v-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
+      <template v-if="readonly"></template>
+      <vxe-column v-else-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
-          <template v-if="enableSingleRowSave && isEditByRow(row)">
+          <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
               class="action-button btn-edit"
               @click="saveRowEdit(row, rowIndex)"
@@ -208,6 +210,7 @@
 
 <script>
 import { createDefer } from '../../utils/defer';
+import { debounce } from '../../utils/index';
 
 export default {
   name: 'EditTable',
@@ -216,6 +219,10 @@ export default {
     FetchSelect: () => import('../FetchSelect'),
   },
   props: {
+    editConfig: {
+      type: [Object, Boolean],
+      default: () => ({ trigger: 'click', mode: 'row', showStatus: true }),
+    },
     // 表格列配置
     auth: {
       type: Object,
@@ -317,6 +324,11 @@ export default {
         }
       },
       immediate: true
+    },
+  },
+  computed: {
+    readonly () {
+      return !Boolean(this.editConfig);
     }
   },
   mounted () {
@@ -385,8 +397,27 @@ export default {
     },
 
     // 判断行是否为激活编辑状态
-    isEditByRow(row) {
+    isEditByRow (row, rowIndex) {
       return this.$refs.editTable.isEditByRow(row);
+    },
+    /**
+     * 当前行是否需要保存（未保存）
+     */
+    isNeedSave (row, rowIndex) {
+      const datum = this.originalData.find(item => item.__key__ === row.__key__);
+
+      if (!datum) {
+        return true;
+      }
+
+      const keys = Object.keys(this.defaultNewRow || {});
+      for (let key of keys) {
+        if (datum[key] !== row[key]) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
@@ -597,28 +628,38 @@ export default {
     clearEdit() {
       this.$refs.editTable.clearEdit();
     },
-    /**
+     /**
      * 单行保存
      */
-    saveRowEdit(row, rowIndex) {
-      const defer = createDefer();
-      this.$emit('save-row-edit', row, defer);
+    saveRowEdit: debounce(function (row, rowIndex) {
 
-      defer.promise.then(id => {
-        if (id && typeof id === 'string') {
-          row.id = id;
+      this.$refs.editTable.validate(row).then((errMap) => {
+        if (errMap) {
+          return Promise.reject(new Error('验证失败'));
         }
-        // 新增的数据更新到originalData中
-        const datum = this.originalData.find(item => item.__key__ === row.__key__);
-        if (!datum) {
-          this.originalData.splice(rowIndex, 0, row);
-        }
-        //
-        this.clearEdit();
-      }).catch((e) => {
-        //
+
+        const defer = createDefer();
+        this.$emit('save-row-edit', row, defer);
+
+        defer.promise.then(id => {
+          if (id && typeof id === 'string') {
+            row.id = id;
+          }
+
+          const datum = this.originalData.find(item => item.__key__ === row.__key__);
+          if (!datum) {// 新增
+            this.originalData.splice(rowIndex, 0, row);
+          } else { // 更新
+            this.originalData.splice(rowIndex, 1, row);
+          }
+          //
+          this.clearEdit();
+        }).catch((e) => {
+          //
+        });
+
       });
-    }
+    }, 300),
   }
 };
 </script>
