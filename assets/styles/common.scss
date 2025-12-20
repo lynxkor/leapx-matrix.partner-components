@@ -200,6 +200,16 @@ html[data-vxe-ui-theme="light"] {
   }
 }
 
+// 下拉框与按钮组合样式
+.ais-select-group {
+  .el-input__inner {
+    border-radius: 4px 0 0 4px;
+  }
+  .el-button {
+    border-radius: 0 4px 4px 0;
+  }
+}
+
 // 提示框
 .el-popconfirm {
   .el-popconfirm__icon {
@@ -616,6 +626,9 @@ html[data-vxe-ui-theme="light"] {
         font-size: 14px;
         margin-right: 4px;
       }
+    }
+    &-body{
+      padding-left: 16px;
     }
     &:last-child{
       border-bottom: none;
