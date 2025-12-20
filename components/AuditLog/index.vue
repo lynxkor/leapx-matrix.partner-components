@@ -68,7 +68,8 @@ export default {
     async fetchAuditLogData () {
       this.loading = true;
       try {
-        const res = await this.getAuditLogList({ recordId: '00076D98-6575-EF11-B197-FA9152FF2813' });
+        // const res = await this.getAuditLogList({ recordId: '00076D98-6575-EF11-B197-FA9152FF2813' });
+        const res = await this.getAuditLogList({ recordId: this.currentId });
         const tableData = res || [];
         const target = [];
         let rows = 0;
