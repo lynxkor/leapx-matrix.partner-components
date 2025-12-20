@@ -206,7 +206,9 @@ html[data-vxe-ui-theme="light"] {
     border-radius: 4px 0 0 4px;
   }
   .el-button {
-    border-radius: 0 4px 4px 0;
+    &:first-of-type {
+      border-radius: 0 4px 4px 0;
+    }
   }
 }
 
