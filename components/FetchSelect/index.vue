@@ -208,7 +208,7 @@ export default {
       this.loading = true;
       try {
         const response = await this.remoteMethod(v ?? this.params);
-        const responseData = response.data || response || [];
+        const responseData = response.data || response.records || response || [];
         const formatedData = this.format ?  this.format(responseData) : responseData;
         this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
