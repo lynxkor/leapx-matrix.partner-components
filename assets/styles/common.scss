@@ -52,6 +52,14 @@ html[data-vxe-ui-theme="light"] {
     background: #CECFCE;
   }
 }
+.vxe-table .u-lp-table-operation {
+  &>span {
+    margin-right: 8px;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
 
 // 按钮
 .el-button--default {
@@ -84,6 +92,7 @@ html[data-vxe-ui-theme="light"] {
 .el-popconfirm {
   margin: 6px;
   .el-popconfirm__main{
+    max-width: 300px;
     margin-bottom: 10px;
   }
 }
