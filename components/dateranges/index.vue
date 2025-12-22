@@ -4,7 +4,7 @@
  * @author sihongyu
  * @description 基于 `el-date-picker` 实现的时间范围选择器组件，支持多种快捷时间选项（如本周、本月、最近一周等），
  *              并提供时间范围限制、默认时间设置、时间变化回调等功能。
- * @param {Object} form - 父组件传递的表单对象，用于绑定表单数据。
+ * @param {Date | String | Array } value - 父组件传递的表单对象，用于绑定表单数据。
  * @param {Number} limtNum - 时间范围限制，默认限制为12个月。
  * @param {Function} changeNewTime - 暴露给父组件的时间变化回调函数，当时间范围变化时触发。
  * @param {Boolean} setDefault - 是否设置默认时间，默认为 `false`。
@@ -63,7 +63,6 @@
  */
 </script>
 <template>
-  <el-col :span="24" style="height: 100%">
     <el-date-picker
       :default-time="['00:00:00', '23:59:59']"
       format="yyyy-MM-dd HH:mm:ss"
@@ -73,6 +72,7 @@
       range-separator="/"
       popper-class="data-style"
       @change="changeTime"
+      @input="updateValue"
       :clearable="true"
       unlink-panels
       :picker-options="pickerOptions"
@@ -81,16 +81,21 @@
       v-bind="$attrs"
     >
     </el-date-picker>
-  </el-col>
 </template>
 
 <script>
 import { formatDateTime } from '@/utils';
 
 export default {
+  name: 'DatePicker',
+  model: {
+    prop: 'value',
+    event: 'input'
+  },
   props: {
-    form: {
-      type: Object
+    value: {
+      type: [Date, String, Array],
+      default: null
     },
     limtNum: {
       type: Number,
@@ -264,12 +269,35 @@ export default {
       } else {
         this.time2 = e;
       }
+    },
+    value: {
+      immediate: true,
+      handler (newVal) {
+        if (newVal) {
+          this.time2 = newVal;
+        } else {
+          this.time2 = [];
+        }
+      }
+    }
+  },
+  computed: {
+    internalValue: {
+      get() {
+        return this.value
+      },
+      set(val) {
+        this.$emit('input', val)
+      }
     }
   },
   created () {
     this.setDefaultTime();
   },
   methods: {
+    updateValue(val) {
+      this.internalValue = val
+    },
     setDefaultTime () {
       if (this.setDefault) {
         // const time = new Date();
