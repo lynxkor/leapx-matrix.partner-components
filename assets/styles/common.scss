@@ -601,6 +601,25 @@ html[data-vxe-ui-theme="light"] {
   height: 100%;
   container: card-container / inline-size;
   min-width: 500px;
+  .common-title{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    h2 {
+      color: #0A0E0A;
+      font-size: 20px;
+      font-weight: 500;
+      max-width: 600px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .iconfont{
+      margin-right: 4px;
+      font-size: 14px;
+    }
+  }
   .common-section{
     margin-bottom: 20px;
     // border-bottom: 1px solid #E6E6E5;
@@ -699,6 +718,14 @@ html[data-vxe-ui-theme="light"] {
       height: auto;
     }
   }
+  .form-detail {
+    .el-form-item {
+      line-height: 22px;
+    }
+    .el-form-item__label,.el-form-item__content {
+      line-height: 22px;
+    }
+  }
 }
 
 /* 根据屏幕宽度适配 */
@@ -728,20 +755,29 @@ html[data-vxe-ui-theme="light"] {
       flex-direction: column;
     }
   }
-  .page-common-edit .el-form-item {
-    width: 50%;
-  }
 }
 
 /* container query */
-@container (width <= 700px) {
+@container (width < 700px) {
   .page-common-edit .el-form-item {
     width: 100%;
   }
 }
 
-@container (width > 700px) and (width < 1200px) {
+@container (width >= 700px) and (width < 1080px) {
   .page-common-edit .el-form-item {
     width: 50%;
+  }
+}
+
+@container (width >= 1080px) and (width < 1600px) {
+  .page-common-edit .el-form-item {
+    width: 33%;
+  }
+}
+
+@container (width >= 1600px) {
+  .page-common-edit .el-form-item {
+    width: 25%;
   }
 }
