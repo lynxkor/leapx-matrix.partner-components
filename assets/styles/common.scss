@@ -256,6 +256,9 @@ html[data-vxe-ui-theme="light"] {
     }
   }
 }
+.el-popup-parent--hidden {
+  padding-right: 0px !important;
+}
 
 .ais-leave-tips, .ais-enable-tips {
   color: var(--aisDefaultTextColor);
