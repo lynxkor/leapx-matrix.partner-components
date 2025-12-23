@@ -1,6 +1,6 @@
 <script>
 /**
-<leap-tabs
+<base-tabs
   :items="items"
   :value="selectedTab"
   closeTip="确定删除该公共车型吗？"
@@ -22,52 +22,56 @@
       placeholder="请输入公告车型代码/名称"
     />
   </template>
-</leap-tabs>
+</base-tabs>
  */
 </script>
 
 <template>
-  <div class="leap-tabs-wrapper" ref="wrapper">
-    <div class="leap-tabs" ref="leapTabs">
+  <div class="base-tabs-wrapper" ref="wrapper">
+    <div class="base-tabs" ref="leapTabs">
       <div
         v-for="(item, index) in items"
         :key="item.value"
-        class="leap-tab"
+        class="base-tab"
         :class="{active: item.value === value}"
         :ref="el => setTabRef(el, index)"
         @click="handleClick(item, index)">
-        <div class="leap-tab-content">
+        <div class="base-tab-content">
           <span class="name">{{item.label}}</span>
-          <el-popconfirm
-            :title="closeTip"
-            confirm-button-type="danger"
-          >
-            <i slot="reference" class="iconfont icon-lxppc-close"></i>
-          </el-popconfirm>
+          <span @click.stop>
+            <el-popconfirm
+              v-show="!item.disableClose"
+              :title="closeTip"
+              confirm-button-type="danger"
+              @confirm="handleClose(item, index)"
+            >
+              <i slot="reference" class="iconfont icon-lxppc-close"></i>
+            </el-popconfirm>
+          </span>
         </div>
       </div>
     </div>
-    <div class="leap-tabs-actions" ref="leapActions">
+    <div class="base-tabs-actions" ref="leapActions">
       <!-- more -->
       <el-popover
         placement="bottom-end"
         title=""
         trigger="hover"
         >
-        <div class="leap-tabs">
+        <div class="base-tabs">
           <div
             v-for="(item, index) in items.slice(moreStartIndex)"
             :key="item.value"
-            class="leap-tab"
+            class="base-tab"
             :class="{active: item.value === value}"
             @click="handleClick(item, index)">
-            <div class="leap-tab-content">
+            <div class="base-tab-content">
               <span class="name">{{item.label}}</span>
               <i class="iconfont icon-lxppc-close" @click="handleClose(item, moreStartIndex + index)"></i>
             </div>
           </div>
         </div>
-        <div v-show="moreStartIndex <= items.length - 1" class="leap-tab-more" slot="reference">
+        <div v-show="moreStartIndex <= items.length - 1" class="base-tab-more" slot="reference">
           <i class="iconfont icon-lxppc-t-more"></i>
         </div>
       </el-popover>
@@ -78,7 +82,7 @@
         trigger="click"
         >
         <slot name="add-popover"></slot>
-        <div slot="reference" class="leap-tab-add">
+        <div slot="reference" class="base-tab-add">
           <i class="iconfont icon-lxppc-plus"></i>
         </div>
       </el-popover>
@@ -198,7 +202,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.leap-tabs-wrapper{
+.base-tabs-wrapper{
   width: 100%;
   display: flex;
   align-items: flex-start;
@@ -214,18 +218,18 @@ export default {
     display: block;
     border-bottom: 1px solid #E6E6E5;
   }
-  .leap-tabs{
+  .base-tabs{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     position: relative;
   }
 
-  .leap-tabs-actions{
+  .base-tabs-actions{
     display: flex;
     height: 40px;
     align-items: center;
-    .leap-tab-more, .leap-tab-add{
+    .base-tab-more, .base-tab-add{
       position: relative;
       right: 0px;
       width: 24px;
@@ -246,19 +250,19 @@ export default {
         color: var(--leap-green);
       }
     }
-    .leap-tab-more{
+    .base-tab-more{
       margin-right: 4px;
     }
   }
 }
-.leap-tab{
+.base-tab{
   height: 40px;
   line-height: 40px;
   margin-right: 20px;
   display: flex;
   align-items: center;
   cursor: pointer;
-  .leap-tab-content{
+  .base-tab-content{
     line-height: 40px;
     border-bottom: 2px solid transparent;
     .name{
@@ -280,7 +284,7 @@ export default {
     }
   }
   &.active {
-    .leap-tab-content{
+    .base-tab-content{
       border-bottom-color: var(--leap-green);
       position: relative;
       z-index: 1;

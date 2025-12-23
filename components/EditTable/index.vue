@@ -141,7 +141,7 @@
       </vxe-column>
 
       <template v-if="readonly"></template>
-      <vxe-column v-else-if="defaultNewRow" title="操作" width="150" align="center" fixed="right" :resizable="false">
+      <vxe-column v-else-if="defaultNewRow" title="操作" :width="actionWidth" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
@@ -162,6 +162,7 @@
             </span>
           </template>
           <template v-else>
+            <slot name="btn-before" :row="row" :rowIndex="rowIndex"></slot>
             <span
               class="action-button btn-edit"
               @click="editRow(row, rowIndex)"
@@ -170,6 +171,7 @@
             >
               编辑
             </span>
+            <slot name="btn-middle" :row="row" :rowIndex="rowIndex"></slot>
             <el-popconfirm
               :title="delTitle"
               @confirm="removeRow(rowIndex)"
@@ -182,6 +184,7 @@
                 删除
               </span>
             </el-popconfirm>
+            <slot name="btn-after" :row="row" :rowIndex="rowIndex"></slot>
           </template>
         </template>
       </vxe-column>
@@ -301,6 +304,11 @@ export default {
     enableSingleRowSave: {
       type: Boolean,
       default: false,
+    },
+    // 操作栏的宽度
+    actionWidth: {
+      type: Number,
+      default: 150,
     }
   },
   data () {
@@ -423,13 +431,18 @@ export default {
     /**
      * 添加新行
      */
-    addRow () {
-      const newRow = { ...this.defaultNewRow };
-      // 如果没有提供默认值，则初始化为空对象
-      if (Object.keys(newRow).length === 0) {
-        this.columns.forEach(col => {
-          newRow[col.field] = col.defaultValue !== undefined ? col.defaultValue : '';
-        });
+    addRow (datum) {
+      let newRow;
+      if (datum) {
+        newRow = datum;
+      } else {
+        newRow = { ...this.defaultNewRow };
+        // 如果没有提供默认值，则初始化为空对象
+        if (Object.keys(newRow).length === 0) {
+          this.columns.forEach(col => {
+            newRow[col.field] = col.defaultValue !== undefined ? col.defaultValue : '';
+          });
+        }
       }
 
       const _newRow = this.setKey(newRow);
