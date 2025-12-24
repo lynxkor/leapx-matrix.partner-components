@@ -148,7 +148,9 @@ export default {
       this.tagList = this.inputValue2Array();
     },
     inputValue2Array () {
-      const splitArray = this.inputValue.split(/[\s]/);
+      // console.log('inputValue2Array', this.inputValue);
+      // const splitArray = this.inputValue.split(/[\s]/);
+      const splitArray = this.inputValue.split(/\n/);
       const set = new Set();
       for (const splitArrayElement of splitArray) {
         if (splitArrayElement) {
