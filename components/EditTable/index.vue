@@ -695,7 +695,7 @@ export default {
     margin-bottom: 10px;
   }
   .m-vxe-table-empty {
-    height: 250px;
+    height: 300px;
   }
   .m-vxe-table-empty-text {
     text-align: left;
