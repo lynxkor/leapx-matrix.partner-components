@@ -600,7 +600,7 @@ html[data-vxe-ui-theme="light"] {
   width: 100%;
   height: 100%;
   container: card-container / inline-size;
-  min-width: 500px;
+  min-width: 300px;
   .common-title{
     display: flex;
     justify-content: space-between;
@@ -724,6 +724,12 @@ html[data-vxe-ui-theme="light"] {
     }
     .el-form-item__label,.el-form-item__content {
       line-height: 22px;
+      padding-right: 0;
+    }
+  }
+  .form-edit {
+    .el-form-item__label {
+      padding-right: 0;
     }
   }
 }

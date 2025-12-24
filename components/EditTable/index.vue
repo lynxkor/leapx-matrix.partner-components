@@ -79,8 +79,7 @@
       :edit-rules="editRules"
       :cell-config="{height: 40}"
       :header-cell-config="{height: 40}"
-      height="100%"
-      min-height="360px"
+      min-height="0"
       max-height="500px"
       @edit-closed="handleEditClosed"
       @edit-actived="handleEditActived"
@@ -189,7 +188,10 @@
         </template>
       </vxe-column>
       <template #empty>
-        <div class="m-vxe-table-empty">
+        <div class="m-vxe-table-empty-text" v-if="emptyText">
+          {{ emptyText }}
+        </div>
+        <div class="m-vxe-table-empty" v-else>
           <img :src="require('../../assets/images/empty.png')" />
           <p>暂无数据</p>
         </div>
@@ -309,7 +311,12 @@ export default {
     actionWidth: {
       type: Number,
       default: 150,
-    }
+    },
+    // 空提示信息
+    emptyText: {
+      type: String,
+      default: ''
+    },
   },
   data () {
     return {
@@ -679,10 +686,25 @@ export default {
 
 <style lang="scss" scoped>
 .edit-table-container {
+  ::v-deep .vxe-table--render-default.size--medium .vxe-header--column.is--padding .vxe-cell,
+  ::v-deep .vxe-table--render-default .vxe-body--column:not(.col--active).col--ellipsis > .vxe-cell,
+  ::v-deep .vxe-table--render-default.size--medium .vxe-body--column.is--padding .vxe-cell {
+    padding: 8px 16px!important;
+  }
   .vxe-toolbar {
     margin-bottom: 10px;
   }
-
+  .m-vxe-table-empty {
+    height: 250px;
+  }
+  .m-vxe-table-empty-text {
+    text-align: left;
+  }
+  ::v-deep .vxe-table--empty-content {
+    color: #9D9F9D;
+    width: 100%;
+    padding: 0 16px;
+  }
   .vxe-default-input {
     width: 100%;
     height: 32px;
