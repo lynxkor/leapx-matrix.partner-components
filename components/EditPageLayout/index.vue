@@ -105,6 +105,7 @@ export default {
   .splitpanes.default-theme .splitpanes__splitter:after {
     width: 0;
   }
+  .splitpanes .splitpanes__pane {transition: none;}
 </style>
 <style scoped>
 /* splitpanes组件样式 default-theme */
