@@ -38,7 +38,7 @@
         @click="handleClick(item, index)">
         <div class="base-tab-content">
           <span class="name">{{item.label}}</span>
-          <span @click.stop>
+          <span @click.stop v-if="!disabled">
             <el-popconfirm
               v-show="!item.disableClose"
               :title="closeTip"
@@ -67,7 +67,7 @@
             @click="handleClick(item, index)">
             <div class="base-tab-content">
               <span class="name">{{item.label}}</span>
-              <i class="iconfont icon-lxppc-close" @click="handleClose(item, moreStartIndex + index)"></i>
+              <i v-if="!disabled" class="iconfont icon-lxppc-close" @click="handleClose(item, moreStartIndex + index)"></i>
             </div>
           </div>
         </div>
@@ -77,6 +77,7 @@
       </el-popover>
       <!-- add -->
        <el-popover
+        v-if="!disabled"
         placement="bottom-end"
         title=""
         trigger="click"
@@ -102,6 +103,10 @@ export default {
     },
     closeTip: {
       type: String,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     }
   },
   data () {

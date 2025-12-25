@@ -42,13 +42,14 @@
 
 <template>
   <base-tabs
-    :items="items"
+    :items="$data._items"
     :value="internalValue"
     :closeTip="closeTip"
+    :disabled="disabled"
     @change="onTabChange"
     @close="onTabClose"
     >
-    <template v-if="showAdd" slot="add-popover">
+    <template v-if="!disabled" slot="add-popover">
       <fetch-select
         filterable
         clearable
@@ -81,10 +82,15 @@ export default {
       type: [String, Number],
       default: ''
     },
-    // 是否显示添加功能
-    showAdd: {
+    // 初始数据
+    items: {
+      type: Array,
+      default: () => [],
+    },
+    // 禁用模式
+    disabled: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     // 加载参数
     loadParams: {
@@ -133,7 +139,7 @@ export default {
   },
   data () {
     return {
-      items: [],
+      _items: [],
       vehicleRegisteredModelId: '',
       tabValue: '',
     };
@@ -151,7 +157,7 @@ export default {
   },
   watch: {
     // 监听初始数据变化
-    initialItems: {
+    items: {
       immediate: true,
       handler (newItems) {
         if (newItems && newItems.length > 0) {
@@ -162,6 +168,7 @@ export default {
   },
   mounted () {
     this.initializeComponent();
+    console.log(this.$data)
   },
   methods: {
     getId () {
@@ -185,18 +192,18 @@ export default {
       const wasActive = item.value === this.internalValue;
 
       // 3. 执行删除
-      this.items.splice(index, 1);
+      this.$data._items.splice(index, 1);
       const defer = createDefer();
       this.$emit('remove', item, index, defer);
       defer.promise.then(() => {}).catch((e) => {
         // 删除失败回退
-        this.items.splice(rowIndex, 0, item);
+        this.$data._items.splice(rowIndex, 0, item);
       });
 
       // 4. 处理删除后的选中状态
       if (wasActive) {
-        if (this.items.length > 0) {
-          const firstItem = this.items[0];
+        if (this.$data._items.length > 0) {
+          const firstItem = this.$data._items[0];
           this.internalValue = firstItem.value;
           this.emitChange(firstItem, 0);
         } else {
@@ -208,26 +215,26 @@ export default {
       // // 添加调试，检查 LeapTabs 组件是否接收到新值
       // setTimeout(() => {
       //   console.log('Current tabs state:', {
-      //     items: this.items,
+      //     items: this.$data._items,
       //     internalValue: this.internalValue,
       //     value: this.value
       //   });
       // }, 1000);
     },
     onRemote (query) {
-      if (this.remoteMethod) {
+      if (typeof this.remoteMethod === 'function') {
         return this.remoteMethod(query);
       }
     },
     onChange (val, record) {
       if (val) {
-        const fItem = this.items.find(item => item.value === val);
+        const fItem = this.$data._items.find(item => item.value === val);
         if (fItem) {
           this.tabValue = '';
           this.$message.error('数据重复添加');
           return;
         }
-        this.items.push({
+        this.$data._items.push({
           ...record,
           label: record[this.selectConfig.labelKey],
           value: record[this.selectConfig.valueKey],
@@ -240,8 +247,8 @@ export default {
      */
     async initializeComponent () {
       // 如果有初始数据，使用初始数据
-      if (this.initialItems && this.initialItems.length > 0) {
-        this.initializeItems(this.initialItems);
+      if (this.items && this.items.length > 0) {
+        this.initializeItems(this.items);
         return;
       }
       // 如果有远程加载方法，加载数据
@@ -252,10 +259,11 @@ export default {
     /**
      * 初始化 items
      */
-    initializeItems (items = []) {
-      const processedItems = items.map((item, index) => {
-        const value = item[this.itemConfig.valueKey] || item.value || item.id;
-        const label = item[this.itemConfig.labelKey] || item.label || item.name;
+    initializeItems (data = []) {
+      const processedItems = data.map((item, index) => {
+
+        const value = item[this.itemConfig.valueKey];
+        const label = item[this.itemConfig.labelKey];
 
         const disableClose = this.itemConfig.disableFirst && index === 0;
         return {
@@ -266,7 +274,7 @@ export default {
         };
       });
 
-      this.items = processedItems;
+      this.$data._items = processedItems;
 
       // 自动选中第一项
       if (this.autoSelectFirst && processedItems.length > 0 && !this.internalValue) {

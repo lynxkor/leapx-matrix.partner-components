@@ -139,14 +139,13 @@
         </template>
       </vxe-column>
 
-      <template v-if="readonly"></template>
-      <vxe-column v-else-if="defaultNewRow" title="操作" :width="actionWidth" align="center" fixed="right" :resizable="false">
+      <vxe-column v-if="defaultNewRow" title="操作" :width="actionWidth" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
             <span
               class="action-button btn-edit"
+              :class="{'disabled': disabled}"
               @click="saveRowEdit(row, rowIndex)"
-              :disabled="!isRowEditable(row)"
               v-if="auth.edit"
             >
               保存
@@ -154,7 +153,6 @@
             <span
               class="action-button btn-edit"
               @click="cancelEdit(row, rowIndex)"
-              :disabled="!isRowEditable(row)"
               v-if="auth.edit"
             >
               取消
@@ -165,7 +163,7 @@
             <span
               class="action-button btn-edit"
               @click="editRow(row, rowIndex)"
-              :disabled="!isRowEditable(row)"
+              :class="{'disabled': disabled}"
               v-if="auth.edit"
             >
               编辑
@@ -176,12 +174,14 @@
               @confirm="removeRow(rowIndex)"
               v-if="auth.delete"
             >
-              <span
-                slot="reference"
+              <el-button
                 class="action-button btn-delete"
-              >
+                :class="{'disabled': disabled}"
+                :disabled="disabled"
+                slot="reference"
+                type="text">
                 删除
-              </span>
+              </el-button>
             </el-popconfirm>
             <slot name="btn-after" :row="row" :rowIndex="rowIndex"></slot>
           </template>
@@ -317,6 +317,11 @@ export default {
       type: String,
       default: ''
     },
+    // 禁用模式
+    disabled: {
+      type: Boolean,
+      default: false,
+    }
   },
   data () {
     return {
@@ -342,9 +347,6 @@ export default {
     },
   },
   computed: {
-    readonly () {
-      return !Boolean(this.editConfig);
-    }
   },
   mounted () {
     // 初始化验证规则
@@ -472,6 +474,9 @@ export default {
      * 编辑行
      */
     editRow (row, rowIndex) {
+      if (this.disabled) {
+        return;
+      }
       // 只有当行中有可编辑字段时才激活编辑
       if (this.isRowEditable(row)) {
         // 激活行编辑
@@ -484,6 +489,9 @@ export default {
      * 删除行
      */
     removeRow (index) {
+      if (this.disabled) {
+        return;
+      }
       const removedRow = this.tableData.splice(index, 1)[0];
       const defer = createDefer();
       this.$emit('remove-row', removedRow, index, defer);
@@ -652,7 +660,9 @@ export default {
      * 单行保存
      */
     saveRowEdit: debounce(function (row, rowIndex) {
-
+      if (this.disabled) {
+        return;
+      }
       this.$refs.editTable.validate(row).then((errMap) => {
         if (errMap) {
           return Promise.reject(new Error('验证失败'));
@@ -734,6 +744,10 @@ export default {
     }
     &.btn-delete{
       color:#B91919;
+    }
+    &.disabled{
+      cursor: not-allowed;
+      color: var(--disabled-color);
     }
   }
 }

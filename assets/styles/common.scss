@@ -80,6 +80,10 @@ html[data-vxe-ui-theme="light"] {
   border-color: #EBEEF5;
   background-color: #fff;
 }
+.el-button--text.is-disabled, .el-button--text.is-disabled:hover, .el-button--text.is-disabled:focus{
+  border: 0;
+  background-color: transparent;
+}
 .el-button--small{
   border-radius: 4px;
   padding: 8px 16px;
