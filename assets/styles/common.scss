@@ -398,6 +398,9 @@ html[data-vxe-ui-theme="light"] {
     .el-input__icon {
       line-height: 32px;
     }
+    .m-centralized-view {
+      height: calc(100% + 16px);
+    }
   }
   /* 列表页-搜索项 */
   .ais-search-form {
