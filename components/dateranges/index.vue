@@ -9,6 +9,7 @@
  * @param {Function} changeNewTime - 暴露给父组件的时间变化回调函数，当时间范围变化时触发。
  * @param {Boolean} setDefault - 是否设置默认时间，默认为 `false`。
  * @param {String} deftTime - 默认时间类型（如 "本周"、"本月" 等），仅在 `setDefault` 为 `true` 时生效。
+ * @param {Number} timeRangeLimit - 选择时间段。
  * @param {Number} upToTodayStart - 截至到今天的起始时间，默认为 2018-01-01 的时间戳。
  *
  * @event $attrs - 绑定所有父组件的属性到子组件的 `el-date-picker` 元素上。
@@ -112,6 +113,10 @@ export default {
     deftTime: {
       type: String,
       default: ''
+    },
+    timeRangeLimit: {
+      type: Number,
+      default: 1
     },
     // 截至到今天的起始时间外部处理
     upToTodayStart: {
@@ -242,29 +247,51 @@ export default {
           }
         ],
         onPick: ({ maxDate, minDate }) => {
-          this.minDate = minDate;
+          if (minDate) {
+            this.minDate = minDate;
+            this.maxDate = null;
+          }
+          if (maxDate) {
+            this.maxDate = maxDate;
+          }
         },
+
         disabledDate: (time) => {
-          var mindate2 = new Date('2018/01/01').getTime();
-          return time.getTime() < mindate2;
+          if (this.minDate !== null && this.maxDate === null) {
+            let minMonth = this.minDate.getMonth(),
+              lastYear = new Date(this.minDate).setMonth(minMonth - 3),
+              nextYear = new Date(this.minDate).setMonth(minMonth + 3)
+            // 只能选 minDate 前后3个月的范围
+            return time.valueOf() < lastYear.valueOf() || time.valueOf() > nextYear.valueOf()
+          }
+          return false
         }
       }
     };
   },
   watch: {
-    minDate (e) {
-      this.pickerOptions = {
-        disabledDate: (time) => {
-          var c = e;
-          var a = e.setMonth(e.getMonth() + this.limtNum);
-          var b = c.setMonth(c.getMonth() - this.limtNum);
-          var d = new Date(b).setMonth(new Date(b).getMonth() - this.limtNum);
-          return time.getTime() > a || time.getTime() < d;
-        }
-      };
-    },
+    // minDate (e) {
+    //   this.pickerOptions = {
+    //     disabledDate: (time) => {
+    //       if (!e) {
+    //         return false;
+    //       }// 获取当前选中的月份和年份
+    //       const minYear = this.minDate.getFullYear();
+    //       const minMonth = this.minDate.getMonth();
+    //       // 计算上个月的第一天
+    //       const prevMonthStart = new Date(minYear, minMonth - 1, 1);
+    //       // 计算下个月的最后一天
+    //       const nextMonthEnd = new Date(minYear, minMonth + 2, 0);
+    //       // 禁用不在完整月份范围内的日期
+    //       return time.getTime() < prevMonthStart.getTime() || time.getTime() > nextMonthEnd.getTime();
+    //     }
+    //   };
+    // },
     time2 (e) {
       if (!e) {
+        this.time2 = [];
+        this.minDate = '';
+        this.maxDate = '';
         this.time2 = [];
       } else {
         this.time2 = e;
@@ -277,6 +304,8 @@ export default {
           this.time2 = newVal;
         } else {
           this.time2 = [];
+          this.minDate = '';
+          this.maxDate = '';
         }
       }
     }
@@ -302,7 +331,7 @@ export default {
       if (this.setDefault) {
         // const time = new Date();
         let time = this.unifiedHandlData(0, this.deftTime);
-        console.log(time);
+        console.log('setDefaultTime', time);
         const time1 = formatDateTime(time[0], 'data');
         // console.log('time1', time1);
         const time2 = formatDateTime(time[1], 'data');
@@ -315,9 +344,16 @@ export default {
     },
     changeTime (value) {
       this.$emit('changeNewTime', value);
+      // 当清空选择时，重置minDate和maxDate
+      if (!value || value.length === 0) {
+        this.minDate = '';
+        this.maxDate = '';
+      }
     },
     clearTime () {
       this.time2 = [];
+      this.minDate = '';
+      this.maxDate = '';
     },
     unifiedHandlData (days = 0, type = '') {
       const oneDay = 24 * 60 * 60 * 1000;
@@ -409,6 +445,10 @@ export default {
           // start.setTime(null);
           start.setTime(this.upToTodayStart);
           end.setTime(end.getTime());
+          break;
+        case '最近一周':
+          start.setTime(start.getTime() - 7 * oneDay); // 最近一周开始时间
+          end.setTime(end.getTime() - oneDay); // 当前时间
           break;
 
         default:
