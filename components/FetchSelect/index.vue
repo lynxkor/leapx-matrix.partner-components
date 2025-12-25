@@ -208,6 +208,10 @@ export default {
       this.loading = true;
       try {
         const response = await this.remoteMethod(v ?? this.params);
+        if (!response) {
+          this.loading = false;
+          return;
+        }
         const responseData = response.data || response.records || response || [];
         const formatedData = this.format ?  this.format(responseData) : responseData;
         this.remoteOptions = formatedData.slice(0, this.filterNum);

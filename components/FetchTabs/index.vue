@@ -42,6 +42,7 @@
 
 <template>
   <base-tabs
+    :type="type"
     :items="$data._items"
     :value="internalValue"
     :closeTip="closeTip"
@@ -51,16 +52,23 @@
     >
     <template v-if="!disabled" slot="add-popover">
       <fetch-select
+        v-if="remoteMethod"
         filterable
         clearable
         remote
         reserve-keyword
-        v-model="tabValue"
+        v-model="selectValue"
         :remote-method="onRemote"
-        @change="onChange"
+        @change="onAdd"
         :value-key="selectConfig.valueKey"
         :label-key="selectConfig.labelKey"
         :placeholder="selectConfig.placeholder"
+      />
+      <base-input
+        v-else
+        v-model="inputValue"
+        placeholder="请输入内容"
+        @keyup.enter.native="onInputEnter"
       />
     </template>
   </base-tabs>
@@ -71,13 +79,20 @@ import BaseTabs from '../BaseTabs';
 import FetchSelect from '../FetchSelect';
 import { createDefer } from '../../utils/defer';
 import { debounce } from '../../utils';
+import BaseInput from '../BaseInput';
 
 export default {
   components: {
     BaseTabs,
     FetchSelect,
+    BaseInput,
   },
   props: {
+    // 展示类型
+    type: {
+      type: 'normal' | 'menu' | 'rect',
+      default: 'normal',
+    },
     // 添加 value 支持 v-model
     value: {
       type: [String, Number],
@@ -142,17 +157,18 @@ export default {
     return {
       _items: [],
       _value: '',
-      tabValue: '',
+      selectValue: '',
       loading: false,
+      inputValue: '',
     };
   },
   computed: {
     internalValue: {
       get () {
-        return this.value || this._value;
+        return this.value || this.$data._value;
       },
       set (val) {
-        this._value = val; // 没有v-model情况生效
+        this.$data._value = val; // 没有v-model情况生效
         this.$emit('input', val); // 使v-model生效
       }
     },
@@ -227,11 +243,11 @@ export default {
         return this.remoteMethod(query);
       }
     },
-    onChange (val, record) {
+    onAdd (val, record) {
       if (val) {
         const fItem = this.$data._items.find(item => item.value === val);
         if (fItem) {
-          this.tabValue = '';
+          this.selectValue = '';
           this.$message.error('数据重复添加');
           return;
         }
@@ -241,7 +257,7 @@ export default {
           value: record[this.selectConfig.valueKey],
         });
       }
-      this.tabValue = '';
+      this.selectValue = '';
     },
     /**
      * 初始化 items
@@ -298,6 +314,21 @@ export default {
      */
     async refresh() {
       await this.loadRemoteData();
+    },
+    // 回车
+    onInputEnter() {
+      const val = this.inputValue.trim();
+      this.inputValue = '';
+      // 完成输入
+      if (val.length === 0) {
+        this.$message.info('请输入内容');
+        return;
+      }
+      this.$data._items.push({
+        label: val,
+        value: val,
+      });
+      this.$emit('input-complete', val);
     }
   }
 };

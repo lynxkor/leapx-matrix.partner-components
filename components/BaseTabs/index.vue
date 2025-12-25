@@ -94,6 +94,13 @@
 
 export default {
   props: {
+    // 展示类型，normal: 下划线+关闭图标
+    // menu: 下拉菜单
+    // rect: 边框+关闭图标
+    type: {
+      type: 'normal' | 'menu' | 'rect',
+      default: 'normal',
+    },
     items: {
       type: [Array],
       default: () => [],

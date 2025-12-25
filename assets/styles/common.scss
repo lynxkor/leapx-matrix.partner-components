@@ -666,6 +666,9 @@ html[data-vxe-ui-theme="light"] {
     }
     &-body{
       padding-left: 16px;
+      &.not-commit{
+        color: #9D9F9D;
+      }
     }
     &:last-child{
       border-bottom: none;
