@@ -183,6 +183,15 @@ export function handleBatchStatusChange ({
     }
 
     this.$prompt(promptConfig.message, promptConfig).then(({ value }) => {
+      // 校验输入内容长度
+      if (value && value.length > 100) {
+        this.$message({
+          type: 'error',
+          message: `${statusText}说明不能超过100字!`
+        });
+        return reject(new Error(`${statusText}说明不能超过100字`));
+      }
+
       // 停用操作(targetStatus为0)需要说明，启用操作(targetStatus为1)可以没有说明
       if (!value && targetStatus === 0) { // targetStatus为0表示停用操作
         this.$message({
