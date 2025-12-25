@@ -3,7 +3,7 @@
   使用方式一：
   <fetch-tabs
     v-model="currentVehicleId"
-    :loadParams="{freeMaintenancePolicyId: getId()}"
+    :loadParams="{freeMaintenancePolicyId: _id}"
     :loadData="loadData"
     :itemConfig="{
       valueKey: 'vehicleRegisteredModelId',
@@ -70,6 +70,7 @@
 import BaseTabs from '../BaseTabs';
 import FetchSelect from '../FetchSelect';
 import { createDefer } from '../../utils/defer';
+import { debounce } from '../../utils';
 
 export default {
   components: {
@@ -140,17 +141,18 @@ export default {
   data () {
     return {
       _items: [],
-      vehicleRegisteredModelId: '',
+      _value: '',
       tabValue: '',
+      loading: false,
     };
   },
   computed: {
     internalValue: {
       get () {
-        return this.value || this.vehicleRegisteredModelId;
+        return this.value || this._value;
       },
       set (val) {
-        this.vehicleRegisteredModelId = val; // 没有v-model情况生效
+        this._value = val; // 没有v-model情况生效
         this.$emit('input', val); // 使v-model生效
       }
     },
@@ -160,21 +162,20 @@ export default {
     items: {
       immediate: true,
       handler (newItems) {
-        if (newItems && newItems.length > 0) {
-          this.initializeItems(newItems);
-        }
+        this.initializeItems(newItems);
       }
-    }
+    },
+    loadParams: {
+      handler () {
+        this.loadRemoteData();
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   mounted () {
-    this.initializeComponent();
-    console.log(this.$data)
   },
   methods: {
-    getId () {
-      const id = this.id || this.$route.query.id;
-      return id;
-    },
     emitChange (item, index) {
       this.$emit('change', item, index);
     },
@@ -243,23 +244,12 @@ export default {
       this.tabValue = '';
     },
     /**
-     * 初始化组件
-     */
-    async initializeComponent () {
-      // 如果有初始数据，使用初始数据
-      if (this.items && this.items.length > 0) {
-        this.initializeItems(this.items);
-        return;
-      }
-      // 如果有远程加载方法，加载数据
-      if (this.loadData && typeof this.loadData === 'function') {
-        await this.loadRemoteData();
-      }
-    },
-    /**
      * 初始化 items
      */
     initializeItems (data = []) {
+      if (!Array.isArray(data) || data.length === 0) {
+        return;
+      }
       const processedItems = data.map((item, index) => {
 
         const value = item[this.itemConfig.valueKey];
@@ -286,7 +276,12 @@ export default {
     /**
      * 加载远程数据
      */
-    async loadRemoteData () {
+    loadRemoteData: debounce(async function() {
+      // 是否有远程加载方法，加载数据
+      if (!this.loadData && typeof this.loadData !== 'function') {
+        return;
+      }
+
       try {
         this.loading = true;
         const data = await this.loadData(this.loadParams);
@@ -297,7 +292,13 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
+    }, 300),
+    /**
+     * 手动刷新数据
+     */
+    async refresh() {
+      await this.loadRemoteData();
+    }
   }
 };
 
