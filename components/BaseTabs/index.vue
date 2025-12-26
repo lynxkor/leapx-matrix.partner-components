@@ -38,7 +38,8 @@
         @click="handleClick(item, index)">
         <div class="base-tab-content">
           <span class="name">{{item.label}}</span>
-          <span @click.stop v-if="!disabled">
+          <!-- 关闭按钮 -->
+          <span @click.stop v-if="showCloseBtn">
             <el-popconfirm
               v-show="!item.disableClose"
               :title="closeTip"
@@ -48,6 +49,12 @@
               <i slot="reference" class="iconfont icon-lxppc-close"></i>
             </el-popconfirm>
           </span>
+          <!-- 关闭按钮 -->
+          <DropdownActions
+            v-if="showMenuBtn"
+            :menus="menus"
+            @command="(command) => $emit('command', command, item, index)"
+            />
         </div>
       </div>
     </div>
@@ -67,15 +74,34 @@
             @click="handleClick(item, index)">
             <div class="base-tab-content">
               <span class="name">{{item.label}}</span>
-              <i v-if="!disabled" class="iconfont icon-lxppc-close" @click="handleClose(item, moreStartIndex + index)"></i>
+              <!-- 关闭按钮 -->
+              <span @click.stop v-if="showCloseBtn">
+                <el-popconfirm
+                  v-show="!item.disableClose"
+                  :title="closeTip"
+                  confirm-button-type="danger"
+                  @confirm="handleClose(item, moreStartIndex + index)"
+                >
+                  <i slot="reference" class="iconfont icon-lxppc-close"></i>
+                </el-popconfirm>
+              </span>
+              <!-- 关闭按钮 -->
+               <DropdownActions
+                v-if="showMenuBtn"
+                :menus="menus"
+                @command="(command) => $emit('command', command, item, index)"
+                />
             </div>
           </div>
         </div>
+        <!-- 查看更多 -->
         <div v-show="moreStartIndex <= items.length - 1" class="base-tab-more" slot="reference">
           <i class="iconfont icon-lxppc-t-more"></i>
         </div>
+        <!-- 查看更多 -->
       </el-popover>
-      <!-- add -->
+
+      <!-- 添加按钮 -->
        <el-popover
         v-if="!disabled"
         placement="bottom-end"
@@ -87,12 +113,17 @@
           <i class="iconfont icon-lxppc-plus"></i>
         </div>
       </el-popover>
+      <!-- 添加按钮 -->
     </div>
   </div>
 </template>
 <script>
 
+import DropdownActions from './DropdownActions';
 export default {
+  components: {
+    DropdownActions,
+  },
   props: {
     // 展示类型，normal: 下划线+关闭图标
     // menu: 下拉菜单
@@ -100,6 +131,11 @@ export default {
     type: {
       type: 'normal' | 'menu' | 'rect',
       default: 'normal',
+    },
+    // type = 'menu' 时使用，下拉菜单功能
+    menus: {
+      type: [Array], // {label, value}
+      default: () => ([]),
     },
     items: {
       type: [Array],
@@ -124,17 +160,30 @@ export default {
       resizeObserver: null,
     };
   },
+  computed: {
+    showCloseBtn () {
+      return !this.disabled && (this.type === 'normal' || this.type === 'rect');
+    },
+    showMenuBtn () {
+      return this.type === 'menu';
+    }
+  },
   watch: {
     items: {
       deep: true,
       handler (newItems, oldItems) {
-        this.updateMoreStartIndex();
+        this.updateLayout();
       }
+    },
+    disabled: {
+      handler () {
+        this.updateLayout();
+      },
     }
   },
   mounted () {
     this.initResizeObserver();
-    this.updateMoreStartIndex();
+    this.updateLayout();
   },
   updated () {
   },
@@ -202,6 +251,10 @@ export default {
       if (el) {
         this.tabRefs[index] = el;
       }
+    },
+    // 更新布局
+    updateLayout () {
+      this.updateMoreStartIndex();
     },
   },
   beforeDestroy () {
@@ -281,7 +334,7 @@ export default {
       vertical-align: middle;
       color: #3B3E3B;
     }
-    .icon-lxppc-close {
+    .iconfont {
       vertical-align: middle;
       margin-left: 4px;
       color: #9D9F9D;

@@ -42,6 +42,7 @@
 
 <template>
   <base-tabs
+    ref="baseTabs"
     :type="type"
     :items="$data._items"
     :value="internalValue"
@@ -49,6 +50,8 @@
     :disabled="disabled"
     @change="onTabChange"
     @close="onTabClose"
+    v-bind="$attrs"
+    v-on="$listeners"
     >
     <template v-if="!disabled" slot="add-popover">
       <fetch-select
@@ -82,6 +85,7 @@ import { debounce } from '../../utils';
 import BaseInput from '../BaseInput';
 
 export default {
+  inheritAttrs: false,
   components: {
     BaseTabs,
     FetchSelect,
@@ -118,7 +122,7 @@ export default {
       type: Function,
       default: null
     },
-    // 数据映射配置
+    // 数据映射配置, (loadData数据进行映射)
     itemConfig: {
       type: Object,
       default: () => ({
@@ -133,7 +137,7 @@ export default {
       type: Function,
       default: null
     },
-    // 下拉选择配置
+    // 下拉搜索配置，remoteMethod数据进行映射
     selectConfig: {
       type: Object,
       default: () => ({
@@ -251,11 +255,23 @@ export default {
           this.$message.error('数据重复添加');
           return;
         }
-        this.$data._items.push({
+        const newItem = {
           ...record,
           label: record[this.selectConfig.labelKey],
           value: record[this.selectConfig.valueKey],
-        });
+        };
+
+        if (this.$listeners.add) {
+          const defer = createDefer();
+          this.$emit('add', newItem, defer);
+          defer.promise.then(v => {
+            newItem.value = v;
+            this.$data._items.push(newItem);
+            this.$message.success('添加成功');
+          });
+        } else {
+          this.$data._items.push(newItem);
+        }
       }
       this.selectValue = '';
     },
@@ -317,18 +333,23 @@ export default {
     },
     // 回车
     onInputEnter() {
-      const val = this.inputValue.trim();
+      const label = this.inputValue.trim();
       this.inputValue = '';
       // 完成输入
-      if (val.length === 0) {
+      if (label.length === 0) {
         this.$message.info('请输入内容');
         return;
       }
-      this.$data._items.push({
-        label: val,
-        value: val,
+      // 新增时用custom_前缀区分
+      const value = 'custom_' + label;
+      this.onAdd(value, {
+        [this.selectConfig.labelKey]: label,
+        [this.selectConfig.valueKey]: value,
       });
-      this.$emit('input-complete', val);
+    },
+    // 手动更新布局
+    updateLayout () {
+      this.$refs.baseTabs.updateLayout();
     }
   }
 };
