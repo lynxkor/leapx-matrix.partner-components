@@ -36,6 +36,12 @@ export default {
     fixTableConfig () {
       if (this.optionObj?.dataProp) {
         const operate = this.optionObj.dataProp.find(item => item.props === 'operate');
+        if (!operate) {
+          return;
+        }
+        if (!operate.buttons) {
+          operate.buttons = [];
+        }
         // 没有编辑权限
         if (!this.canAddOrUpdate) {
           operate.buttons = operate.buttons.filter(item => item.name !== '编辑');
