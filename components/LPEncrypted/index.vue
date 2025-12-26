@@ -4,15 +4,13 @@
 
   详情页使用
   <LPEncrypted
-    @change="v => info.ownerPhone = v"
-    :value="info.ownerPhone"
+    :value.sync="info.ownerPhone"
     :decryptMethod="() => getDetailDecryptField(info.id, 'ownerPhone')"
   />
 
   通过slot注入内容
   <LPEncrypted
-    @change="v => form.vin = v"
-    :value="form.vin"
+    :value.sync="form.vin"
     :decryptMethod="() => getDetailDecryptField(form.id, 'vin')"
   >
     <el-input
@@ -47,6 +45,14 @@ export default {
       required: true
     },
   },
+  watch: {
+    value (val) {
+      // 外部页面数据刷新时，重置状态
+      if (this.encryptedData === val) {
+        this.isEncryptedView = true;
+      }
+    }
+  },
   data () {
     return {
       isEncryptedView: true, // 默认加密状态
@@ -62,21 +68,21 @@ export default {
         // 如果已经解密过，直接切换视图
         if (this.decryptedData !== null) {
           this.isEncryptedView = false;
-          this.$emit('change', this.decryptedData);
+          this.$emit('update:value', this.decryptedData);
           return;
         }
         try {
           // 执行解密
           this.decryptedData = await this.decryptMethod(this.value);
           this.isEncryptedView = false;
-          this.$emit('change', this.decryptedData);
+          this.$emit('update:value', this.decryptedData);
         } catch (error) {
           this.$emit('error', error);
           console.error('解密失败:', error);
         }
       } else {
         this.isEncryptedView = true;
-        this.$emit('change', this.encryptedData);
+        this.$emit('update:value', this.encryptedData);
       }
     }
   }
