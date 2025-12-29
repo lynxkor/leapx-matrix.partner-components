@@ -27,13 +27,23 @@
 </script>
 
 <template>
-  <div class="base-tabs-wrapper" ref="wrapper">
+  <div
+    class="base-tabs-wrapper"
+    :class="{
+      normal: isNormal,
+      rect: isRect,
+    }"
+    ref="wrapper">
     <div class="base-tabs" ref="leapTabs">
       <div
         v-for="(item, index) in items"
         :key="item.value"
         class="base-tab"
-        :class="{active: item.value === value}"
+        :class="{
+          active: item.value === value,
+          line: isNormal || isMenu,
+          rect: isRect,
+        }"
         :ref="el => setTabRef(el, index)"
         @click="handleClick(item, index)">
         <div class="base-tab-content">
@@ -51,7 +61,7 @@
           </span>
           <!-- 关闭按钮 -->
           <DropdownActions
-            v-if="showMenuBtn"
+            v-if="isMenu"
             :menus="menus"
             @command="(command) => $emit('command', command, item, index)"
             />
@@ -70,7 +80,11 @@
             v-for="(item, index) in items.slice(moreStartIndex)"
             :key="item.value"
             class="base-tab"
-            :class="{active: item.value === value}"
+            :class="{
+              active: item.value === value,
+              line: isNormal || isMenu,
+              rect: isRect,
+            }"
             @click="handleClick(item, index)">
             <div class="base-tab-content">
               <span class="name">{{item.label}}</span>
@@ -87,7 +101,7 @@
               </span>
               <!-- 关闭按钮 -->
                <DropdownActions
-                v-if="showMenuBtn"
+                v-if="isMenu"
                 :menus="menus"
                 @command="(command) => $emit('command', command, item, index)"
                 />
@@ -164,9 +178,15 @@ export default {
     showCloseBtn () {
       return !this.disabled && (this.type === 'normal' || this.type === 'rect');
     },
-    showMenuBtn () {
+    isNormal () {
+      return this.type === 'normal';
+    },
+    isMenu () {
       return this.type === 'menu';
-    }
+    },
+    isRect () {
+      return this.type === 'rect';
+    },
   },
   watch: {
     items: {
@@ -274,7 +294,7 @@ export default {
   position: relative;
   height: 42px;
   overflow: hidden;
-  &::after{
+  &.normal::after{
     content: ' ';
     width: 100%;
     position: absolute;
@@ -282,6 +302,12 @@ export default {
     bottom: 0px;
     display: block;
     border-bottom: 1px solid #E6E6E5;
+  }
+  &.rect{
+    height: 30px;
+    .base-tabs-actions{
+      height: 28px;
+    }
   }
   .base-tabs{
     display: flex;
@@ -324,6 +350,7 @@ export default {
   height: 40px;
   line-height: 40px;
   margin-right: 20px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -348,13 +375,42 @@ export default {
       }
     }
   }
-  &.active {
+  &.line.active {
     .base-tab-content{
       border-bottom-color: var(--leap-green);
       position: relative;
       z-index: 1;
       .name{
         color: var(--leap-green);
+      }
+    }
+  }
+  &.rect {
+    height: 28px;
+    line-height: 24px;
+    margin-right: 8px;
+    .base-tab-content{
+      padding: 0 16px;
+      line-height: 24px;
+      border-radius: 4px;
+      border: 1px solid #E6E6E5;
+      .name{
+        position: relative;
+        top: -1px;
+      }
+      .iconfont{
+        position: relative;
+        top: -1px;
+      }
+    }
+    &.active {
+      .base-tab-content{
+        border: 1px solid var(--leap-green);
+        position: relative;
+        z-index: 1;
+        .name{
+          color: var(--leap-green);
+        }
       }
     }
   }

@@ -81,8 +81,8 @@
 import BaseTabs from '../BaseTabs';
 import FetchSelect from '../FetchSelect';
 import { createDefer } from '../../utils/defer';
-import { debounce } from '../../utils';
 import BaseInput from '../BaseInput';
+import { renderTemplate } from './format';
 
 export default {
   inheritAttrs: false,
@@ -130,6 +130,7 @@ export default {
         labelKey: 'name',
         disableCloseKey: 'disableClose',
         disableFirst: true,
+        labelFormat: '', // 是否需要对tab的展示内容进行格式化，例如 '${name}($code)' = '名称(编码)'
       })
     },
     // 搜索获取下拉数据
@@ -144,6 +145,7 @@ export default {
         valueKey: 'id',
         labelKey: 'name',
         placeholder: '请选择',
+        labelFormat: '', // 是否需要对tab的展示内容进行格式化，例如 '${name}($code)' = '名称(编码)'
       })
     },
     // 关闭确认提示
@@ -255,9 +257,12 @@ export default {
           this.$message.error('数据重复添加');
           return;
         }
+
+        const label = this.selectConfig.labelFormat
+        ? renderTemplate(record, this.selectConfig.labelFormat) : record[this.selectConfig.labelKey];
         const newItem = {
           ...record,
-          label: record[this.selectConfig.labelKey],
+          label,
           value: record[this.selectConfig.valueKey],
         };
 
@@ -268,7 +273,9 @@ export default {
             newItem.value = v;
             this.$data._items.push(newItem);
             this.$message.success('添加成功');
-          });
+          }).catch((e) => {
+            console.log(e);
+          })
         } else {
           this.$data._items.push(newItem);
         }
@@ -280,12 +287,14 @@ export default {
      */
     initializeItems (data = []) {
       if (!Array.isArray(data) || data.length === 0) {
+        this.$data._items = [];
         return;
       }
       const processedItems = data.map((item, index) => {
 
         const value = item[this.itemConfig.valueKey];
-        const label = item[this.itemConfig.labelKey];
+        const label = this.itemConfig.labelFormat
+        ? renderTemplate(item, this.itemConfig.labelFormat) : item[this.itemConfig.labelKey];
 
         const disableClose = this.itemConfig.disableFirst && index === 0;
         return {
@@ -308,7 +317,7 @@ export default {
     /**
      * 加载远程数据
      */
-    loadRemoteData: debounce(async function() {
+    async loadRemoteData () {
       // 是否有远程加载方法，加载数据
       if (!this.loadData && typeof this.loadData !== 'function') {
         return;
@@ -317,14 +326,15 @@ export default {
       try {
         this.loading = true;
         const data = await this.loadData(this.loadParams);
-        this.initializeItems(data || []);
+        const _data = Array.isArray(data) ? data : data.records;
+        this.initializeItems(_data || []);
       } catch (error) {
         console.error('加载数据失败:', error);
         this.$emit('error', error);
       } finally {
         this.loading = false;
       }
-    }, 300),
+    },
     /**
      * 手动刷新数据
      */
