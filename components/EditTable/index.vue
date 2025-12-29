@@ -381,6 +381,7 @@ export default {
       const componentMap = {
         input: 'input',
         ElInput: 'el-input',
+        ElInputNumber: 'el-input-number',
         ElSelect: 'el-select',
         ElDatePicker: 'el-date-picker',
         ElSwitch: 'el-switch',
