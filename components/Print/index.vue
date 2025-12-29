@@ -42,7 +42,7 @@ export default {
       currentComponent: null, // 动态组件
       printObj: {
         id: 'printArea',
-        popTitle: this.title,
+        popTitle: '',
         beforeOpenCallback (vue) {
           console.log('打开之前');
         },
@@ -58,7 +58,7 @@ export default {
 
   methods: {
     async show (options = {}) {
-      const { title, template, id, data } = options;
+      const { title = '', template, id, data } = options;
       this.printObj.popTitle = title;
       this.id = id;
       this.data = data;

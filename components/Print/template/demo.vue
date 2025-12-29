@@ -438,7 +438,7 @@
 
 <script>
 // 对应业务的接口
-import { getDetail } from '@/api/claimreturn/claim/basic/serviceActivityVehicle';
+// import { getDetail } from '@/api/claimreturn/claim/basic/serviceActivityVehicle';
 
 export default {
   props: {
@@ -466,9 +466,9 @@ export default {
   },
   methods: {
     getData () {
-      getDetail(this.id).then(res => {
-        this.info = res;
-      });
+      // getDetail(this.id).then(res => {
+      //   this.info = res;
+      // });
     }
   },
 };
