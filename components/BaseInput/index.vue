@@ -2,9 +2,7 @@
   <el-input
     v-bind="mergedAttrs"
     v-on="$listeners"
-  >
-    <slot></slot>
-  </el-input>
+  />
 </template>
 
 <script>
@@ -27,6 +25,7 @@ export default {
       }
       return {
         maxLength,
+        type: this.type,
         ...this.$attrs
       };
     }
