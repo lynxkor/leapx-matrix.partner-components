@@ -105,7 +105,8 @@
             popper-class="vxe-table--ignore-clear"
             v-bind="column.editRender.props"
             v-model="row[column.field]"
-            @change="d => onValueChange(row, column, d)"
+            :options="getFetchSelectOptions(row, column)"
+            @change="(...args) => onValueChange(row, column, ...args)"
             @select="d => onValueSelect(row, column, d)"
           >
             <template v-if="column.editRender.name === 'ElSelect'">
@@ -113,7 +114,7 @@
               <template v-if="column.editRender.multiRow">
                 <el-option
                   class="multi-row"
-                  v-for="option in options[column.field]"
+                  v-for="option in getOptions(row, column)"
                   :key="option.value"
                   :value="option.value"
                   :label="option.label"
@@ -125,7 +126,7 @@
               <!-- 单行展示 -->
               <template v-else>
                 <el-option
-                  v-for="option in options[column.field]"
+                  v-for="option in getOptions(row, column)"
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
@@ -335,17 +336,16 @@ export default {
   },
   watch: {
     data: {
-      handler (newVal) {
+      handler (newVal, oldVal) {
         this.tableData = [...(newVal || [])].map((item) => this.setKey(item));
-
         try {
           // 深拷贝当前行数据
-          this.originalData = JSON.parse(JSON.stringify(this.tableData));
+          this.originalData = this.copy(this.tableData);
         } catch(e) {
           this.originalData = [];
         }
       },
-      deep: true,
+      deep: false,
       immediate: true,
     },
   },
@@ -361,7 +361,29 @@ export default {
      */
     setKey(item) {
       item.__key__ = 'row_' + Math.random();
+      if (!item.__options__) {
+        item.__options__ = {}
+      }
       return item;
+    },
+    /**
+     * FetchSelect的下拉选项
+     */
+    getFetchSelectOptions(row, column) {
+      if (row.__options__[column.field]) {
+        return row.__options__[column.field];
+      }
+      return null;
+    },
+    /**
+     * 获取下拉数据
+     */
+    getOptions (row, column) {
+      const options = this.getFetchSelectOptions(row, column);
+      if (options) {
+        return options;
+      }
+      return this.options[column.field];
     },
     /**
      * 增加勾选
@@ -426,12 +448,14 @@ export default {
      */
     isNeedSave (row, rowIndex) {
       const datum = this.originalData.find(item => item.__key__ === row.__key__);
-
+      // 新增的数据直接返回true
       if (!datum) {
         return true;
       }
 
-      const keys = Object.keys(this.defaultNewRow || {});
+      // 对defaultNewRow上的key对应的值进行一一比较，存在不相等返回true
+      let keys = this.defaultNewRow ? Object.keys(this.defaultNewRow || {}) : Object.keys(datum);
+
       for (let key of keys) {
         if (datum[key] !== row[key]) {
           return true;
@@ -575,7 +599,7 @@ export default {
     /**
      * 值变更事件
      */
-    onValueChange (row, column, value) {
+    onValueChange (row, column, value, ...args) {
       const option = this.options[column.property]?.find(option => option.value === value);
       if (option) {
         for (const key in option) {
@@ -585,7 +609,7 @@ export default {
       if (!row[column.property]) {
         row[column.property] = value;
       }
-      this.$emit('value-change', { row, column, value: row[column.property] });
+      this.$emit('value-change', { row, column, value: row[column.property] }, ...args);
     },
 
     /**
@@ -648,10 +672,17 @@ export default {
       this.clearEdit();
       const datum = this.originalData.find(item => item.__key__ === row.__key__);
       if (datum) {
-        this.tableData.splice(rowIndex, 1, JSON.parse(JSON.stringify(datum)));
+        this.tableData.splice(rowIndex, 1, this.copy(datum));
       } else {
         // 对于新增的行取消操作，直接删除该行
         this.tableData.splice(rowIndex, 1);
+      }
+    },
+    copy (data) {
+      try {
+        return JSON.parse(JSON.stringify(data));
+      } catch(e) {
+        //
       }
     },
     /**
@@ -679,12 +710,12 @@ export default {
           if (id && typeof id === 'string') {
             row.id = id;
           }
-
+          const newRow = this.copy(row);
           const datum = this.originalData.find(item => item.__key__ === row.__key__);
           if (!datum) {// 新增
-            this.originalData.splice(rowIndex, 0, row);
+            this.originalData.splice(rowIndex, 0, newRow);
           } else { // 更新
-            this.originalData.splice(rowIndex, 1, row);
+            this.originalData.splice(rowIndex, 1, newRow);
           }
           //
           this.clearEdit();
