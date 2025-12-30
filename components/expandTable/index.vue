@@ -86,7 +86,7 @@
       @checkbox-change="checkboxChange"
       @checkbox-all="selectAllCheckboxChange"
     >
-      <vxe-column type="seq" title="结算顺序" :width="120" drag-sort />
+      <vxe-column type="seq" title="顺序" :width="120" drag-sort v-if="dragSort" />
       <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
       <vxe-column
         v-for="column in columns"
@@ -159,6 +159,26 @@
               >
                 {{ button.label }}
               </span>
+              <span
+                class="action-button btn-edit"
+                @click="editRow(row, rowIndex)"
+                v-if="auth.edit"
+              >
+                编辑
+              </span>
+              <slot name="btn-middle" :row="row" :rowIndex="rowIndex"></slot>
+              <el-popconfirm
+                :title="delTitle"
+                @confirm="removeRow(rowIndex)"
+                v-if="auth.delete"
+              >
+              <el-button
+                class="action-button btn-delete"
+                slot="reference"
+                type="text">
+                删除
+              </el-button>
+            </el-popconfirm>
           </template>
         </template>
       </vxe-column>
@@ -278,7 +298,13 @@ export default {
     enableSingleRowSave: {
       type: Boolean,
       default: false,
-    }
+    },
+    // 首列拖拽
+    dragSort: {
+      type: Boolean,
+      default: false,
+
+    },
   },
   data () {
     return {
