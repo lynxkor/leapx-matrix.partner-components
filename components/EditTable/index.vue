@@ -96,6 +96,8 @@
         :min-width="column.minWidth"
         :drag-sort="column.drag"
         :edit-render="column.editable ? (column.editRender || {}) : null"
+        :formatter="column.formatter"
+        :tableField="column.tableField"
       >
         <template #edit="{ row, column }">
           <component
@@ -343,7 +345,8 @@ export default {
           this.originalData = [];
         }
       },
-      immediate: true
+      deep: true,
+      immediate: true,
     },
   },
   computed: {
@@ -572,15 +575,15 @@ export default {
     /**
      * 值变更事件
      */
-    onValueChange (row, column, d) {
-      const option = this.options[column.property]?.find(option => option.value === d);
+    onValueChange (row, column, value) {
+      const option = this.options[column.property]?.find(option => option.value === value);
       if (option) {
         for (const key in option) {
           row[key] = option[key];
         }
       }
       if (!row[column.property]) {
-        row[column.property] = d;
+        row[column.property] = value;
       }
       this.$emit('value-change', { row, column, value: row[column.property] });
     },
@@ -766,3 +769,91 @@ export default {
   }
 }
 </style>
+
+<!-- column -->
+<!-- [
+  "type",
+  "property",
+  "field",
+  "title",
+  "width",
+  "minWidth",
+  "maxWidth",
+  "resizable",
+  "fixed",
+  "align",
+  "headerAlign",
+  "footerAlign",
+  "showOverflow",
+  "showHeaderOverflow",
+  "showFooterOverflow",
+  "className",
+  "headerClassName",
+  "footerClassName",
+  "formatter",
+  "footerFormatter",
+  "padding",
+  "verticalAlign",
+  "sortable",
+  "sortBy",
+  "sortType",
+  "sortMethod",
+  "remoteSort",
+  "filters",
+  "filterMultiple",
+  "filterMethod",
+  "filterResetMethod",
+  "filterRecoverMethod",
+  "filterRender",
+  "rowGroupNode",
+  "treeNode",
+  "dragSort",
+  "rowResize",
+  "cellType",
+  "cellRender",
+  "editRender",
+  "contentRender",
+  "headerExportMethod",
+  "exportMethod",
+  "footerExportMethod",
+  "titleHelp",
+  "titlePrefix",
+  "titleSuffix",
+  "aggFunc",
+  "params",
+  "id",
+  "parentId",
+  "visible",
+  "defaultParentId",
+  "halfVisible",
+  "defaultVisible",
+  "defaultFixed",
+  "defaultAggGroup",
+  "defaultAggFunc",
+  "checked",
+  "halfChecked",
+  "disabled",
+  "level",
+  "rowSpan",
+  "colSpan",
+  "order",
+  "sortTime",
+  "sortNumber",
+  "renderSortNumber",
+  "renderAggFn",
+  "renderFixed",
+  "renderVisible",
+  "renderWidth",
+  "renderHeight",
+  "renderResizeWidth",
+  "renderAutoWidth",
+  "resizeWidth",
+  "renderLeft",
+  "renderArgs",
+  "model",
+  "renderHeader",
+  "renderCell",
+  "renderFooter",
+  "renderData",
+  "slots"
+] -->
