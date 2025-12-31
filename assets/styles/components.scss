@@ -1,0 +1,40 @@
+// 自定义离开提示框
+.ais-leave-tips,
+.ais-enable-tips {
+  color: var(--aisDefaultTextColor);
+  font-size: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  .el-message-box__header {
+    display: none;
+  }
+  .el-message-box__btns {
+    padding: 0;
+  }
+  .el-message-box__content {
+    padding: 10px;
+    color: var(--aisDefaultTextColor);
+  }
+  .iconfont {
+    font-size: 16px;
+    margin-right: 5px;
+    color: var(--themColor);
+    font-weight: normal;
+  }
+  &-main {
+    font-weight: 700;
+    color: var(--aisDefaultTextColor);
+  }
+  &-sub {
+    color: #9d9f9d;
+    font-size: 14px;
+    margin-top: 3px;
+  }
+  .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+  }
+  .el-button {
+    font-weight: 400;
+  }
+}

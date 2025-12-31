@@ -1,0 +1,49 @@
+// 样式变量
+html[data-vxe-ui-theme="light"] {
+  --vxe-ui-font-primary-color: var(--themColor);
+  --vxe-ui-font-primary-lighten-color: var(--themColor);
+  --vxe-ui-font-color: var(--aisDefaultTextColor);
+  --vxe-ui-table-border-color: #e6e6e5;
+  --vxe-ui-table-validate-error-color: #b91919;
+}
+
+:root {
+  // 主题色
+  --leap-color-primary: #009100;
+  --leap-color-primary-light-1: #1A9C1A;
+  --leap-color-primary-light-2: #33A733;
+  --leap-color-primary-light-3: #4DB24D;
+  --leap-color-primary-light-4: #66BD66;
+  --leap-color-primary-light-5: #80C880;
+  --leap-color-primary-light-6: #99D399;
+  --leap-color-primary-light-7: #B3DEB3;
+  --leap-color-primary-light-8: #CCE9CC;
+  --leap-color-primary-light-9: #E6F4E6;
+  --leap-color-primary-dark-1: #008200;
+  --leap-color-primary-dark-2: #007400;
+  --leap-color-primary-dark-3: #006500;
+  --leap-color-primary-dark-4: #005700;
+  --leap-color-primary-dark-5: #004800;
+  --leap-color-primary-dark-6: #003A00;        
+  --leap-color-primary-dark-7: #002B00;
+  --leap-color-primary-dark-8: #001D00;
+  --leap-color-primary-dark-9: #0C0E0C;
+  // 中性色
+  --leap-color-default: #3B3E3B;
+  --leap-color-default-dark-1: #0A0E0A;
+  --leap-color-default-light-1: #6C6E6C;
+  --leap-color-default-light-2: #9D9F9D;
+  --leap-color-default-light-3: #CECFCE;
+  --leap-color-default-light-4: #E6E6E5;
+  --leap-color-default-light-5: #F8F7F7;
+  --leap-color-default-light-6: #F8F8F8;
+  // 辅助色
+  --leap-color-danger: #B91919;
+  --leap-color-danger-dark-1: #A61616;
+  --leap-color-success: #009100;
+  --leap-color-success-dark-1: #008200;
+  --leap-color-warning: #C8A12B;
+  --leap-color-warning-dark-1: #B49127;
+  --leap-color-link: #4C4CD6;
+  --leap-color-link-dark-1: #4444C0;
+} 

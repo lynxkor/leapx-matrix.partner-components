@@ -1,0 +1,53 @@
+/* 根据屏幕宽度适配 */
+@media screen and (min-width: 1920px) {
+  .page-common {
+    .ais-search-form {
+      .el-form-item {
+        width: 25%;
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  .page-common-detail .el-form-item {
+    width: 50%;
+  }
+}
+
+@media screen and (max-width: 1139px) {
+  .page-common {
+    .el-form-item__label {
+      text-align: left !important;
+    }
+    .ais-search-form .el-form-item {
+      flex-direction: column;
+    }
+  }
+}
+
+/* container query */
+@container (width < 700px) {
+  .page-common-edit .el-form-item {
+    width: 100%;
+  }
+}
+
+@container (width >= 700px) and (width < 1080px) {
+  .page-common-edit .el-form-item {
+    width: 50%;
+  }
+}
+
+@container (width >= 1080px) and (width < 1600px) {
+  .page-common-edit .el-form-item {
+    width: 33%;
+  }
+}
+
+@container (width >= 1600px) {
+  .page-common-edit .el-form-item {
+    width: 25%;
+  }
+}
