@@ -280,10 +280,11 @@ export default {
     handleBlur () {
       this.$emit('blur');
     },
-    handleFocus () {
+    handleFocus (e) {
       if (this.remote && (!this.initialLoaded || this.computedOptions.length === 0)) {
         this.loadRemoteMethod();
       }
+      this.$emit('focus', e.target.value);
     },
     handleClear () {
       if (this.remote) {

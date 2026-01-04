@@ -19,6 +19,7 @@
  * @param {String} columns[].editRender.name - 编辑组件名称
  * @param {Boolean} columns[].editRender.multiRow - 编辑组件 选择下拉组件 是否显示两行
  * @param {Object} columns[].editRender.props - 编辑组件属性
+ * @param {Object} columns[].editRender.$listeners - 编辑组件事件
  * @param {Function} columns[].formatter - 列数据格式化函数
  * @param {Function} columns[].drag - 开启拖拽排序
  * @param {Array} columns[].rules - 列验证规则
@@ -104,6 +105,7 @@
             :is="getEditorComponent(column.editRender.name)"
             popper-class="vxe-table--ignore-clear"
             v-bind="column.editRender.props"
+            v-on="listeners(row, column)"
             v-model="row[column.field]"
             :options="getFetchSelectOptions(row, column)"
             @change="(...args) => onValueChange(row, column, ...args)"
@@ -725,6 +727,22 @@ export default {
 
       });
     }, 300),
+    // 编辑组件事件监听
+    listeners (row, column) {
+      const listeners = column.editRender.$listeners || {};
+      const keys = Object.keys(listeners);
+      const events = keys.reduce((ans, key) => {
+        ans[key] = (val) => {
+          listeners[key](val, row, column);
+        }
+        return ans;
+      }, {});
+      return events;
+    },
+    updateRow (row) {
+      // !TODO 这里需要立即刷新
+      table.updateData(row, row)
+    }
   }
 };
 </script>
