@@ -227,6 +227,7 @@ export default {
   components: {
     // 简单异步加载
     FetchSelect: () => import('../FetchSelect'),
+    BaseInput: () => import('../BaseInput'),
   },
   props: {
     editConfig: {
@@ -415,6 +416,7 @@ export default {
         ElRate: 'el-rate',
         ElAutocomplete: 'el-autocomplete',
         FetchSelect: 'fetch-select',
+        BaseInput: 'base-input',
       };
       return componentMap[name] || 'input';
     },
@@ -459,6 +461,7 @@ export default {
       let keys = this.defaultNewRow ? Object.keys(this.defaultNewRow || {}) : Object.keys(datum);
 
       for (let key of keys) {
+        // 这里使用宽松不相等，兼容switch组件('1' == true)
         if (datum[key] !== row[key]) {
           return true;
         }
@@ -733,15 +736,17 @@ export default {
       const keys = Object.keys(listeners);
       const events = keys.reduce((ans, key) => {
         ans[key] = (val) => {
-          listeners[key](val, row, column);
+          if (typeof listeners[key] === 'function') {
+            listeners[key](val, row, column);
+          }
         }
         return ans;
       }, {});
       return events;
     },
+    // 用于组件联动时快速更新下拉数据
     updateRow (row) {
-      // !TODO 这里需要立即刷新
-      table.updateData(row, row)
+      this.$refs.editTable.updateData(row, row);
     }
   }
 };
