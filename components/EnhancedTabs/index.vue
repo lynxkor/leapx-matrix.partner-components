@@ -1,43 +1,50 @@
 <script>
-/*
-  使用方式一：
-  <fetch-tabs
-    v-model="currentVehicleId"
-    :loadParams="{freeMaintenancePolicyId: _id}"
-    :loadData="loadData"
-    :itemConfig="{
-      valueKey: 'vehicleRegisteredModelId',
-      labelKey: 'vehicleRegisteredModelName',
-      disableCloseKey: 'disableClose',
-      disableFirst: true,
-    }"
-    closeTip="确定删除该公共车型吗？"
-    :remoteMethod="remoteMethod"
-    :selectConfig="{
-      valueKey: 'id',
-      labelKey: 'registeredModelName',
-      placeholder: '请输入公告车型代码/名称',
-    }"
-  />
-
-  data() {
-    return {
-      currentVehicleId: '',
-    }
-  },
-  methods: {
-    loadData (params) {
-      return freeMaintenancePolicyPartDetailList(params);
-    },
-    remoteMethod (query) {
-      return vehicleSalesVersionList({
-        registeredModelNameLike: query,
-        pageSize: 20,
-        pageNum: 1,
-      });
-    },
-  }
-  */
+/**
+ * 增强型标签页组件
+ *
+ * @module EnhancedTabs
+ * @description 支持远程加载、动态添加、搜索过滤等高级功能的标签页组件
+ *
+ * @example
+ * // 基本用法
+ * <enhanced-tabs v-model="activeTab" :items="tabItems" @change="onTabChange" />
+ *
+ * @example
+ * // 远程数据加载
+ * <enhanced-tabs
+ *   :load-data="fetchTabsData"
+ *   :load-params="queryParams"
+ *   :item-config="{
+ *     valueKey: 'id',
+ *     labelKey: 'name'
+ *   }"
+ * />
+ *
+ * @example
+ * // 支持搜索添加
+ * <enhanced-tabs
+ *   :remote-method="searchItems"
+ *   :select-config="{
+ *     placeholder: '搜索并添加标签页'
+ *   }"
+ *   @add="onTabAdd"
+ * />
+ */
+/**
+ * 组件属性定义
+ * @typedef {Object} EnhancedTabsProps
+ * @property {'normal'|'menu'|'rect'} type - 标签页展示类型
+ * @property {String|Number} value - 当前激活的标签页值，支持 v-model 双向绑定
+ * @property {Array} items - 标签页数据项数组
+ * @property {Boolean} disabled - 是否禁用标签页操作（添加、关闭等）
+ * @property {Object} loadParams - 远程数据加载参数
+ * @property {Function} loadData - 远程数据加载方法，用于初始化标签页数据
+ * @property {Object} itemConfig - 数据映射配置，用于格式化 loadData 返回的数据
+ * @property {Function} remoteMethod - 远程搜索方法，用于搜索并添加标签页
+ * @property {Object} selectConfig - 下拉搜索配置，用于映射 remoteMethod 返回的数据
+ * @property {String} closeTip - 关闭标签页时的确认提示信息
+ * @property {Boolean} autoSelectFirst - 是否自动选中第一项标签页
+ */
 </script>
 
 <template>
@@ -85,6 +92,7 @@ import BaseInput from '../BaseInput';
 import { renderTemplate } from './format';
 
 export default {
+  name: 'EnhancedTabs',
   inheritAttrs: false,
   components: {
     BaseTabs,
@@ -180,13 +188,19 @@ export default {
     },
   },
   watch: {
-    // 监听初始数据变化
+    /**
+     * 监听初始数据变化
+     * @param {Array} newItems - 新的标签页数据
+     */
     items: {
       immediate: true,
       handler (newItems) {
         this.initializeItems(newItems);
       }
     },
+    /**
+     * 监听加载参数变化
+     */
     loadParams: {
       handler () {
         this.loadRemoteData();
