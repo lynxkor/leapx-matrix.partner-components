@@ -1,12 +1,3 @@
-// 样式变量
-html[data-vxe-ui-theme="light"] {
-  --vxe-ui-font-primary-color: var(--themColor);
-  --vxe-ui-font-primary-lighten-color: var(--themColor);
-  --vxe-ui-font-color: var(--aisDefaultTextColor);
-  --vxe-ui-table-border-color: #e6e6e5;
-  --vxe-ui-table-validate-error-color: #b91919;
-}
-
 :root {
   // 主题色
   --leap-color-primary: #009100;
@@ -47,3 +38,12 @@ html[data-vxe-ui-theme="light"] {
   --leap-color-link: #4C4CD6;
   --leap-color-link-dark-1: #4444C0;
 } 
+
+// 样式变量
+html[data-vxe-ui-theme="light"] {
+  --vxe-ui-font-primary-color: var(--leap-color-primary);
+  --vxe-ui-font-primary-lighten-color: var(--leap-color-primary);
+  --vxe-ui-font-color: var(--leap-color-default);
+  --vxe-ui-table-border-color: #e6e6e5;
+  --vxe-ui-table-validate-error-color: #b91919;
+}

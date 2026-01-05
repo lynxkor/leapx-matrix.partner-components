@@ -18,7 +18,7 @@
   }
   /* 列表页-搜索项 */
   .ais-search-form {
-    border-bottom: 1px solid #e6e6e5;
+    border-bottom: 1px solid var(--leap-color-default-light-4);
     display: flex;
     flex-wrap: wrap;
     padding-bottom: 4px;
@@ -83,7 +83,7 @@
     width: 700px;
     margin-bottom: 20px;
     padding-bottom: 6px;
-    // border-bottom: 1px solid #E6E6E5;
+    // border-bottom: 1px solid var(--leap-color-default-light-4);
     &-header{
       margin-bottom: 15px;
       display: flex;
@@ -91,7 +91,7 @@
       align-items: center;
       h2{
         font-size: 16px;
-        color: #333;
+        color: var(--leap-color-default-dark-1);
       }
       .iconfont {
         font-size: 14px;
@@ -126,7 +126,7 @@
   .el-footer{
     text-align: center;
     line-height: 60px;
-    border-top: 1px solid #E6E6E5;
+    border-top: 1px solid var(--leap-color-default-light-4);
     .el-button{
       width: 150px;
       font-weight: 400;
@@ -135,13 +135,19 @@
   .el-form-item{
     margin-bottom: 12px;
   }
+  .el-form-item__label {
+    color: var(--leap-color-default-light-1);
+  }
+  .el-form-item__content{
+    color: var(--leap-color-default);
+  }
 }
 
 /* 通用详情页样式 */
 .page-common-detail {
   padding: 20px;
   .el-descriptions-item__label{
-    color: #0A0E0A;
+    color: var(--leap-color-default-dark-1);
   }
   .common-title{
     display: flex;
@@ -149,7 +155,7 @@
     align-items: center;
     margin-bottom: 20px;
     h2 {
-      color: #0A0E0A;
+      color: var(--leap-color-default-dark-1);
       font-size: 20px;
       font-weight: 500;
       max-width: 600px;
@@ -172,7 +178,7 @@
       align-items: center;
       h2{
         font-size: 16px;
-        color: #333;
+        color: var(--leap-color-default-dark-1);
       }
   }
   &:last-child{
@@ -192,13 +198,13 @@
     display: inline-flex;
   }
   .el-form-item__label {
-    color: #6C6E6C;
+    color: var(--leap-color-default-light-1);
     line-height: 1.5;
     padding-right: 0px;
   }
   .el-form-item__content{
     flex: 1;
-    color: var(--aisDefaultTextColor);
+    color: var(--leap-color-default);
     line-height: 1.5;
   }
   .form-item-full{
@@ -231,7 +237,7 @@
     background-color: #fff;
     padding-top: 16px;
     h2 {
-      color: #0A0E0A;
+      color: var(--leap-color-default-dark-1);
       font-size: 20px;
       font-weight: 500;
       max-width: 600px;
@@ -240,7 +246,7 @@
       overflow: hidden;
     }
     h5 {
-      color: #6C6E6C;
+      color: var(--leap-color-default-light-1);
       font-size: 12px;
       font-weight: normal;
       margin-top: 8px;
@@ -252,7 +258,7 @@
   }
   .common-section{
     margin: 20px 0;
-    // border-bottom: 1px solid #E6E6E5;
+    // border-bottom: 1px solid var(--leap-color-default-light-4);
     &-header{
       margin-bottom: 15px;
       display: flex;
@@ -260,7 +266,7 @@
       align-items: center;
       h2{
         font-size: 16px;
-        color: var(--aisDefaultTextColor);
+        color: var(--leap-color-default);
         cursor: pointer;
         &::before {
           content: "\e651";
@@ -284,7 +290,7 @@
     &-body{
       padding-left: 16px;
       &.not-commit{
-        color: #9D9F9D;
+        color: var(--leap-color-default-light-2);
       }
     }
     &:last-child{
@@ -313,7 +319,7 @@
   }
 
   .el-form-item__label {
-    color: #333;
+    color: var(--leap-color-default);
   }
   .el-input__inner {
     height: 32px!important;
@@ -336,7 +342,7 @@
   .el-footer{
     text-align: center;
     line-height: 60px;
-    border-top: 1px solid #E6E6E5;
+    border-top: 1px solid var(--leap-color-default-light-4);
     .el-button{
       width: 150px;
       font-weight: 400;

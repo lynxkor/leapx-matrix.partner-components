@@ -1,7 +1,7 @@
 // 自定义离开提示框
 .ais-leave-tips,
 .ais-enable-tips {
-  color: var(--aisDefaultTextColor);
+  color: var(--leap-color-default);
   font-size: 14px;
   padding: 16px;
   border-radius: 8px;
@@ -13,20 +13,20 @@
   }
   .el-message-box__content {
     padding: 10px;
-    color: var(--aisDefaultTextColor);
+    color: var(--leap-color-default);
   }
   .iconfont {
     font-size: 16px;
     margin-right: 5px;
-    color: var(--themColor);
+    color: var(--leap-color-primary);
     font-weight: normal;
   }
   &-main {
     font-weight: 700;
-    color: var(--aisDefaultTextColor);
+    color: var(--leap-color-default);
   }
   &-sub {
-    color: #9d9f9d;
+    color: var(--leap-color-default-light-2);
     font-size: 14px;
     margin-top: 3px;
   }
