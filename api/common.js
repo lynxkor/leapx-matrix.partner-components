@@ -301,3 +301,11 @@ export function sparePartList (data) {
 export function sparePartListShort (data) {
   return api.jsonPost('/sp/web/basic/sparePart/list', data);
 }
+
+/**
+   * 备件主数据门店备件库位表列表查询
+   * @param {*} data
+   */
+export function locationListShort (data) {
+  return api.jsonPost('/sp/web/warehouse/location/list', data);
+}
