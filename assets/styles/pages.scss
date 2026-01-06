@@ -146,6 +146,7 @@
 /* 通用详情页样式 */
 .page-common-detail {
   padding: 20px;
+  container: card-container / inline-size;
   .el-descriptions-item__label{
     color: var(--leap-color-default-dark-1);
   }
