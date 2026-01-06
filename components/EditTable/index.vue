@@ -376,6 +376,9 @@ export default {
       if (row.__options__[column.field]) {
         return row.__options__[column.field];
       }
+      if (column?.editRender?.props?.options) {
+        return column.editRender.props.options;
+      }
       return null;
     },
     /**
