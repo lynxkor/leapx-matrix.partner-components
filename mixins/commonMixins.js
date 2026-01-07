@@ -3,7 +3,10 @@
 // 页面都注入pageType = 'detail' || 'edit' || 'list'，根据页面类型选择性注入方法
 export default {
   data () {
+    const isEditing = this.$route.query.isEditing === 'true';
     return {
+      isEditing,
+      breadcrumbTitle: isEditing ? '编辑' : '详情',
       isFirstActivated: true,
       pickerOptions: {
         shortcuts: [{
@@ -49,8 +52,11 @@ export default {
     // keep-alive 缓存过的页面，激活时重新设置面包屑
     if (this.$route.meta.keepAlive && this.pageTitle) {
       this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
-      this.getData();
+      this.getData?.();
     }
+  },
+  created () {
+    this.initBreadcrumb();
   },
   mounted () {
     // 统一给高级编辑页标题注入展开缩起逻辑
@@ -70,6 +76,18 @@ export default {
     }
   },
   methods: {
+    /**
+     * 页面包屑导航
+     */
+    initBreadcrumb () {
+      const inEditPage = location.pathname.endsWith('/edit');
+      if (this.pageType === 'list') {
+        this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
+      } else if (this.pageType === 'edit' && inEditPage) {
+        const id = this.$route.query.id;
+        this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle, `${id ? this.breadcrumbTitle : '新建'}`]);
+      }
+    },
     addHeaderActions (e) {
       const parent = e.target.parentNode;
       const el = parent.nextSibling;

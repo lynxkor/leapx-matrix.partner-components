@@ -14,7 +14,7 @@
   4. 即可使用
 -->
 <template>
-   <el-dialog title="" width="1080px" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print">
+   <el-dialog title="" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print">
       <div class="print-content">
         <!-- 动态组件 -->
         <component :is="currentComponent" :id="id" :data="data" />
@@ -36,6 +36,7 @@ export default {
   },
   data () {
     return {
+      width: 1080,
       dialogVisible: false,
       id: '',
       data: {},
@@ -58,10 +59,13 @@ export default {
 
   methods: {
     async show (options = {}) {
-      const { title = '', template, id, data } = options;
+      const { title = '', template, id, data, width } = options;
       this.printObj.popTitle = title;
       this.id = id;
       this.data = data;
+      if (width) {
+        this.width = width;
+      }
       // 动态加载组件
       try {
         const component = await this.loadComponent(template);
