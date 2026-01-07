@@ -29,6 +29,36 @@
  *   }"
  *   @add="onTabAdd"
  * />
+ *
+ * @example
+ * 复杂案例
+ * <enhanced-tabs
+ *   ref="tabs"
+ *   type="rect"
+ *   v-model="partId"
+ *   :load-params="loadParams"
+ *   :load-data="loadData"
+ *   :autoSelectFirst="true"
+ *   :item-config="{
+ *     valueKey: 'id',
+ *     labelKey: 'repairItemName',
+ *     disableCloseKey: 'disableClose',
+ *     disableFirst: false,
+ *     labelFormat: '${repairItemName}(${repairItemCode})',
+ *   }"
+ *   :remote-method="repairRemote"
+ *   :select-config="{
+ *     valueKey: 'id',
+ *     labelKey: 'name',
+ *     labelFormat: '${name}(${code})',
+ *     placeholder: '输入项目零件代码、名称',
+ *   }"
+ *   close-tip="确定删除该项目零件吗？"
+ *   :disabled="!isEditing"
+ *   @remove="onRemove"
+ *   @add="onTabAdd"
+ *   :menus="menus"
+ *   />
  */
 /**
  * 组件属性定义
@@ -37,7 +67,7 @@
  * @property {String|Number} value - 当前激活的标签页值，支持 v-model 双向绑定
  * @property {Array} items - 标签页数据项数组
  * @property {Boolean} disabled - 是否禁用标签页操作（添加、关闭等）
- * @property {Object} loadParams - 远程数据加载参数
+ * @property {Object} loadParams - 远程数据加载参数，作为loadData的请求参数
  * @property {Function} loadData - 远程数据加载方法，用于初始化标签页数据
  * @property {Object} itemConfig - 数据映射配置，用于格式化 loadData 返回的数据
  * @property {Function} remoteMethod - 远程搜索方法，用于搜索并添加标签页
@@ -203,6 +233,7 @@ export default {
      */
     loadParams: {
       handler () {
+        this.internalValue = '';
         this.loadRemoteData();
       },
       immediate: true,
@@ -248,15 +279,6 @@ export default {
           this.emitChange(null, -1);
         }
       }
-
-      // // 添加调试，检查 LeapTabs 组件是否接收到新值
-      // setTimeout(() => {
-      //   console.log('Current tabs state:', {
-      //     items: this.$data._items,
-      //     internalValue: this.internalValue,
-      //     value: this.value
-      //   });
-      // }, 1000);
     },
     onRemote (query) {
       if (typeof this.remoteMethod === 'function') {
