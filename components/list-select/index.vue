@@ -263,8 +263,17 @@ export default {
       deep: true,
       handler (val, oldVal) {
         this.ids = val;
-        if (val && !oldVal && this.options.length === 0) {
-          this.remoteMethod();
+        if (val && !oldVal) {
+          console.log('有新值,旧值为空' + val + '旧' + oldVal + Boolean(oldVal));
+          if (this.options.length === 0) {
+            this.remoteMethod();
+          } else {
+            // 如果 options已经有了,判断 options带不带这一顶
+            let ele = this.options.find(item => item[this.valueKey] === val);
+            if (!ele) {
+              this.remoteMethod();
+            }
+          }
         }
       }
     }
