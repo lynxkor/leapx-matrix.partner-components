@@ -163,8 +163,10 @@ export default {
           setTimeout(() => {
             downloadExcel(res?.failExcelUrl, res?.fileName || res?.businessType || '模板.xlsx');
           }, 2000);
+          this.$emit('getData');
         } else {
           this.$message.success('文件上传成功');
+          this.$emit('getData');
         }
         // 公共清理逻辑
         this.fileList = [];
