@@ -40,8 +40,16 @@ export default {
             picker.$emit('pick', [start, end]);
           }
         }]
-      }
+      },
+      formRefs: [], // 存储表单引用
     };
+  },
+  watch: {
+    isEditing: {
+      handler (newVal) {
+        this.updateFormRefs();
+      }
+    }
   },
   activated () {
     // 首次激活时，不执行
@@ -66,6 +74,7 @@ export default {
         el[i].addEventListener('click', this.addHeaderActions);
       }
     }
+    this.updateFormRefs();
   },
   beforeDestroy () {
     if (this.pageType === 'edit') {
@@ -75,7 +84,24 @@ export default {
       }
     }
   },
+  provide () {
+    if (this.pageType === 'edit') {
+      return {
+        formRefs: this.formRefs
+      };
+    }
+    return {};
+  },
   methods: {
+    updateFormRefs () {
+      if (this.pageType === 'edit') {
+        Object.keys(this.$refs).forEach((key) => {
+          if (key.startsWith('ruleForm') && !this.formRefs.includes(this.$refs[key])) {
+            this.formRefs.push(this.$refs[key]);
+          }
+        });
+      }
+    },
     /**
      * 页面包屑导航
      */
