@@ -61,14 +61,32 @@
     font-size: 14px;
   }
   .ais-actions {
-    padding: 20px 0 15px 0;
-    min-height: 67px;
+    margin: 20px 0 16px 0;
     button{
       font-weight: 400;
     }
     .iconfont {
       margin-right: 4px;
       font-size: 14px;
+    }
+  }
+  .ais-tabs {
+    height: 40px;
+    border-bottom: 1px solid var(--leap-color-default-light-4);
+    margin: 8px 0 16px 0;
+    color: var(--leap-color-default);
+    &-item {
+      display: inline-block;
+      margin-right: 20px;
+      line-height: 38px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 400;
+      &.active {
+        border-bottom: 2px solid var(--leap-color-primary);
+        color: var(--leap-color-primary);
+        font-weight: 600;
+      }
     }
   }
 }
@@ -255,6 +273,14 @@
     .iconfont{
       margin-right: 4px;
       font-size: 14px;
+    }
+  }
+  .common-title-extend{
+    display: block;
+    .common-title-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   }
   .common-section{
