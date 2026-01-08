@@ -67,6 +67,9 @@ export default {
       type: String,
       default: '导入'
     },
+    businessParams: {
+      type: String
+    }
     // templateUrl: {
     //   type: String,
     //   default: ''
@@ -142,13 +145,19 @@ export default {
         //     Authorization: `Bearer ${localStorage.getItem('token')}`
         //   }
         // });
-        const res = await importExcelConfirmFile(formData, {
+        // 构建 config 对象并根据条件添加 businessParams
+        const config = {
           id: this.id,
           token: localStorage.getItem('token'),
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-        });
+        };
+        // 如果存在 businessParams，则添加到 config 中；否则不包含该字段
+        if (this.businessParams) {
+          config.businessParams = this.businessParams;
+        }
+        const res = await importExcelConfirmFile(formData, config);
         if (res.failExcelUrl) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
           this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
           setTimeout(() => {
