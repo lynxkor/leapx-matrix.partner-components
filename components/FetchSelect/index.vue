@@ -79,6 +79,7 @@
     collapse-tags
     :remote="remote"
     :remote-method="loadRemoteMethod"
+    popper-class="ais-el-select"
   >
     <el-option
       v-for="item in computedOptions"
@@ -87,6 +88,10 @@
       :value="item[valueKey]"
       :disabled="item.disabled"
     >
+      <template v-if="subLabelKey">
+        <div> {{ item[labelKey] }}</div>
+        <div class="el-select-sub-text"> {{ item[subLabelKey] }}</div>
+      </template>
     </el-option>
   </el-select>
 </template>
@@ -130,6 +135,11 @@ export default {
     labelKey: {
       type: String,
       default: 'message'
+    },
+    // 子级标签key值
+    subLabelKey: {
+      type: String,
+      default: null
     },
     // 直接传入选项数据，如果有这个值则不调用request方法
     options: {
@@ -303,7 +313,20 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.el-select {
+.ais-el-select {
   width: 100%;
+  .el-select-dropdown__item {
+    height: auto;
+    position: relative;
+  }
+  .el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
+    top: 0;
+  }
+  .el-select-sub-text {
+    font-size: 12px;
+    color: var(--leap-color-default-light-2);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
 }
 </style>
