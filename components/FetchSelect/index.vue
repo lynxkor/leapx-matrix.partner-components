@@ -318,9 +318,9 @@ export default {
   .el-select-dropdown__item {
     height: auto;
     position: relative;
-  }
-  .el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
-    top: 0;
+    &.selected::after {
+      top: 0;
+    }
   }
   .el-select-sub-text {
     font-size: 12px;
