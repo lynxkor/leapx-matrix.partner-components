@@ -8,13 +8,13 @@
     @close="handleClose"
   >
     <div class="upload-modal-step">
-      1.模版下载：
+      1.模板下载：
       <span
         class="upload-modal-link"
         @click="downloadTemplate"
-      >模板文件</span>
+      >{{ downloadTitle }}</span>
     </div>
-    <div class="upload-modal-step">2.上传填好的模版</div>
+    <div class="upload-modal-step">2.上传填好的模板</div>
     <el-upload
       ref="upload"
       :limit="1"
@@ -66,6 +66,11 @@ export default {
     title: {
       type: String,
       default: '导入'
+    },
+    // 下载模板标题
+    downloadTitle: {
+      type: String,
+      default: '模板文件'
     },
     businessParams: {
       type: String
