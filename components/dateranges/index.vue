@@ -259,8 +259,8 @@ export default {
         disabledDate: (time) => {
           if (this.minDate !== null && this.maxDate === null) {
             let minMonth = this.minDate.getMonth(),
-              lastYear = new Date(this.minDate).setMonth(minMonth - 3),
-              nextYear = new Date(this.minDate).setMonth(minMonth + 3)
+              lastYear = new Date(this.minDate).setMonth(minMonth - this.limtNum),
+              nextYear = new Date(this.minDate).setMonth(minMonth + this.limtNum)
             // 只能选 minDate 前后3个月的范围
             return time.valueOf() < lastYear.valueOf() || time.valueOf() > nextYear.valueOf()
           }
