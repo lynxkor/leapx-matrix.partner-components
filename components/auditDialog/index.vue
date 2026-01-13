@@ -1,9 +1,26 @@
-
+<script>
+/**
+  * 审批弹窗
+  * <audit-dialog
+  *   ref="auditDialogRef"
+  *  :auditTitle="'初审审批'"
+  *   @audit="handleAudit"
+  * />
+  *
+  * auditDialogShow () {
+  *    this.$refs.auditDialogRef.show();
+  *  },
+  *  handleAudit () {
+  *    this.$refs.auditDialogRef.show();
+  *  },
+  *
+*/
+</script>
 <template>
   <el-dialog
     :visible.sync="auditShow"
     append-to-body
-    title="审批"
+    :title="auditTitle"
     width="500px"
     @close="close"
   >
@@ -42,6 +59,12 @@
 <script>
 export default {
   name: 'AuditDialog',
+  props: {
+    auditTitle: {
+      type: String,
+      default: '审批'
+    }
+  },
   data () {
     return {
       auditShow: false,

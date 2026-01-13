@@ -39,7 +39,7 @@
   }
 }
 
-@container (width >= 700px) and (width < 1080px) {
+@container (width >= 700px) and (width < 1000px) {
   .page-common-edit, .page-common-detail {
     .el-form-item {
       width: 50%;
@@ -50,7 +50,7 @@
   }
 }
 
-@container (width >= 1080px) and (width < 1600px) {
+@container (width >= 1000px) and (width < 1600px) {
   .page-common-edit, .page-common-detail {
     .el-form-item {
       width: 33%;

@@ -169,7 +169,7 @@
               <slot name="btn-middle" :row="row" :rowIndex="rowIndex"></slot>
               <el-popconfirm
                 :title="delTitle"
-                @confirm="removeRow(rowIndex)"
+                @confirm="removeRow(row, rowIndex)"
                 v-if="auth.delete"
               >
               <el-button
@@ -462,16 +462,8 @@ export default {
     /**
      * 删除行
      */
-    removeRow (index) {
-      const removedRow = this.tableData.splice(index, 1)[0];
-      const defer = createDefer();
-      this.$emit('remove-row', removedRow, index, defer);
-      defer.promise.then(() => {
-        //
-      }).catch(() => {
-        // 删除失败，数据回退
-        this.tableData.splice(index, 0, removedRow);
-      })
+    removeRow (val, index) {
+      this.$emit('remove-row', val, index);
     },
 
     /**
@@ -552,7 +544,7 @@ export default {
       if (!row[column.property]) {
         row[column.property] = d;
       }
-      this.$emit('value-change', { row, column, value: row[column.property] });
+      this.$emit('value-change', { row, column, value: row[column.property], option });
     },
 
     /**

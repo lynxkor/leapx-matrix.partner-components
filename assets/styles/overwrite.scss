@@ -92,6 +92,9 @@
   background-color: var(--leap-color-primary-dark-1);
   border-color: var(--leap-color-primary-dark-1);
 }
+.el-button--primary.is-plain{
+  background-color: #fff;
+}
 .el-popconfirm {
   margin: 6px;
   .el-popconfirm__main{
@@ -109,12 +112,13 @@
   padding-right: 10px;
 }
 .el-input__inner, .el-range-input,.el-textarea__inner {
+  color: var(--leap-color-default);
   border-color: var(--leap-color-default-light-4);
   padding: 0 8px;
+  font-family: PingFang SC;
   &::placeholder {
     color: var(--leap-color-default-light-2) !important;
     font-weight: 400 !important;
-    font-family: PingFang SC;
   }
   &:hover {
     border-color: var(--leap-color-default-light-2);
@@ -125,9 +129,14 @@
 }
 .el-textarea__inner {
   margin: 4px 0;
+  padding: 4px 8px;
 }
 .el-select__input {
   margin-left: 8px;
+}
+.el-radio {
+  color: var(--leap-color-default);
+  font-weight: 400;
 }
 .el-select:hover .el-input__inner {
   border-color: var(--leap-color-default-light-2);
@@ -158,13 +167,18 @@
 .el-select-dropdown__list {
   padding: 8px 4px;
 }
-.el-input.is-disabled .el-input__inner {
+.el-input.is-disabled .el-input__inner,
+.el-radio__input.is-disabled .el-radio__inner,
+.el-textarea.is-disabled .el-textarea__inner {
   background-color: var(--leap-color-default-light-5);
   border-color: var(--leap-color-default-light-4);
   color: var(--leap-color-default-light-3);
   &::placeholder {
     color: var(--leap-color-default-light-3)!important;
   }
+}
+.el-radio__input.is-disabled + span.el-radio__label {
+  color: var(--leap-color-default-light-3);
 }
 .el-textarea .el-input__count {
   line-height: 1;
@@ -206,6 +220,8 @@
 
 // 下拉框与按钮组合样式
 .ais-select-group {
+  display: flex;
+  align-items: center;
   .el-input__inner {
     border-radius: 4px 0 0 4px;
   }
@@ -213,6 +229,9 @@
     &:first-of-type {
       border-radius: 0 4px 4px 0;
     }
+  }
+  .el-icon-circle-close{
+    line-height: 32px;
   }
 }
 
