@@ -193,7 +193,10 @@ export default {
 
     // 窗口大小变化处理（兼容模式）
     handleResize () {
-      this.calculateLayout();
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = setTimeout(() => {
+        this.calculateLayout();
+      }, 100);
     }
   }
 };
