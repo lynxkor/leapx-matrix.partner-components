@@ -47,7 +47,9 @@ export default {
   watch: {
     isEditing: {
       handler (newVal) {
-        this.updateFormRefs();
+        this.$nextTick(() => {
+          this.updateFormRefs();
+        });
       }
     }
   },
