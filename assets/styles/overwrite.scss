@@ -76,7 +76,7 @@
 }
 .el-button.is-disabled, .el-button.is-disabled:hover, .el-button.is-disabled:focus {
   color: var(--leap-color-default-light-3);
-  border-color: #EBEEF5;
+  border-color: var(--leap-color-default-light-4);
   background-color: #fff;
 }
 .el-button--text.is-disabled, .el-button--text.is-disabled:hover, .el-button--text.is-disabled:focus{
@@ -176,6 +176,11 @@
   &::placeholder {
     color: var(--leap-color-default-light-3)!important;
   }
+}
+.el-input-group__append, .el-input-group__prepend {
+  background-color: var(--leap-color-default-light-5);
+  border-color: var(--leap-color-default-light-4);
+  color: var(--leap-color-default-light-2);
 }
 .el-radio__input.is-disabled + span.el-radio__label {
   color: var(--leap-color-default-light-3);

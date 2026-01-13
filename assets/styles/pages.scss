@@ -353,6 +353,7 @@
   }
   .el-form-item__content {
     flex: 1;
+    color: var(--leap-color-default);
   }
   .el-form-item{
     width: 33.3%;
@@ -362,7 +363,7 @@
   }
 
   .el-form-item__label {
-    color: var(--leap-color-default);
+    color: var(--leap-color-default-light-1);
   }
   .el-input__inner {
     height: 32px!important;
