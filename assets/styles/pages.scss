@@ -62,6 +62,7 @@
   }
   .ais-actions {
     margin: 20px 0 16px 0;
+    min-height: 24px;
     button{
       font-weight: 400;
     }
@@ -163,7 +164,7 @@
 
 /* 通用详情页样式 */
 .page-common-detail {
-  padding: 20px;
+  padding: 16px;
   container: card-container / inline-size;
   .el-descriptions-item__label{
     color: var(--leap-color-default-dark-1);
@@ -185,6 +186,9 @@
     .iconfont{
       margin-right: 4px;
       font-size: 14px;
+    }
+    .el-button{
+      font-weight: 400;
     }
   }
   .common-section{
@@ -244,7 +248,7 @@
   container: card-container / inline-size;
   min-width: 300px;
   .el-main{
-    padding: 0 20px;
+    padding: 0 16px;
   }
   .common-title{
     display: flex;
@@ -274,6 +278,9 @@
       margin-right: 4px;
       font-size: 14px;
     }
+    .el-button{
+      font-weight: 400;
+    }
   }
   .common-title-extend{
     display: block;
@@ -288,9 +295,12 @@
         font-style: normal;
       }
     }
+    .el-button{
+      font-weight: 400;
+    }
   }
   .common-section{
-    margin: 20px 0;
+    margin: 16px 0;
     // border-bottom: 1px solid var(--leap-color-default-light-4);
     &-header{
       margin-bottom: 15px;
@@ -299,7 +309,7 @@
       align-items: center;
       h2{
         font-size: 16px;
-        color: var(--leap-color-default);
+        color: var(--leap-color-default-dark-1);
         cursor: pointer;
         &::before {
           content: "\e651";
@@ -312,7 +322,7 @@
       &.fold{
         margin-bottom: 0;
         h2::before {
-          content: "\e649";
+          content: "\e64a";
         }
       }
       .iconfont {
@@ -348,7 +358,7 @@
     width: 33.3%;
     display: flex;
     margin-right: 0;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .el-form-item__label {
