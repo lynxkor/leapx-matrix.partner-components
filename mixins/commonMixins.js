@@ -89,10 +89,13 @@ export default {
   provide () {
     if (this.pageType === 'edit') {
       return {
-        formRefs: this.formRefs
+        formRefs: this.formRefs,
+        moduleKey: this.moduleKey || '',
       };
     }
-    return {};
+    return {
+      moduleKey: this.moduleKey || '',
+    };
   },
   methods: {
     updateFormRefs () {
