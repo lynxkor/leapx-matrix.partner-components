@@ -544,7 +544,7 @@ export default {
       if (!row[column.property]) {
         row[column.property] = d;
       }
-      this.$emit('value-change', { row, column, value: row[column.property] });
+      this.$emit('value-change', { row, column, value: row[column.property], option });
     },
 
     /**
