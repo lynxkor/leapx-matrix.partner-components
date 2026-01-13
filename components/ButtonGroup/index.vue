@@ -122,7 +122,6 @@ export default {
       let totalWidth = 0;
       let visibleCount = 0;
 
-      console.log('calculateLayout', containerWidth);
       const availableWidth = containerWidth - 40;
 
       // 计算可以显示多少个按钮
@@ -139,8 +138,6 @@ export default {
       // 设置可见和隐藏的按钮
       this.visibleButtons = this.originalButtons.slice(0, visibleCount);
       this.hiddenButtons = this.originalButtons.slice(visibleCount);
-
-      console.log(this.visibleButtons, this.hiddenButtons);
 
       // 更新按钮显示状态
       this.updateButtonVisibility();

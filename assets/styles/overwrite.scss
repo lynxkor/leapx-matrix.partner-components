@@ -199,6 +199,7 @@
 .el-form-item__error {
   color: var(--leap-color-danger);
   padding-top: 0;
+  transform: translateY(-3px);
 }
 .el-tag.el-tag--info {
   background-color: var(--leap-color-default-light-5);
