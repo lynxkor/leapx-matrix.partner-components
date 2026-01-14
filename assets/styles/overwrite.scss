@@ -95,6 +95,15 @@
 .el-button--primary.is-plain{
   background-color: #fff;
 }
+.el-button--danger {
+  background-color: var(--leap-color-danger);
+  border-color: var(--leap-color-danger);
+}
+.el-button--danger:hover, .el-button--danger:focus {
+  background-color: var(--leap-color-danger-dark-1);
+  border-color: var(--leap-color-danger-dark-1);
+}
+
 .el-popconfirm {
   margin: 6px;
   .el-popconfirm__main{
