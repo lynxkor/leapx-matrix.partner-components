@@ -344,3 +344,36 @@ export function formatDateTime (val, type) {
   var s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
   return type === 'data' ? Y + '-' + M + '-' + D : type === 'time' ? h + ':' + m + ':' + s : Y + '-' + M + '-' + D + ' ' + h + ':' + m + ':' + s;
 };
+
+/**
+ * 获取dom实际宽度 （不受缩放影响）
+ */
+export function getDomStyle (dom) {
+  if (!dom) {
+    return 0;
+  }
+  const style = window.getComputedStyle(dom);
+  const width = parseFloat(style.width);
+  const marginLeft = parseFloat(style.marginLeft);
+  const marginRight = parseFloat(style.marginRight);
+  const marginBottom = parseFloat(style.marginBottom);
+  const marginTop = parseFloat(style.marginTop);
+  const paddingLeft = parseFloat(style.paddingLeft);
+  const paddingRight = parseFloat(style.paddingRight);
+  const paddingTop = parseFloat(style.paddingTop);
+  const paddingBottom = parseFloat(style.paddingBottom);
+  const minWidth = parseFloat(style.minWidth);
+
+  return {
+    width,
+    marginLeft,
+    marginRight,
+    marginTop,
+    marginBottom,
+    paddingLeft,
+    paddingRight,
+    paddingTop,
+    paddingBottom,
+    minWidth,
+  };
+}

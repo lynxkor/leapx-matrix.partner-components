@@ -10,6 +10,7 @@
       v-if="hasHiddenButtons"
       @command="handleDropdownCommand"
       class="more-dropdown"
+      ref="dropdownRef"
     >
       <el-button class="more-button" size="small">
         <i class="iconfont icon-lxppc-t-more"></i>
@@ -30,6 +31,8 @@
 </template>
 
 <script>
+import { getDomStyle } from '../../utils/index';
+
 export default {
   name: 'ButtonGroup',
   props: {
@@ -66,7 +69,7 @@ export default {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     } else {
-      window.removeEventListener('resize', this.calculateLayout);
+      window.removeEventListener('resize', this.handleResize);
     }
   },
 
@@ -99,13 +102,10 @@ export default {
     // 缓存按钮宽度
     cacheButtonWidths () {
       if (!this.$refs.visibleButtons) return;
-
       const buttonElements = this.$refs.visibleButtons.querySelectorAll('.group-button, .el-button');
       this.buttonWidths = Array.from(buttonElements).map(el => {
-        const style = window.getComputedStyle(el);
-        const marginLeft = parseFloat(style.marginLeft) || 0;
-        const marginRight = parseFloat(style.marginRight) || 0;
-        return el.offsetWidth + marginLeft + marginRight;
+        const style = getDomStyle(el);
+        return Math.ceil(style.width + style.marginLeft + style.marginRight);
       });
     },
 
@@ -117,21 +117,26 @@ export default {
         return;
       }
 
-      const container = this.$refs.container;
-      const containerWidth = container.offsetWidth;
+      const style = getDomStyle(this.$refs.container);
+      const containerWidth = style.width;
       let totalWidth = 0;
       let visibleCount = 0;
 
-      console.log('calculateLayout', containerWidth);
-      const availableWidth = containerWidth - 40;
+      const availableWidth = containerWidth;
 
       // 计算可以显示多少个按钮
       for (let i = 0; i < this.buttonWidths.length; i++) {
         const buttonWidth = this.buttonWidths[i];
-        if (totalWidth + buttonWidth <= availableWidth - 20) {
+        if (totalWidth + buttonWidth <= availableWidth) {
           totalWidth += buttonWidth;
           visibleCount++;
         } else {
+          // TODO 计算获取
+          const dropdownSize = 60; // 预留下拉菜单宽度(width + margin), 如果下拉菜单有变，需要修改
+          // 检查最后一个按钮是否需要隐藏
+          if (containerWidth - totalWidth <= dropdownSize) {
+            visibleCount = Math.max(0, visibleCount - 1);
+          }
           break;
         }
       }
@@ -139,8 +144,6 @@ export default {
       // 设置可见和隐藏的按钮
       this.visibleButtons = this.originalButtons.slice(0, visibleCount);
       this.hiddenButtons = this.originalButtons.slice(visibleCount);
-
-      console.log(this.visibleButtons, this.hiddenButtons);
 
       // 更新按钮显示状态
       this.updateButtonVisibility();
@@ -193,10 +196,12 @@ export default {
 
     // 窗口大小变化处理（兼容模式）
     handleResize () {
-      clearTimeout(this.resizeTimer);
-      this.resizeTimer = setTimeout(() => {
-        this.calculateLayout();
-      }, 100);
+      this.calculateLayout();
+    },
+
+    // 获取按钮宽度缓存，外部调用
+    getWidth () {
+      return this.buttonWidths.reduce((total, width) => total + width, 0);
     }
   }
 };

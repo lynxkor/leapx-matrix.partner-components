@@ -130,5 +130,23 @@ export default {
         el.style.display = 'none';
       }
     },
+    // 跳转到【门店详情】
+    goToDealer (dealerCode) {
+      if (window.__POWERED_BY_QIANKUN__) {
+        if (window.__PARENT_ROUTER__) {
+          window.__PARENT_ROUTER__.push({
+            path: `/partner/channelManagement/shopDetail?dealerCode=${dealerCode}`
+          });
+        } else {
+          // window.location.href = `${process.env.VUE_APP_ROUTER_BASE}${path}`;
+        }
+      } else {
+        // this.$router.push(`/partner/channelManagement/shopDetail?dealerCode=${dealerCode}`);
+      }
+    },
+    // 跳转到【备件主数据】-【备件详情】
+    goToSparePart (oldPartId) {
+      this.$router.push('/sparepart/basic/sparePart/detail?id=' + oldPartId);
+    },
   },
 };
