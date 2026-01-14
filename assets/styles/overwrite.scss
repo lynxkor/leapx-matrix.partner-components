@@ -76,7 +76,7 @@
 }
 .el-button.is-disabled, .el-button.is-disabled:hover, .el-button.is-disabled:focus {
   color: var(--leap-color-default-light-3);
-  border-color: #EBEEF5;
+  border-color: var(--leap-color-default-light-4);
   background-color: #fff;
 }
 .el-button--text.is-disabled, .el-button--text.is-disabled:hover, .el-button--text.is-disabled:focus{
@@ -95,6 +95,15 @@
 .el-button--primary.is-plain{
   background-color: #fff;
 }
+.el-button--danger {
+  background-color: var(--leap-color-danger);
+  border-color: var(--leap-color-danger);
+}
+.el-button--danger:hover, .el-button--danger:focus {
+  background-color: var(--leap-color-danger-dark-1);
+  border-color: var(--leap-color-danger-dark-1);
+}
+
 .el-popconfirm {
   margin: 6px;
   .el-popconfirm__main{
@@ -177,6 +186,11 @@
     color: var(--leap-color-default-light-3)!important;
   }
 }
+.el-input-group__append, .el-input-group__prepend {
+  background-color: var(--leap-color-default-light-5);
+  border-color: var(--leap-color-default-light-4);
+  color: var(--leap-color-default-light-2);
+}
 .el-radio__input.is-disabled + span.el-radio__label {
   color: var(--leap-color-default-light-3);
 }
@@ -194,6 +208,7 @@
 .el-form-item__error {
   color: var(--leap-color-danger);
   padding-top: 0;
+  transform: translateY(-3px);
 }
 .el-tag.el-tag--info {
   background-color: var(--leap-color-default-light-5);
@@ -215,6 +230,12 @@
   .el-input__suffix{
     display: flex;
     align-items: center;
+  }
+}
+.el-link.el-link--success {
+  color: var(--leap-color-primary);
+  &:hover {
+    color: var(--leap-color-primary);
   }
 }
 
