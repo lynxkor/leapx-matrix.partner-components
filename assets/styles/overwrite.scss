@@ -232,6 +232,12 @@
     align-items: center;
   }
 }
+.el-link.el-link--success {
+  color: var(--leap-color-primary);
+  &:hover {
+    color: var(--leap-color-primary);
+  }
+}
 
 // 下拉框与按钮组合样式
 .ais-select-group {
