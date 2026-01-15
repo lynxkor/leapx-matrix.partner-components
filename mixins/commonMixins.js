@@ -1,3 +1,4 @@
+import navigate from '../utils/navigate';
 // 公共逻辑预埋
 // 后续遇到所有页面改动时，优先考虑添加到该文件
 // 页面都注入pageType = 'detail' || 'edit' || 'list'，根据页面类型选择性注入方法
@@ -130,23 +131,13 @@ export default {
         el.style.display = 'none';
       }
     },
-    // 跳转到【门店详情】
-    goToDealer (dealerCode) {
-      if (window.__POWERED_BY_QIANKUN__) {
-        if (window.__PARENT_ROUTER__) {
-          window.__PARENT_ROUTER__.push({
-            path: `/partner/channelManagement/shopDetail?dealerCode=${dealerCode}`
-          });
-        } else {
-          // window.location.href = `${process.env.VUE_APP_ROUTER_BASE}${path}`;
-        }
-      } else {
-        // this.$router.push(`/partner/channelManagement/shopDetail?dealerCode=${dealerCode}`);
-      }
-    },
-    // 跳转到【备件主数据】-【备件详情】
-    goToSparePart (oldPartId) {
-      this.$router.push('/sparepart/basic/sparePart/detail?id=' + oldPartId);
+    /**
+     * 统一路由跳转，支持子应用之间跳转
+     * @param {Object|String} location 同 $router.push 参数
+     * @param {Boolean} isBlank 是否需要强制新开窗口
+     */
+    navigateToRoute (location, isBlank) {
+      navigate(location, isBlank, this.$router);
     },
   },
 };
