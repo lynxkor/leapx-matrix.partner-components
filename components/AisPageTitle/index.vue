@@ -10,6 +10,8 @@
 </template>
 
 <script>
+import { handleBackForEdit } from '../../utils/index';
+
 export default {
   computed: {
     list () {
@@ -37,7 +39,7 @@ export default {
       }
     },
     handleBack () {
-      this.$router.back();
+      handleBackForEdit(this.$router);
     }
   }
 };

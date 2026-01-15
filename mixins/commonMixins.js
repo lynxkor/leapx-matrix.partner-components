@@ -135,6 +135,14 @@ export default {
      * 统一路由跳转，支持子应用之间跳转
      * @param {Object|String} location 同 $router.push 参数
      * @param {Boolean} isBlank 是否需要强制新开窗口
+     *
+     * @example 跳转到门店详情
+        this.navigateToRoute({
+          path: '/partner/channelManagement/shopDetail',
+          query: {
+            dealerCode: row.dealerCode,
+          },
+        });
      */
     navigateToRoute (location, isBlank) {
       navigate(location, isBlank, this.$router);

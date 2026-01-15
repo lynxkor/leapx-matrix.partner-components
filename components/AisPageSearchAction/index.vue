@@ -1,5 +1,5 @@
 <template>
-  <el-form-item label=" " class="form-item-action">
+  <el-form-item label=" " class="form-item-action" :class="{'right': align === 'right'}">
     <el-button :loading="Loading" size="medium" class="btn-search" @click="$emit('submit')">查询</el-button>
     <el-button size="medium" class="btn-reset" @click="$emit('reset')">重置</el-button>
     <span v-if="isExpandable" class="icon-expand curPoint" @click="$emit('input', !value)">
@@ -24,12 +24,15 @@ export default {
     Loading: {
       type: Boolean,
       default: false
+    },
+    align: {
+      type: String,
     }
   }
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* 列表中展开和收起 */
 .icon-expand {
   color: var(--aisDefaultTextColor);
@@ -62,6 +65,11 @@ export default {
     background-color: #fff;
     color: var(--themColor);
     border: 1px solid var(--themColor);
+  }
+}
+.el-form-item.right  {
+  ::v-deep .el-form-item__content {
+    text-align: right;
   }
 }
 </style>

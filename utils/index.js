@@ -410,3 +410,16 @@ const prefixRegex = new RegExp(`^${appPrefix}`);
 export const getRouterPath = () => {
   return location.pathname.replace(prefixRegex, '');
 };
+// 编辑页的返回操作
+export function handleBackForEdit ($router) {
+  const path = getRouterPath();
+  const str = '/edit';
+  // 在编辑页中进行操作
+  if (path.endsWith(str)) {
+    const suffixRegex = new RegExp(`${str}$`);
+    const _path = path.replace(suffixRegex, '');
+    $router.push(_path);
+  } else {
+    // 在列表页进行操作
+  }
+}

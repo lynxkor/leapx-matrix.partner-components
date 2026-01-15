@@ -105,7 +105,7 @@
 </template>
 <script>
 
-import { getRouterPath } from '../../../utils/index';
+import { handleBackForEdit } from '../../../utils/index';
 import permissions from '../../../mixins/permissions';
 import ButtonGroup from '../../ButtonGroup';
 import { getDomStyle } from '../../../utils';
@@ -273,16 +273,7 @@ export default {
       this.$emit('cancel');
     },
     handleBack () {
-      const path = getRouterPath();
-      const str = '/edit';
-      // 在编辑页中进行操作
-      if (path.endsWith(str)) {
-        const suffixRegex = new RegExp(`${str}$`);
-        const _path = path.replace(suffixRegex, '');
-        this.$router.push(_path);
-      } else {
-        // 在列表页进行操作
-      }
+      handleBackForEdit(this.$router);
     },
     handleEdit () {
       this.$emit('edit');

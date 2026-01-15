@@ -318,6 +318,10 @@
           display: inline;
           font-size: 16px;
         }
+        .btns{
+          padding-left: 16px;
+          padding-top: 12px;
+        }
       }
       &.fold{
         margin-bottom: 0;
@@ -416,5 +420,9 @@
       padding-right: 0;
       color: var(--leap-color-default);
     }
+  }
+
+  .el-button.link.el-button--text {
+    padding: 0px;
   }
 }
