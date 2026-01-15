@@ -346,11 +346,11 @@ export function formatDateTime (val, type) {
 };
 
 /**
- * 获取dom实际宽度 （不受缩放影响）
+ * 获取dom宽度 （不受缩放影响）
  */
 export function getDomStyle (dom) {
   if (!dom) {
-    return 0;
+    return {};
   }
   const style = window.getComputedStyle(dom);
   const width = parseFloat(style.width);
@@ -377,3 +377,36 @@ export function getDomStyle (dom) {
     minWidth,
   };
 }
+
+/**
+ * 获取元素的 CSS zoom 属性值
+ * 注意：zoom 不是标准属性，获取方式特殊
+ */
+export function getElementZoomValue (element = document.body) {
+  if (!element) return 1;
+
+  // 方法1：通过 computedStyle 获取
+  const style = window.getComputedStyle(element);
+
+  // zoom 可能以字符串形式存在，如 "0.8", "80%", "normal"
+  let zoomValue = style.zoom;
+
+  if (!zoomValue || zoomValue === 'normal') {
+    return 1;
+  }
+
+  // 处理百分比值
+  if (zoomValue.endsWith('%')) {
+    return parseFloat(zoomValue) / 100;
+  }
+
+  // 处理数字值
+  const numericValue = parseFloat(zoomValue);
+  return isNaN(numericValue) ? 1 : numericValue;
+}
+
+export const appPrefix = process.env.VUE_APP_ROUTER_BASE;
+const prefixRegex = new RegExp(`^${appPrefix}`);
+export const getRouterPath = () => {
+  return location.pathname.replace(prefixRegex, '');
+};

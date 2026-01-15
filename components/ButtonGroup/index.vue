@@ -118,11 +118,9 @@ export default {
       }
 
       const style = getDomStyle(this.$refs.container);
-      const containerWidth = style.width;
+      const availableWidth = style.width;
       let totalWidth = 0;
       let visibleCount = 0;
-
-      const availableWidth = containerWidth;
 
       // 计算可以显示多少个按钮
       for (let i = 0; i < this.buttonWidths.length; i++) {
@@ -131,10 +129,9 @@ export default {
           totalWidth += buttonWidth;
           visibleCount++;
         } else {
-          // TODO 计算获取
           const dropdownSize = 60; // 预留下拉菜单宽度(width + margin), 如果下拉菜单有变，需要修改
           // 检查最后一个按钮是否需要隐藏
-          if (containerWidth - totalWidth <= dropdownSize) {
+          if (availableWidth - totalWidth <= dropdownSize) {
             visibleCount = Math.max(0, visibleCount - 1);
           }
           break;
@@ -144,6 +141,7 @@ export default {
       // 设置可见和隐藏的按钮
       this.visibleButtons = this.originalButtons.slice(0, visibleCount);
       this.hiddenButtons = this.originalButtons.slice(visibleCount);
+      // console.log('按钮组', availableWidth, this.buttonWidths, totalWidth, this.visibleButtons, this.hiddenButtons);
 
       // 更新按钮显示状态
       this.updateButtonVisibility();

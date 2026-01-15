@@ -3,3 +3,4 @@
 @leapmotor/design
 vue
 qrcode.vue
+lodash
