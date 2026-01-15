@@ -46,7 +46,8 @@ export default {
       visibleButtons: [], // 可见按钮
       hiddenButtons: [], // 隐藏按钮
       buttonWidths: [], // 按钮宽度缓存
-      originalButtons: [] // 原始按钮数据
+      originalButtons: [], // 原始按钮数据
+      mutationObserver: null // MutationObserver 实例
     };
   },
 
@@ -61,6 +62,7 @@ export default {
       this.setupButtons();
       this.calculateLayout();
       this.setupResizeObserver();
+      this.setupMutationObserver();
     });
   },
 
@@ -69,6 +71,9 @@ export default {
       this.resizeObserver.disconnect();
     } else {
       window.removeEventListener('resize', this.handleResize);
+    }
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
     }
   },
 
@@ -121,8 +126,8 @@ export default {
       let totalWidth = 0;
       let visibleCount = 0;
 
-      // 计算可以显示多少个按钮
-      for (let i = 0; i < this.buttonWidths.length; i++) {
+      // 从后向前计算可以显示多少个按钮（保留右侧按钮）
+      for (let i = this.buttonWidths.length - 1; i >= 0; i--) {
         const buttonWidth = this.buttonWidths[i];
         if (totalWidth + buttonWidth <= availableWidth) {
           totalWidth += buttonWidth;
@@ -137,9 +142,9 @@ export default {
         }
       }
 
-      // 设置可见和隐藏的按钮
-      this.visibleButtons = this.originalButtons.slice(0, visibleCount);
-      this.hiddenButtons = this.originalButtons.slice(visibleCount);
+      // 设置可见和隐藏的按钮（保留右侧，折叠左侧）
+      this.visibleButtons = this.originalButtons.slice(this.originalButtons.length - visibleCount);
+      this.hiddenButtons = this.originalButtons.slice(0, this.originalButtons.length - visibleCount);
       // console.log('按钮组', availableWidth, this.buttonWidths, totalWidth, this.visibleButtons, this.hiddenButtons);
 
       // 更新按钮显示状态
@@ -151,9 +156,10 @@ export default {
       if (!this.$refs.visibleButtons) return;
 
       const allButtons = this.$refs.visibleButtons.querySelectorAll('.group-button, .el-button');
+      const visibleStartIndex = this.originalButtons.length - this.visibleButtons.length;
 
       allButtons.forEach((button, index) => {
-        if (index < this.visibleButtons.length) {
+        if (index >= visibleStartIndex) {
           button.style.display = '';
         } else {
           button.style.display = 'none';
@@ -189,6 +195,32 @@ export default {
       // } else {
       // }
       window.addEventListener('resize', this.handleResize);
+    },
+
+    // 设置 MutationObserver 监听 slot 内容变化
+    setupMutationObserver () {
+      if (!this.$refs.visibleButtons) return;
+
+      this.mutationObserver = new MutationObserver((mutations) => {
+        // 检查是否有子节点变化（按钮的添加/删除）
+        const hasChildListChange = mutations.some(mutation => mutation.type === 'childList');
+
+        this.$nextTick(() => {
+          // 只有按钮数量真正变化时才重新缓存宽度
+          if (hasChildListChange) {
+            this.setupButtons();
+          }
+          // 始终重新计算布局（处理容器宽度变化）
+          this.calculateLayout();
+        });
+      });
+
+      this.mutationObserver.observe(this.$refs.visibleButtons, {
+        childList: true, // 监听子节点的添加/删除
+        subtree: true, // 监听所有后代节点
+        attributes: true, // 监听属性变化
+        attributeFilter: ['style', 'class'] // 只监听特定属性
+      });
     },
 
     // 窗口大小变化处理（兼容模式）
