@@ -329,4 +329,8 @@ export default {
     margin-bottom: 8px;
   }
 }
+
+::v-deep .el-select__tags {
+  flex-wrap: nowrap;
+}
 </style>
