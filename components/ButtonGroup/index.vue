@@ -1,10 +1,5 @@
 <template>
   <div class="ais-button-group" ref="container" :style="{ maxWidth }">
-    <!-- 可见按钮区域 -->
-    <div class="visible-buttons" ref="visibleButtons">
-      <slot/>
-    </div>
-
     <!-- 更多按钮下拉菜单 -->
     <el-dropdown
       v-if="hasHiddenButtons"
@@ -27,6 +22,10 @@
         </el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
+    <!-- 可见按钮区域 -->
+    <div class="visible-buttons" ref="visibleButtons">
+      <slot/>
+    </div>
   </div>
 </template>
 
@@ -40,7 +39,7 @@ export default {
     maxWidth: {
       type: [Number, String],
       default: '100%'
-    }
+    },
   },
   data () {
     return {
@@ -225,7 +224,7 @@ export default {
 
 .more-dropdown {
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-right: 8px;
 }
 
 /* 确保按钮不会换行 */
