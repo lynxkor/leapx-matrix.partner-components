@@ -1,6 +1,6 @@
 <template>
   <div id="printArea" style="width:1060px;">
-    <div v-for="index in [1,2,3,4,5]" :key="index" class="divMain">
+    <div v-for="item in data" :key="item.id" class="divMain">
       <div class="divLeft">
         <table>
           <tbody>
@@ -13,9 +13,9 @@
             </tr>
             <tr>
               <td>服务中心代码：</td>
-              <td>33A10SC204</td>
+              <td>{{item.dealerCode}}</td>
               <td>服务中心名称：</td>
-              <td>杭州服务中心金桥北路店</td>
+              <td>{{item.dealerName}}</td>
             </tr>
             <tr>
               <td class="tdsubtitle" colspan="2">保修相关信息：</td>
@@ -23,19 +23,20 @@
             </tr>
             <tr>
               <td>开单日期：</td>
-              <td>2025/12/14 10:07</td>
+              <td>{{transformDate(item.createTime)}}</td>
               <td>行驶里程：</td>
+              <!-- TODO 待确定 -->
               <td>3,100.00</td>
             </tr>
             <tr>
               <td>施工单号：</td>
-              <td colspan="3">33A10SC204S25121400001</td>
+              <td colspan="3">{{item.serviceProxyNo}}</td>
             </tr>
             <tr>
               <td>保修类型：</td>
-              <td>一般整车保修</td>
+              <td>{{item.repairItemTypeName}}</td>
               <td>保修申请单号：</td>
-              <td>33A10SC204W25120068</td>
+              <td>{{item.warrantyNo}}</td>
             </tr>
             <tr>
               <td>故障现象：</td>
@@ -159,8 +160,8 @@ export default {
       default: ''
     },
     data: {
-      type: Object,
-      default: () => { }
+      type: Array,
+      default: () => ([])
     }
   },
   data () {
@@ -171,16 +172,31 @@ export default {
   watch: {
     id: function (val) {
       if (val) {
-        this.info = {};
         this.getData();
       }
     }
+  },
+  mounted () {
   },
   methods: {
     getData () {
       // getDetail(this.id).then(res => {
       //   this.info = res;
       // });
+    },
+    transformDate (time) {
+      if (!time) {
+        return '';
+      }
+      const date = new Date(time);
+      var Y = date.getFullYear();
+      const _m = date.getMonth() + 1;
+      var M = (_m < 10 ? '0' + (_m) : _m);
+      const _d = date.getDate();
+      var D = _d < 10 ? '0' + _d : _d;
+      const h = date.getHours();
+      const m = date.getMinutes();
+      return `${Y}/${M}/${D} ${h}/${m}`;
     }
   },
 };
