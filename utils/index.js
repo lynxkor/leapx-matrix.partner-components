@@ -413,10 +413,11 @@ export const getRouterPath = () => {
 // 编辑页的返回操作
 export function handleBackForEdit ($router) {
   const path = getRouterPath();
-  const str = '/edit';
+  const suffixes = ['/edit', '/detail'];
   // 在编辑页中进行操作
-  if (path.endsWith(str)) {
-    const suffixRegex = new RegExp(`${str}$`);
+  const suffix = suffixes.find(suffix => path.endsWith(suffix));
+  if (suffix) {
+    const suffixRegex = new RegExp(`${suffix}$`);
     const _path = path.replace(suffixRegex, '');
     $router.push(_path);
   } else {
