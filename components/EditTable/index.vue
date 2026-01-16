@@ -88,6 +88,7 @@
       @checkbox-all="selectAllCheckboxChange"
     >
       <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
+      <vxe-column v-if="seq" type="seq" width="70"></vxe-column>
       <vxe-column
         v-for="column in columns"
         :key="column.field"
@@ -300,6 +301,11 @@ export default {
     },
     // 是否默认勾选
     checkbox: {
+      type: Boolean,
+      default: false
+    },
+    // 序号
+    seq: {
       type: Boolean,
       default: false
     },
