@@ -214,8 +214,4 @@ export default {
     text-align: center;
   }
 }
-.print-content{
-  max-height: 800px;
-  overflow: auto;
-}
 </style>

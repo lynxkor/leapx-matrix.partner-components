@@ -457,11 +457,14 @@ export default {
     };
   },
   watch: {
-    id: function (val) {
-      if (val) {
-        this.info = {};
-        this.getData();
-      }
+    id: {
+      handler (val) {
+        if (val) {
+          this.info = {};
+          this.getData();
+        }
+      },
+      immediate: true
     }
   },
   methods: {
