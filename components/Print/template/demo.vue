@@ -17,7 +17,7 @@
               <h2>接车施工单</h2>
             </td>
             <td style="width: 30%; text-align: right" rowspan="3">
-              <img id="logoID" :src="require('../../../assets/images/logo.png')" />
+              <img id="logoID" :src="require('@/libs/assets/images/logo.png')" />
             </td>
           </tr>
           <tr>

@@ -2,13 +2,13 @@
   调用方式：
   this.$print.show({
     id: 'xxxx', // 必选，对应数据id
-    template: 'demo', // 必选，对应 ./template/文件名.vue
+    template: 'demo', // 必选，对应 @/components/PrintTemplate/文件名.vue
     title: 'test'，// 可选，打印标题
     data: { id: 'xxx', ...} // 可选，其他数据对象
   });
   ---------
   开发步骤：
-  1. 开发打印模版，拷贝demo.vue文件于./template/目录
+  1. 开发打印模版，拷贝demo.vue文件于@/components/PrintTemplate/目录
   2. 从老销服系统拷贝对应html模版到新文件
   3. 开发模版文件，完成数据调用和渲染
   4. 即可使用
@@ -83,16 +83,12 @@ export default {
       // 根据模板名称动态导入组件
       try {
         // 使用 import() 动态导入组件
-        const component = await import(`./template/${templateName}.vue`);
+        const component = await import(`@/components/PrintTemplate/${templateName}.vue`);
         return component.default;
       } catch (error) {
         this.$message.error(`打印模板 ${templateName} 不存在，请联系管理员`);
         this.close();
         return null;
-        // console.error(`打印模板 ${templateName} 不存在，尝试加载默认模板`);
-        // 如果指定模板不存在，加载默认模板
-        // const defaultComponent = await import('./template/demo.vue');
-        // return defaultComponent.default;
       }
     },
 
