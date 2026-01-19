@@ -91,6 +91,7 @@
     >
       <slot name="trigger">
         <el-button
+          size="small"
           v-show="editable"
           :type="uploadButtonType"
           :icon="uploadIcon"
