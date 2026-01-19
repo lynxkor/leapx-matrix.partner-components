@@ -281,10 +281,18 @@ export default {
 
     // 处理值变更事件
     handleChange (val) {
-      // 查找完整的选项对象
-      const selectedOption = this.computedOptions.find(
-        option => option[this.valueKey] === val
-      );
+      let selectedOption;
+      if (Array.isArray(val)) {
+        // 多选：返回匹配的选项对象数组
+        selectedOption = val.map(v =>
+          this.computedOptions.find(option => option[this.valueKey] === v)
+        ).filter(Boolean); // 过滤掉未找到的 null/undefined
+      } else {
+        // 单选：返回单个选项对象
+        selectedOption = this.computedOptions.find(
+          option => option[this.valueKey] === val
+        );
+      }
       this.$emit('change', val, selectedOption);
     },
     handleBlur () {
