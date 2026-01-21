@@ -1,4 +1,4 @@
-import { getByCode, getFileList } from '@/api/attachment';
+import { getByCode, getFileList } from '@/libs/api/attachment';
 
 export const attachmentMixin = {
   data () {
