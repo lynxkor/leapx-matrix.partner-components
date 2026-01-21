@@ -224,6 +224,12 @@ export default {
         }
         const responseData = response.data || response.records || response || [];
         const formatedData = this.format ?  this.format(responseData) : responseData;
+        // 强制统一使用string
+        if (Object.prototype.toString.call(formatedData?.[0]?.[this.valueKey]) === '[object Number]') {
+          formatedData.forEach(el => {
+            el[this.valueKey] = String(el[this.valueKey]);
+          });
+        }
         this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
         if (!this.initialLoaded && this.params) {
@@ -257,7 +263,15 @@ export default {
       try {
         const response = await this.request(this.enumCode || this.params);
         const responseData = response.data || response || [];
-        this.remoteOptions = this.format ?  this.format(responseData) : responseData;
+        const formatedData = this.format ?  this.format(responseData) : responseData;
+        // 强制统一使用string
+        if (Object.prototype.toString.call(formatedData?.[0]?.[this.valueKey]) === '[object Number]') {
+          formatedData.forEach(el => {
+            el[this.valueKey] = String(el[this.valueKey]);
+          });
+        }
+        this.remoteOptions = formatedData;
+
         if (this.enumCode && response) {
           // 缓存枚举数据
           this.$store.dispatch('enum/setEnum', { code: this.enumCode, data: response });

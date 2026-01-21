@@ -117,8 +117,8 @@
 </template>
 
 <script>
-import FileDisplay from '@/components/FileDisplay';
-import { uploadFile, deleteFile, getFileList, addOrUpdateFile } from '@/api/attachment';
+import FileDisplay from '@/libs/components/FileDisplay';
+import { uploadFile, deleteFile, getFileList, addOrUpdateFile } from '@/libs/api/attachment';
 
 export default {
   name: 'BusinessUpload',
