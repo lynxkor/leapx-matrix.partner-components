@@ -123,6 +123,9 @@ export default {
     addHeaderActions (e) {
       const parent = e.target.parentNode;
       const el = parent.nextSibling;
+      if (!el) {
+        return;
+      }
       if (parent.className.includes('fold')) {
         parent.classList.remove('fold');
         el.style.display = 'block';

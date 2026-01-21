@@ -90,16 +90,16 @@
       <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
       <vxe-column v-if="seq" type="seq" width="70"></vxe-column>
       <vxe-column
-        v-for="column in columns"
-        :key="column.field"
-        :field="column.field"
-        :title="column.title"
-        :width="column.width"
-        :min-width="column.minWidth"
-        :drag-sort="column.drag"
-        :edit-render="column.editable ? (column.editRender || {}) : null"
-        :formatter="column.formatter"
-        :tableField="column.tableField"
+        v-for="col in columns"
+        :key="col.field"
+        :field="col.field"
+        :title="col.title"
+        :width="col.width"
+        :min-width="col.minWidth"
+        :drag-sort="col.drag"
+        :edit-render="col.editable ? (col.editRender || {}) : null"
+        :formatter="col.formatter"
+        :tableField="col.tableField"
       >
         <template #edit="{ row, column }">
           <component
@@ -142,6 +142,10 @@
         <template #default="{ row, column }">
           <span v-if="column.formatter">{{ column.formatter(row[column.field], row, column) }}</span>
           <span v-else>{{ row[column.field] }}</span>
+          <template v-if="col.mask">
+            <span v-if="!row[column.field + 'Mask']" @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye"></span>
+            <span v-else @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye-off"></span>
+          </template>
         </template>
       </vxe-column>
 
@@ -830,6 +834,13 @@ export default {
     color: #999999;
     font-size: 12px;
   }
+}
+.eye-icon{
+  vertical-align: text-top;
+  font-size: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+  color: #009100;
 }
 </style>
 
