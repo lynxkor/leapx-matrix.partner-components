@@ -37,31 +37,14 @@
  *
  插槽使用：状态显示
   <template #status>
-    <span class="status" :class="{
-      primary: form.returnStatus === '10',
-      warning: form.returnStatus === '20',
-      success: form.returnStatus === '30',
-      success: form.returnStatus === '40',
-    }">
-      {{ form.returnStatusLabel }}
-    </span>
+    <!-- 支持primary,warning,success,danger等状态 -->
+    <span class="status primary">状态</span>
   </template>
 
   插槽使用：额外按钮组
   <template #extraButtons>
-    <template v-if="form.returnStatus==='10'">
-      <el-button v-if="canDelete" size="small">删除</el-button>
-      <el-button v-if="canAddOrUpdate" size="small">下发</el-button>
-    </template>
-    <template v-if="form.returnStatus==='20'">
-      <el-button v-if="canAddOrUpdate" size="small">回运出库</el-button>
-    </template>
-    <template v-if="form.returnStatus==='30'">
-      <el-button v-if="canAddOrUpdate" size="small">签收</el-button>
-    </template>
-    <el-button v-if="canAddOrUpdate" size="small">打印回运单</el-button>
-    <el-button v-if="canAddOrUpdate" size="small">打印标签</el-button>
-    <el-button v-if="canAddOrUpdate" size="small">打印外包装标签</el-button>
+    <el-button size="small">按钮1</el-button>
+    <el-button size="small">按钮2</el-button>
   </template>
  */
 </script>
@@ -94,7 +77,7 @@
               </ButtonGroup>
             </div>
             <div class="edit-button-wrapper" ref="editRef">
-              <el-divider v-if="$slots.extraButtons" class="extra-divider" direction="vertical"></el-divider>
+              <el-divider v-if="$slots.extraButtons && showEditBtn" class="extra-divider" direction="vertical"></el-divider>
               <el-button v-if="showEditBtn" size="small" @click="handleEdit"><i class="iconfont icon-lxppc-edit"></i>{{editText}}</el-button>
             </div>
           </template>
