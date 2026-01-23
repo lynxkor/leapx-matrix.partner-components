@@ -140,11 +140,14 @@
         </template>
 
         <template #default="{ row, column }">
-          <span v-if="column.formatter">{{ column.formatter(row[column.field], row, column) }}</span>
-          <span v-else>{{ row[column.field] }}</span>
-          <template v-if="col.mask">
-            <span v-if="!row[column.field + 'Mask']" @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye"></span>
-            <span v-else @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye-off"></span>
+          <slot v-if="$scopedSlots.default" :row="row" :column="column" :col="col"></slot>
+          <template v-else>
+            <span v-if="column.formatter">{{ column.formatter(row[column.field], row, column) }}</span>
+            <span v-else>{{ row[column.field] }}</span>
+            <template v-if="col.mask">
+              <span v-if="!row[column.field + 'Mask']" @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye"></span>
+              <span v-else @click="$emit('mask', row, column)" class="eye-icon iconfont icon-lxppc-eye-off"></span>
+            </template>
           </template>
         </template>
       </vxe-column>
