@@ -4,16 +4,16 @@
       <div
         v-for="(file, index) in fileList"
         :key="file.uid || `${file.name}-${index}`"
-        class="file-item"
+        class=""
         :class="{
-          'file-item-image': file.fileType === 'image',
-          'file-item-video': file.fileType === 'video',
-          'file-item-document': file.fileType === 'file' || !file.fileType
+          'file-item-image': isImageFile(file),
+          'file-item-video': isVideoFile(file),
+          'file-item-document': !isImageFile(file) && !isVideoFile(file)
         }"
       >
         <!-- 图片类型展示 -->
         <div v-if="isImageFile(file)" class="file-item-content">
-          <div class="file-thumbnail">
+          <div class="file-thumbnail square-thumbnail">
             <el-image
               :ref="`imageRef_${index}`"
               :src="file.url || file.thumbUrl"
@@ -29,68 +29,56 @@
                 <i class="el-icon-picture-outline"></i>
               </div>
             </el-image>
+
+            <!-- 遮罩层 - 只在非展示模式下显示 -->
+            <div v-if="!viewOnly" class="file-actions-mask">
+              <div class="file-actions-container" :class="{'two-actions': !editable, 'four-actions': editable}">
+                <el-tooltip content="查看" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-view"
+                    size="small"
+                    @click.stop="handleViewImage(file, index)"
+                  />
+                </el-tooltip>
+                <el-tooltip content="下载" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-download"
+                    size="small"
+                    @click.stop="handleDownload(file)"
+                  />
+                </el-tooltip>
+                <!-- 重命名功能暂时隐藏但保留 -->
+                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-edit"
+                    size="small"
+                    @click.stop="handleRename(file, index)"
+                  />
+                </el-tooltip> -->
+                <el-tooltip v-if="editable" content="删除" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-delete"
+                    size="small"
+                    @click.stop="handleDelete(file, index)"
+                  />
+                </el-tooltip>
+              </div>
+            </div>
           </div>
           <div class="file-info">
             <div class="file-name">
-              <span v-if="!file.editing">{{ file.name }}</span>
-              <el-input
-                v-else
-                ref="renameInputRefs"
-                v-model="file.editName"
-                size="small"
-                @blur="handleRenameConfirm(file, index)"
-                @keyup.enter="handleRenameConfirm(file, index)"
-              />
-            </div>
-            <div class="file-size" v-if="file.size">{{ formatFileSize(file.size) }}</div>
-          </div>
-
-          <!-- 遮罩层 - 只在非展示模式下显示 -->
-          <div v-if="!viewOnly" class="file-actions-mask">
-            <div class="file-actions-container">
-              <el-tooltip content="查看" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-view"
-                  size="small"
-                  @click.stop="handleViewImage(file, index)"
-
-                />
-              </el-tooltip>
-              <el-tooltip content="下载" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-download"
-                  size="small"
-                  @click.stop="handleDownload(file)"
-
-                />
-              </el-tooltip>
-              <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-edit"
-                  size="small"
-                  @click.stop="handleRename(file, index)"
-
-                />
-              </el-tooltip> -->
-              <el-tooltip v-if="editable" content="删除" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-delete"
-                  size="small"
-                  @click.stop="handleDelete(file, index)"
-
-                />
-              </el-tooltip>
+              <span>{{ file.name }}</span>
             </div>
           </div>
         </div>
 
         <!-- 视频类型展示 -->
         <div v-else-if="isVideoFile(file)" class="file-item-content">
-          <div class="file-thumbnail">
+          <div class="file-thumbnail square-thumbnail">
             <div class="video-thumbnail">
               <!-- 改进的视频播放图标设计 -->
               <div class="video-play-btn">
@@ -98,115 +86,92 @@
               </div>
               <div class="video-overlay" @click="handleDownload(file)"></div>
             </div>
+
+            <!-- 遮罩层 - 只在非展示模式下显示 -->
+            <div v-if="!viewOnly" class="file-actions-mask">
+              <div class="file-actions-container" :class="{'two-actions': !editable, 'four-actions': editable}">
+                <el-tooltip content="播放" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-video-play"
+                    size="small"
+                    @click.stop="handleDownload(file)"
+                  />
+                </el-tooltip>
+                <el-tooltip content="下载" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-download"
+                    size="small"
+                    @click.stop="handleDownload(file)"
+                  />
+                </el-tooltip>
+                <!-- 重命名功能暂时隐藏但保留 -->
+                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-edit"
+                    size="small"
+                    @click.stop="handleRename(file, index)"
+                  />
+                </el-tooltip> -->
+                <el-tooltip v-if="editable" content="删除" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-delete"
+                    size="small"
+                    @click.stop="handleDelete(file, index)"
+                  />
+                </el-tooltip>
+              </div>
+            </div>
           </div>
           <div class="file-info">
             <div class="file-name">
-              <span v-if="!file.editing">{{ file.name }}</span>
-              <el-input
-                v-else
-                ref="renameInputRefs"
-                v-model="file.editName"
-                size="small"
-                @blur="handleRenameConfirm(file, index)"
-                @keyup.enter="handleRenameConfirm(file, index)"
-              />
-            </div>
-            <div class="file-size" v-if="file.size">{{ formatFileSize(file.size) }}</div>
-          </div>
-
-          <!-- 遮罩层 - 只在非展示模式下显示 -->
-          <div v-if="!viewOnly" class="file-actions-mask">
-            <div class="file-actions-container">
-              <el-tooltip content="播放" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-video-play"
-                  size="small"
-                  @click.stop="handleDownload(file)"
-
-                />
-              </el-tooltip>
-              <el-tooltip content="下载" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-download"
-                  size="small"
-                  @click.stop="handleDownload(file)"
-
-                />
-              </el-tooltip>
-              <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-edit"
-                  size="small"
-                  @click.stop="handleRename(file, index)"
-
-                />
-              </el-tooltip> -->
-              <el-tooltip v-if="editable" content="删除" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-delete"
-                  size="small"
-                  @click.stop="handleDelete(file, index)"
-
-                />
-              </el-tooltip>
+              <span>{{ file.name }}</span>
             </div>
           </div>
         </div>
 
         <!-- 文件类型展示 -->
         <div v-else class="file-item-content">
-          <div class="file-thumbnail">
+          <div class="file-thumbnail square-thumbnail">
             <i class="el-icon-document file-icon"></i>
+
+            <!-- 遮罩层 - 只在非展示模式下显示 -->
+            <div v-if="!viewOnly" class="file-actions-mask">
+              <div class="file-actions-container" :class="{'two-actions': !editable, 'four-actions': editable}">
+                <el-tooltip content="下载" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-download"
+                    size="small"
+                    @click.stop="handleDownload(file)"
+                  />
+                </el-tooltip>
+                <!-- 重命名功能暂时隐藏但保留 -->
+                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-edit"
+                    size="small"
+                    @click.stop="handleRename(file, index)"
+                  />
+                </el-tooltip> -->
+                <el-tooltip v-if="editable" content="删除" placement="top">
+                  <el-button
+                    type="text"
+                    icon="el-icon-delete"
+                    size="small"
+                    @click.stop="handleDelete(file, index)"
+                  />
+                </el-tooltip>
+              </div>
+            </div>
           </div>
           <div class="file-info">
             <div class="file-name">
-              <span v-if="!file.editing">{{ file.name }}</span>
-              <el-input
-                v-else
-                ref="renameInputRefs"
-                v-model="file.editName"
-                size="small"
-                @blur="handleRenameConfirm(file, index)"
-                @keyup.enter="handleRenameConfirm(file, index)"
-              />
-            </div>
-            <div class="file-size" v-if="file.size">{{ formatFileSize(file.size) }}</div>
-          </div>
-
-          <!-- 遮罩层 - 只在非展示模式下显示 -->
-          <div v-if="!viewOnly" class="file-actions-mask">
-            <div class="file-actions-container">
-              <el-tooltip content="下载" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-download"
-                  size="small"
-                  @click.stop="handleDownload(file)"
-
-                />
-              </el-tooltip>
-              <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-edit"
-                  size="small"
-                  @click.stop="handleRename(file, index)"
-
-                />
-              </el-tooltip> -->
-              <el-tooltip v-if="editable" content="删除" placement="top">
-                <el-button
-                  type="text"
-                  icon="el-icon-delete"
-                  size="small"
-                  @click.stop="handleDelete(file, index)"
-
-                />
-              </el-tooltip>
+              <span>{{ file.name }}</span>
             </div>
           </div>
         </div>
@@ -415,51 +380,6 @@ export default {
       window.open(file.response.fileUrl);
     },
 
-    // 重命名文件
-    handleRename (file, index) {
-      if (!this.editable || this.disabled) return;
-
-      this.internalFileList.forEach((f, i) => {
-        if (i !== index) {
-          f.editing = false;
-        }
-      });
-
-      file.editing = true;
-      file.editName = file.name;
-
-      this.$nextTick(() => {
-        const inputRef = this.$refs.renameInputRefs;
-        if (inputRef && inputRef[index]) {
-          inputRef[index].focus();
-        }
-      });
-    },
-
-    // 确认重命名
-    handleRenameConfirm (file, index) {
-      if (!file.editName || file.editName.trim() === '') {
-        this.$message.warning('文件名不能为空');
-        return;
-      }
-
-      if (file.editName === file.name) {
-        file.editing = false;
-        return;
-      }
-
-      const oldName = file.name;
-      file.name = file.editName;
-      file.editing = false;
-
-      this.$emit('rename', {
-        file,
-        index,
-        oldName,
-        newName: file.name
-      });
-    },
-
     // 删除文件
     handleDelete (file, index) {
       if (!this.editable || this.disabled) return;
@@ -486,19 +406,19 @@ export default {
 .file-list-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
 .file-item {
-  width: 300px;
+  width: 140px;
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 8px 8px 8px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 
   &:hover {
     border-color: var(--leap-color-primary);
@@ -528,23 +448,23 @@ export default {
   }
 }
 
+// file-item-content 不包含任何样式
 .file-item-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  min-height: 60px; // 确保有足够高度显示遮罩
 }
 
-.file-thumbnail {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 6px;
+// 方形缩略图样式 - 放大图片
+.square-thumbnail {
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
 }
 
 .image-slot {
@@ -557,7 +477,7 @@ export default {
   color: #909399;
 
   i {
-    font-size: 20px;
+    font-size: 32px;
   }
 }
 
@@ -571,11 +491,11 @@ export default {
   justify-content: center;
   background: #f8f9fa;
   border: 1px solid #e9ecef;
-  border-radius: 6px;
+  border-radius: 8px;
 
   .video-play-btn {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     background: rgba(64, 158, 255, 0.8);
     border-radius: 50%;
     display: flex;
@@ -585,7 +505,7 @@ export default {
     transition: all 0.2s ease;
 
     i {
-      font-size: 16px;
+      font-size: 20px;
       color: white;
       margin-left: 2px;
     }
@@ -608,32 +528,28 @@ export default {
 }
 
 .file-icon {
-  font-size: 32px;
+  font-size: 40px;
   color: #409eff;
 }
 
 .file-info {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  text-align: center;
+  padding: 0 4px;
 }
 
 .file-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #303133;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-
-  ::v-deep .el-input {
-    width: 120px;
-  }
-}
-
-.file-size {
-  font-size: 12px;
-  color: #909399;
+  word-break: break-all;
+  min-height: 32px; // 确保两行文字的高度
 }
 
 // 避免在只展示模式下出现悬停效果 - 颜色调整为更淡
@@ -645,24 +561,18 @@ export default {
       transform: translateY(0);
       cursor: default;
     }
-
-    .file-item-content:hover .file-actions-mask {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(20px);
-    }
   }
 }
 
-// 遮罩层样式
+// 遮罩层样式 - 在 square-thumbnail 内部
 .file-actions-mask {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -671,47 +581,80 @@ export default {
   transform: translateY(20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 20;
-  padding: 0 12px;
 }
 
 // 鼠标悬停时显示遮罩
-.file-item-content:hover .file-actions-mask {
+.square-thumbnail:hover .file-actions-mask {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
 .file-actions-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 100%;
-  max-width: 200px;
-
-  ::v-deep .el-button {
-    padding: 8px;
-    color: white;
-    font-size: 16px;
-    background: transparent;
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
+  &.two-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    gap: 24px;
 
-    &:hover:not([disabled]) {
+    ::v-deep .el-button {
+      padding: 8px;
       color: white;
-      background: rgba(255, 255, 255, 0.5);
-      transform: scale(1.1);
-    }
+      font-size: 18px;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
 
-    &[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
+      &:hover:not([disabled]) {
+        color: white;
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(1.1);
+      }
+
+      &[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &.four-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    width: 80px;
+    height: 80px;
+
+    ::v-deep .el-button {
+      padding: 6px;
+      color: white;
+      font-size: 16px;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin: 0;
+
+      &:hover:not([disabled]) {
+        color: white;
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(1.1);
+      }
+
+      &[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
   }
 }
