@@ -1,21 +1,3 @@
-<script>
-/**
-  * 审批弹窗
-  * <audit-dialog
-  *   ref="auditDialogRef"
-  *  :auditTitle="'初审审批'"
-  *   @audit="handleAudit"
-  * />
-  *
-  * auditDialogShow () {
-  *    this.$refs.auditDialogRef.show();
-  *  },
-  *  handleAudit () {
-  *    this.$refs.auditDialogRef.show();
-  *  },
-  *
-*/
-</script>
 <template>
   <el-dialog
     :visible.sync="auditShow"
@@ -25,6 +7,19 @@
     @close="close"
   >
     <el-form ref="auditForm" :model="auditForm" :rules="rules">
+      <el-form-item
+        v-if="auditDataList && auditDataList.length > 0"
+        label="批量审核数据"
+        prop="auditor"
+      >
+        <el-tooltip
+          :display="auditDataList && auditDataList.length > 0"
+          :content="tooltipContent"
+          placement="top"
+        >
+          <span>{{ displayAuditData }}</span>
+        </el-tooltip>
+      </el-form-item>
       <el-form-item
         label="审核"
         prop="result"
@@ -63,6 +58,14 @@ export default {
     auditTitle: {
       type: String,
       default: '审批'
+    },
+    auditDataList: {
+      type: Array,
+      default: () => []
+    },
+    field: {
+      type: String,
+      default: 'id'
     }
   },
   data () {
@@ -82,13 +85,35 @@ export default {
       }
     };
   },
+  computed: {
+    displayAuditData () {
+      if (!this.auditDataList || this.auditDataList.length === 0) {
+        return '';
+      }
+      // 如果只有一条数据，直接显示该字段值
+      if (this.auditDataList.length === 1) {
+        return this.auditDataList[0][this.field] || '';
+      }
+      // 如果有多条数据，显示数量
+      return `共 ${this.auditDataList.length} 条数据`;
+    },
+    tooltipContent () {
+      if (!this.auditDataList || this.auditDataList.length === 0) {
+        return '';
+      }
+      return this.auditDataList
+        .map(item => item[this.field] || '')
+        .filter(value => value)
+        .join(', ');
+    }
+  },
   methods: {
     show () {
       this.auditShow = true;
     },
     close () {
       this.auditShow = false;
-      this.auditForm = { remark: '' };
+      this.auditForm = { result: '', remark: '' };
       this.$nextTick(() => {
         this.$refs.auditForm.clearValidate();
       });
@@ -99,7 +124,8 @@ export default {
     auditFun () {
       this.$refs.auditForm.validate((valid) => {
         if (valid) {
-          this.$emit('audit', this.auditForm);
+          // 将审核数据列表也传递给父组件
+          this.$emit('audit', { ...this.auditForm, auditDataList: this.auditDataList });
           this.close();
         }
       });
@@ -111,5 +137,8 @@ export default {
 <style lang="scss" scoped>
 ::v-deep .el-dialog .el-dialog__body {
   padding: 0 20px !important;
+}
+::v-deep .el-form-item {
+  margin-bottom: 10px;
 }
 </style>
