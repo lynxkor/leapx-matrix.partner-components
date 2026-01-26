@@ -1,10 +1,10 @@
 <template>
   <div class="ais-attachment-form">
-    <el-form :model="form" :rules="rules" ref="attachmentForm" label-width="150px" inline class="attachment-form">
+    <el-form :model="form" :rules="rules" ref="attachmentForm" label-width="150px" inline class="attachment-form form-item-full">
       <el-form-item
         v-for="configItem in uploadConfigs"
         :key="configItem.id"
-        :label="configItem.attachType + '：'"
+        :label="showLabel ? configItem.attachType + '：' : ''"
         :prop="`files_${configItem.attachType}`"
         :required="configItem.required === '1'"
       >
@@ -13,7 +13,7 @@
           :business-id="businessId"
           :attach-type="configItem.attachType"
           :show-upload="true"
-          :editable="true"
+          :editable="editable"
           :disabled="disabled"
           :upload-config="getUploadConfig(configItem)"
         />
@@ -37,13 +37,21 @@ export default {
       type: [String, Number],
       default: null
     },
-    attachModuleKey: {
+    attachType: {
       type: String,
       required: true
     },
     disabled: {
       type: Boolean,
       default: false
+    },
+    editable: {
+      type: Boolean,
+      default: true
+    },
+    showLabel: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -53,13 +61,6 @@ export default {
     };
   },
   computed: {
-    form () {
-      const formData = {};
-      Object.keys(this.fileLists).forEach(key => {
-        formData[`files_${key}`] = this.fileLists[key];
-      });
-      return formData;
-    },
     rules () {
       const formRules = {};
       this.uploadConfigs.forEach(configItem => {
@@ -76,7 +77,7 @@ export default {
     // 初始化附件数据
     initAttachmentFormData () {
       this.initAttachmentData(
-        this.attachModuleKey,
+        this.attachType,
         this.businessId,
         () => {
           this.$emit('init-success');
@@ -130,6 +131,9 @@ export default {
   .attachment-form {
     display: flex;
     flex-direction: column;
+    .el-form-item {
+      width: 100%;
+    }
   }
 }
 </style>

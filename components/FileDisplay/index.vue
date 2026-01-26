@@ -3,7 +3,7 @@
     <transition-group name="file-list" tag="div" class="file-list-wrapper">
       <div
         v-for="(file, index) in fileList"
-        :key="file.uid || `${file.name}-${index}`"
+        :key="file.url + index"
         class=""
         :class="{
           'file-item-image': isImageFile(file),
@@ -11,19 +11,18 @@
           'file-item-document': !isImageFile(file) && !isVideoFile(file)
         }"
       >
-        <!-- 图片类型展示 -->
+        <!-- 图片 -->
         <div v-if="isImageFile(file)" class="file-item-content">
           <div class="file-thumbnail square-thumbnail">
             <el-image
               :ref="`imageRef_${index}`"
-              :src="file.url || file.thumbUrl"
+              :src="file.url"
               :alt="file.name"
-              fit="cover"
+              fit="contain"
               lazy
               :preview-src-list="imagePreviewList"
               :initial-index="getImageIndex(file)"
               style="width: 100%; height: 100%; cursor: pointer;"
-              @click="handleImageClick($event, file, index)"
             >
               <div slot="error" class="image-slot">
                 <i class="el-icon-picture-outline"></i>
@@ -49,15 +48,6 @@
                     @click.stop="handleDownload(file)"
                   />
                 </el-tooltip>
-                <!-- 重命名功能暂时隐藏但保留 -->
-                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                  <el-button
-                    type="text"
-                    icon="el-icon-edit"
-                    size="small"
-                    @click.stop="handleRename(file, index)"
-                  />
-                </el-tooltip> -->
                 <el-tooltip v-if="editable" content="删除" placement="top">
                   <el-button
                     type="text"
@@ -76,18 +66,30 @@
           </div>
         </div>
 
-        <!-- 视频类型展示 -->
+        <!-- 视频 -->
         <div v-else-if="isVideoFile(file)" class="file-item-content">
           <div class="file-thumbnail square-thumbnail">
             <div class="video-thumbnail">
-              <!-- 改进的视频播放图标设计 -->
-              <div class="video-play-btn">
-                <i class="el-icon-video-play"></i>
+              <!-- 视频缩略图 -->
+              <div class="video-preview" v-if="file.thumbnailUrl">
+                <img :src="file.thumbnailUrl" alt="视频缩略图" class="thumbnail-image">
               </div>
-              <div class="video-overlay" @click="handleDownload(file)"></div>
+              <!-- 播放图标 -->
+              <div class="video-play-btn">
+                <img :src="require('./video.png')" alt="">
+              </div>
+              <ais-video />
+              <video
+                :ref="`videoPlayer_${index}`"
+                :src="file.url"
+                preload="metadata"
+                crossOrigin="anonymous"
+                style="display: none"
+                @loadeddata="captureFirstFrame(file, index)"
+              ></video>
             </div>
 
-            <!-- 遮罩层 - 只在非展示模式下显示 -->
+            <!-- 遮罩层 -->
             <div v-if="!viewOnly" class="file-actions-mask">
               <div class="file-actions-container" :class="{'two-actions': !editable, 'four-actions': editable}">
                 <el-tooltip content="播放" placement="top">
@@ -95,7 +97,7 @@
                     type="text"
                     icon="el-icon-video-play"
                     size="small"
-                    @click.stop="handleDownload(file)"
+                    @click.stop="handleVideo(file)"
                   />
                 </el-tooltip>
                 <el-tooltip content="下载" placement="top">
@@ -106,15 +108,6 @@
                     @click.stop="handleDownload(file)"
                   />
                 </el-tooltip>
-                <!-- 重命名功能暂时隐藏但保留 -->
-                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                  <el-button
-                    type="text"
-                    icon="el-icon-edit"
-                    size="small"
-                    @click.stop="handleRename(file, index)"
-                  />
-                </el-tooltip> -->
                 <el-tooltip v-if="editable" content="删除" placement="top">
                   <el-button
                     type="text"
@@ -133,7 +126,7 @@
           </div>
         </div>
 
-        <!-- 文件类型展示 -->
+        <!-- 文件 -->
         <div v-else class="file-item-content">
           <div class="file-thumbnail square-thumbnail">
             <i class="el-icon-document file-icon"></i>
@@ -149,15 +142,6 @@
                     @click.stop="handleDownload(file)"
                   />
                 </el-tooltip>
-                <!-- 重命名功能暂时隐藏但保留 -->
-                <!-- <el-tooltip v-if="editable" content="重命名" placement="top">
-                  <el-button
-                    type="text"
-                    icon="el-icon-edit"
-                    size="small"
-                    @click.stop="handleRename(file, index)"
-                  />
-                </el-tooltip> -->
                 <el-tooltip v-if="editable" content="删除" placement="top">
                   <el-button
                     type="text"
@@ -181,9 +165,13 @@
 </template>
 
 <script>
+import AisVideo from '../AisVideo/index.vue';
+
 export default {
   name: 'FileDisplay',
-
+  components: {
+    AisVideo
+  },
   props: {
     // 文件列表
     fileList: {
@@ -216,28 +204,18 @@ export default {
     }
   },
 
-  data () {
-    return {
-      internalFileList: []
-    };
-  },
-
   computed: {
     // 获取所有图片的预览列表
     imagePreviewList () {
-      return this.fileList
-        .filter(file => file.fileType === 'image')
-        .map(file => file.url || file.thumbUrl)
-        .filter(url => url); // 过滤掉空URL
-    }
-  },
-
-  watch: {
-    fileList: {
-      immediate: true,
-      handler (newVal) {
-        this.internalFileList = this.processFileList(newVal);
-      }
+      const urls = [];
+      this.fileList.forEach(file => {
+        const isImage = this.isImageFile(file);
+        if (isImage && file.url) {
+          urls.push(file.url);
+        }
+      });
+      console.log(this.fileList);
+      return urls;
     }
   },
 
@@ -272,17 +250,6 @@ export default {
       const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm', '.mpeg', '.mpg'];
       const lowerFileName = fileName.toLowerCase();
       return videoExtensions.some(ext => lowerFileName.endsWith(ext));
-    },
-    // 处理文件列表
-    processFileList (fileList) {
-      return fileList.map(file => {
-        return {
-          ...file,
-          fileType: file.fileType || this.detectFileType(file),
-          editing: false,
-          editName: file.name
-        };
-      });
     },
 
     // 检测文件类型
@@ -341,43 +308,59 @@ export default {
       return this.imagePreviewList.findIndex(url => url === imageUrl);
     },
 
-    // 处理图片点击事件
-    handleImageClick (event, file, index) {
-      if (this.disabled) return;
-      // 阻止事件冒泡，避免触发其他操作
-      event.stopPropagation();
-      // 调用el-image的clickHandler方法
-      this.triggerImagePreview(index);
-    },
-
     // 通过"查看"按钮触发图片预览
     handleViewImage (file, index) {
       if (this.disabled) return;
-      this.triggerImagePreview(index);
-    },
-
-    // 触发el-image预览的方法
-    triggerImagePreview (index) {
       this.$nextTick(() => {
-        const imageRef = this.$refs[`imageRef_${index}`];
-        if (imageRef && imageRef[0]) {
-          // 调用el-image组件的clickHandler方法
-          if (typeof imageRef[0].clickHandler === 'function') {
-            imageRef[0].clickHandler();
-          } else {
-            // 如果clickHandler不可用，尝试其他方式
-            const imageInstance = imageRef[0];
-            if (imageInstance.showViewer) {
-              imageInstance.showViewer();
-            }
-          }
+        const imageRef = this.$refs[`imageRef_${index}`]?.[0];
+        if (imageRef && typeof imageRef.clickHandler === 'function') {
+          imageRef.clickHandler();
         }
+      });
+    },
+    // 处理视频播放
+    handleVideo (file) {
+      this.$video.show({
+        url: file.url,
+        title: file.name
       });
     },
 
     // 下载文件
     handleDownload (file) {
-      window.open(file.response.fileUrl);
+      const { url, name } = file;
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          // 创建 blob URL
+          const blobUrl = URL.createObjectURL(blob);
+
+          // 创建下载链接
+          const link = document.createElement('a');
+          link.href = blobUrl;
+
+          // 确保文件名有正确的扩展名
+          link.download = name;
+
+          // 添加到文档并触发下载
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // 清理 blob URL 释放内存
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        })
+        .catch(error => {
+          console.error('图片下载失败:', error);
+          // 降级方案：尝试直接使用原始URL
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = name;
+          link.target = '_blank'; // 新窗口打开作为备选
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
     },
 
     // 删除文件
@@ -393,7 +376,38 @@ export default {
     handlePreview (file) {
       if (this.disabled) return;
       this.$emit('preview', file);
-    }
+    },
+    // 捕获视频第一帧
+    captureFirstFrame (file, index) {
+      if (file.thumbnailUrl) {
+        return; // 已经有缩略图，跳过
+      }
+      const video = this.$refs[`videoPlayer_${index}`]?.[0];
+
+      // 确保视频已加载足够数据
+      if (video.readyState < 2) {
+        video.currentTime = 0.1; // 设置到第0.1秒（有些视频第0秒是黑帧）
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // 设置canvas尺寸（可以调整缩略图大小）
+      canvas.width = 120;
+      canvas.height = 120;
+
+      // 绘制视频帧到canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // 将canvas转换为DataURL
+      try {
+        const url = canvas.toDataURL('image/jpeg', 0.8);
+        this.$set(file, 'thumbnailUrl', url);
+      } catch (error) {
+        console.error('生成缩略图失败:', error);
+      }
+    },
   }
 };
 </script>
@@ -450,6 +464,7 @@ export default {
 
 // file-item-content 不包含任何样式
 .file-item-content {
+  width: 120px;
 }
 
 // 方形缩略图样式 - 放大图片
@@ -494,36 +509,27 @@ export default {
   border-radius: 8px;
 
   .video-play-btn {
-    width: 40px;
-    height: 40px;
-    background: rgba(64, 158, 255, 0.8);
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
     transition: all 0.2s ease;
-
-    i {
-      font-size: 20px;
-      color: white;
-      margin-left: 2px;
+    img{
+      width: 100%;
+      height: 100%;
     }
   }
 
-  &:hover .video-play-btn {
-    background: rgba(64, 158, 255, 1);
-    transform: scale(1.1);
-  }
-
-  .video-overlay {
+  .video-preview {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     cursor: pointer;
-    z-index: 2;
   }
 }
 

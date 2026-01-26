@@ -271,30 +271,8 @@ export default {
       handler (newVal) {
         this.internalFileList = [...newVal];
       }
-    }
-    // businessId: {
-    //   immediate: true,
-    //   handler (newVal) {
-    //     if (newVal && this.autoLoad) {
-    //       this.loadFileList();
-    //     }
-    //   }
-    // },
-    // attachType: {
-    //   immediate: true,
-    //   handler (newVal) {
-    //     if (newVal && this.businessId && this.autoLoad) {
-    //       this.loadFileList();
-    //     }
-    //   }
-    // }
+    },
   },
-
-  // mounted () {
-  //   if (this.autoLoad && this.businessId && this.attachType) {
-  //     this.loadFileList();
-  //   }
-  // },
 
   methods: {
     // 获取token
@@ -665,11 +643,6 @@ export default {
       this.internalFileList = [...fileList];
       this.updateFileList(this.internalFileList);
     },
-
-    // // 手动刷新文件列表
-    // refreshFileList () {
-    //   return this.loadFileList();
-    // }
   }
 };
 </script>
