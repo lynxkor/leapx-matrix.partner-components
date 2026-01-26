@@ -37,7 +37,7 @@ export default {
       type: [String, Number],
       default: null
     },
-    attachModuleKey: {
+    attachType: {
       type: String,
       required: true
     },
@@ -76,7 +76,7 @@ export default {
     // 初始化附件数据
     initAttachmentFormData () {
       this.initAttachmentData(
-        this.attachModuleKey,
+        this.attachType,
         this.businessId,
         () => {
           this.$emit('init-success');
