@@ -11,12 +11,11 @@
  * 6. 支持多种使用场景：只读模式、编辑模式、仅展示模式
  *
  * @props {String|Number} id - 附件ID，用于更新已存在的附件记录
- * @props {String|Number} businessId - 业务ID，必填，用于关联业务数据
- * @props {String} attachType - 附件类型，必填，用于区分不同类型的附件
+ * @props {String|Number} businessId - 详情页或者编辑页的id
+ * @props {String} configCode - 实体名称 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
+ * @props {String} attachType - 附件类型 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
  * @props {Array} value - 文件列表，用于v-model双向绑定
- * @props {Boolean} showUpload - 是否显示上传按钮，默认true
- * @props {Boolean} editable - 是否可编辑（重命名、删除），默认true
- * @props {Boolean} disabled - 是否禁用所有操作，默认false
+ * @props {Boolean} readonly - 是否只读，默认false
  * @props {Boolean} autoLoad - 是否自动加载文件列表，默认true
  * @props {Object} uploadConfig - 上传配置对象
  * @props {Object} apiConfig - API配置对象
@@ -32,9 +31,6 @@
  * @method submit() - 手动触发上传
  * @method clearFiles() - 清空文件列表
  * @method getFileList() - 获取当前文件列表
- * @method addFile(file) - 添加文件到列表
- * @method setFileList(fileList) - 设置文件列表
- * @method loadFileList() - 手动加载文件列表
  *
  *
  * @example 只读模式（仅展示）
@@ -43,8 +39,6 @@
  *   attach-type="#"
  *   :value="existingFiles"
  *   :show-upload="false"
- *   :editable="false"
- *   :disabled="true"
  * />
  *
  *
@@ -59,8 +53,6 @@
  *     :business-id="$route.query.id"
  *     :attach-type="configItem.attachType"
  *     :show-upload="true"
- *     :editable="true"
- *     :disabled="false"
  *     :upload-config="getUploadConfig(configItem)"
  *   />
  * </el-form-item>
@@ -70,11 +62,11 @@
   <div class="business-upload">
     <!-- 上传按钮区域 -->
     <el-upload
-      v-if="showUpload"
+      v-if="!readonly"
       ref="uploadRef"
       class="business-upload-area"
       action="#"
-      :http-request="customUploadRequest"
+      :http-request="httpRequest"
       :headers="uploadHeaders"
       :data="uploadData"
       :multiple="multiple"
@@ -88,11 +80,12 @@
       :accept="accept"
       :disabled="uploadDisabled"
       :show-file-list="false"
+      v-bind="$attrs"
+      v-on="$listeners"
     >
       <slot name="trigger">
         <el-button
           size="small"
-          v-show="editable"
           :type="uploadButtonType"
           :icon="uploadIcon"
           :loading="uploadLoading"
@@ -107,18 +100,33 @@
     <file-display
       ref="fileDisplayRef"
       :file-list="internalFileList"
-      :editable="editable"
-      :disabled="disabled"
-      @preview="handleFilePreview"
-      @rename="handleFileRename"
+      :readonly="readonly"
       @delete="handleFileDelete"
+      @update="$emit('update')"
     />
   </div>
 </template>
 
 <script>
 import FileDisplay from '@/libs/components/FileDisplay';
-import { uploadFile, deleteFile, getFileList, addOrUpdateFile } from '@/libs/api/attachment';
+import { uploadFile, deleteFile, addOrUpdateFile } from '@/libs/api/attachment';
+// MIME类型映射
+const mimeTypeMap = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.pdf': 'application/pdf',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.xls': 'application/vnd.ms-excel',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.doc': 'application/msword',
+  '.rar': 'application/x-rar-compressed',
+  '.zip': 'application/zip',
+  '.mp4': 'video/mp4'
+};
 
 export default {
   name: 'BusinessUpload',
@@ -150,22 +158,9 @@ export default {
       default: () => []
     },
 
-    // 是否显示上传按钮
-    showUpload: {
+    readonly: {
       type: Boolean,
       default: true
-    },
-
-    // 是否可编辑（重命名、删除）
-    editable: {
-      type: Boolean,
-      default: true
-    },
-
-    // 是否禁用所有操作
-    disabled: {
-      type: Boolean,
-      default: false
     },
 
     // 是否自动加载文件列表
@@ -196,8 +191,7 @@ export default {
       default: () => ({
         uploadApi: uploadFile,
         deleteApi: deleteFile,
-        getFileListApi: getFileList,
-        addOrUpdateFileApi: addOrUpdateFile // 新增 addOrUpdateFile API 配置
+        addOrUpdateFileApi: addOrUpdateFile,
       })
     }
   },
@@ -206,7 +200,6 @@ export default {
     return {
       internalFileList: [],
       uploadLoading: false,
-      currentUploadingFiles: [],
       loading: false
     };
   },
@@ -220,20 +213,20 @@ export default {
     uploadHeaders () {
       return {
         Authorization: `Bearer ${this.getToken()}`,
-        ...this.uploadConfig.headers
+        ...this.uploadConfig?.headers
       };
     },
 
     // 上传附加数据
     uploadData () {
       return {
-        ...this.uploadConfig.data
+        ...this.uploadConfig?.data
       };
     },
 
     // 上传按钮配置
     uploadText () {
-      return this.uploadConfig.buttonText || '上传文件';
+      return this.uploadConfig?.buttonText || '上传文件';
     },
 
     uploadButtonType () {
@@ -241,27 +234,27 @@ export default {
     },
 
     uploadIcon () {
-      return this.uploadConfig.buttonIcon || 'el-icon-upload';
+      return this.uploadConfig?.buttonIcon || 'el-icon-upload';
     },
 
     multiple () {
-      return this.uploadConfig.multiple !== false;
+      return this.uploadConfig?.multiple !== false;
     },
 
     limit () {
-      return this.uploadConfig.maxNum || 9;
+      return this.uploadConfig?.maxNum || 9;
     },
 
     autoUpload () {
-      return this.uploadConfig.autoUpload !== false;
+      return this.uploadConfig?.autoUpload !== false;
     },
 
     accept () {
-      return this.uploadConfig.accept || '';
+      return this.uploadConfig?.accept || '';
     },
 
     uploadDisabled () {
-      return this.disabled || this.uploadLoading;
+      return this.readonly || this.uploadLoading;
     }
   },
 
@@ -280,67 +273,7 @@ export default {
       // 根据你的实际情况获取token
       return localStorage.getItem('token') || '';
     },
-
-    // 加载文件列表
-    async loadFileList () {
-      if (!this.businessId || !this.attachType) {
-        return;
-      }
-
-      try {
-        this.loading = true;
-        const params = {
-          businessId: this.businessId,
-          attachType: this.attachType
-        };
-
-        const response = await this.apiConfig.getFileListApi(params);
-        if (response && response.data) {
-          // 格式化文件数据以匹配组件期望的格式
-          const formattedFiles = (Array.isArray(response.data) ? response.data : []).map(file => ({
-            attachmentId: file.id || file.attachmentId,
-            name: file.fileName || file.name,
-            url: file.fileUrl || file.url,
-            size: file.fileSize || file.size,
-            fileType: file.fileType || this.getFileTypeFromName(file.fileName || file.name),
-            response: file
-          }));
-
-          this.internalFileList = formattedFiles;
-          this.$emit('input', this.internalFileList);
-          this.$emit('change', this.internalFileList);
-        }
-      } catch (error) {
-        console.error('加载文件列表失败:', error);
-        this.$message.error('加载文件列表失败');
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    // 从文件名获取文件类型
-    getFileTypeFromName (fileName) {
-      if (!fileName) return 'file';
-      const lowerName = fileName.toLowerCase();
-
-      // 图片类型
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
-      // 视频类型
-      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm'];
-
-      for (const ext of imageExtensions) {
-        if (lowerName.endsWith(ext)) return 'image';
-      }
-
-      for (const ext of videoExtensions) {
-        if (lowerName.endsWith(ext)) return 'video';
-      }
-
-      return 'file';
-    },
-
-    // 自定义上传请求
-    async customUploadRequest (options) {
+    async httpRequest (options) {
       const { file, onSuccess, onError } = options;
       try {
         this.uploadLoading = true;
@@ -348,7 +281,7 @@ export default {
         const formData = new FormData();
         formData.append('file', file);
         // 添加额外的数据（如果有的话）
-        if (this.uploadConfig.data) {
+        if (this.uploadConfig?.data) {
           Object.keys(this.uploadConfig.data).forEach(key => {
             formData.append(key, this.uploadConfig.data[key]);
           });
@@ -359,11 +292,11 @@ export default {
         const uploadResponseData = uploadResult.data || {};
         const addOrUpdateParams = {
           // 从 uploadFile 返回的参数
-          fileId: uploadResponseData.id || uploadResponseData.fileId,
-          fileName: uploadResponseData.name || uploadResponseData.fileName || file.name,
-          fileUrl: uploadResponseData.url || uploadResponseData.fileUrl,
-          fileSize: uploadResponseData.size || uploadResponseData.fileSize || file.size,
-          fileType: uploadResponseData.ext || uploadResponseData.fileType || this.getFileType(file),
+          fileId: uploadResponseData.id,
+          fileName: uploadResponseData.filename,
+          fileUrl: uploadResponseData.url,
+          fileSize: uploadResponseData.size,
+          fileType: uploadResponseData.ext,
           // 从外部传入的参数
           attachType: this.attachType,
           businessId: this.businessId
@@ -373,31 +306,8 @@ export default {
           addOrUpdateParams.id = this.id;
         }
         // 第三步：调用 addOrUpdateFile
-        let finalResult = uploadResult;
-        if (this.apiConfig.addOrUpdateFileApi) {
-          finalResult = await this.apiConfig.addOrUpdateFileApi(addOrUpdateParams);
-        } else {
-          // 如果没有提供 addOrUpdateFileApi，则使用合并后的参数作为最终结果
-          finalResult = {
-            ...uploadResult,
-            data: {
-              ...uploadResponseData,
-              ...addOrUpdateParams
-            }
-          };
-        }
-
-        // 创建最终的文件对象
-        const uploadedFile = {
-          ...file,
-          attachmentId: finalResult.data?.id || finalResult.data?.fileId || uploadResponseData.id,
-          name: finalResult.data?.fileName || finalResult.data?.name || file.name,
-          url: finalResult.data?.fileUrl || finalResult.data?.url || uploadResponseData.url,
-          size: finalResult.data?.fileSize || finalResult.data?.size || file.size,
-          fileType: finalResult.data?.fileType || finalResult.data?.type || this.getFileType(file),
-          // 保存完整的响应数据
-          response: finalResult.data
-        };
+        const finalResult = await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
+        this.$emit('update');
         onSuccess(finalResult, uploadedFile);
       } catch (error) {
         console.error('上传失败:', error);
@@ -412,31 +322,43 @@ export default {
       this.$message.warning(`最多只能上传 ${this.limit} 个文件`);
     },
 
+    // 增强版的验证方法，同时验证后缀名和MIME类型
+    validateFileType(file) {
+      const acceptSuffix = this.uploadConfig.acceptSuffix;
+      const fileName = file.name || '';
+      const fileExtension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+
+      const allowedExtensions = acceptSuffix
+        .split(',')
+        .map(ext => ext.trim().toLowerCase());
+
+        // 后缀名验证
+      const isValidExtension = allowedExtensions.includes(fileExtension);
+
+      const mimeTypes = allowedExtensions.map(ext => {
+        return mimeTypeMap[ext];
+      });
+      const isValidMimeType = mimeTypes.includes(file.type);
+
+      return isValidExtension && isValidMimeType;
+    },
     // 上传前处理
     beforeUpload (file) {
-      this.uploadLoading = true;
-      this.currentUploadingFiles.push(file);
-
-      // 调用外部beforeUpload钩子
-      if (this.uploadConfig.beforeUpload) {
-        const result = this.uploadConfig.beforeUpload(file);
-        if (result === false) {
-          this.uploadLoading = false;
-          this.removeCurrentUploadingFile(file);
+      // 文件类型
+      if (!this.validateFileType(file)) {
+        const acceptSuffix = this.uploadConfig.acceptSuffix;
+        this.$message.info(`请上传文件类型为${acceptSuffix}的文件`);
+        return false;
+      }
+      // 文件大小验证
+      if (this.uploadConfig.maxSize) {
+        const maxSize = this.uploadConfig.maxSize * 1024 * 1024; // 转换为字节
+        if (file.size > maxSize) {
+          this.$message.warning(`文件大小不能超过${this.uploadConfig.maxSize}M`);
           return false;
         }
-        return result;
       }
-
       return true;
-    },
-
-    // 移除当前上传文件记录
-    removeCurrentUploadingFile (file) {
-      const index = this.currentUploadingFiles.findIndex(f => f.uid === file.uid);
-      if (index > -1) {
-        this.currentUploadingFiles.splice(index, 1);
-      }
     },
 
     // 文件状态改变
@@ -456,125 +378,18 @@ export default {
 
     // 上传成功
     handleUploadSuccess (response, file, fileList) {
-      this.uploadLoading = false;
-      // 添加文件到列表
-      this.internalFileList.push(file);
-      this.updateFileList(this.internalFileList);
-      this.$emit('success', response, file, fileList);
-      this.$message.success('上传成功');
-
-      // 重新加载文件列表以确保数据同步
-      if (this.autoLoad) {
-        this.loadFileList();
-      }
-    },
-
-    // 获取文件类型
-    getFileType (file) {
-      const name = file.name || '';
-      const lowerName = name.toLowerCase();
-
-      // 图片类型
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
-      // 视频类型
-      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm'];
-
-      for (const ext of imageExtensions) {
-        if (lowerName.endsWith(ext)) return 'image';
-      }
-
-      for (const ext of videoExtensions) {
-        if (lowerName.endsWith(ext)) return 'video';
-      }
-
-      return 'file';
     },
 
     // 上传失败
     handleUploadError (err, file, fileList) {
       this.uploadLoading = false;
-      this.removeCurrentUploadingFiles(file);
       this.$emit('error', err, file, fileList);
       this.$message.error('上传失败');
     },
 
-    // 移除当前上传文件记录（支持单个或多个）
-    removeCurrentUploadingFiles (file) {
-      if (file) {
-        const index = this.currentUploadingFiles.findIndex(f => f.uid === file.uid);
-        if (index > -1) {
-          this.currentUploadingFiles.splice(index, 1);
-        }
-      } else {
-        this.currentUploadingFiles = [];
-      }
-    },
-
-    // 文件预览
-    handleFilePreview (file) {
-      this.$emit('preview', file);
-    },
-
-    // 文件下载
-    handleFileDownload (file) {
-      this.$emit('download', file);
-
-      // 调用下载接口
-      if (file.attachmentId) {
-        console.log('1111');
-        this.downloadAttachment(file.attachmentId, file.name);
-      } else if (file.fileUrl) {
-        console.log('2222');
-        this.downloadFile(file.fileUrl, file.name);
-      }
-    },
-
-    // 下载附件
-    downloadAttachment (attachmentId, fileName) {
-      // 调用你的下载API
-      window.open(`/api/attachment/download/${attachmentId}?filename=${encodeURIComponent(fileName)}`, '_blank');
-    },
-
-    // 下载文件
-    downloadFile (url, fileName) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-
-    // 文件重命名
-    async handleFileRename ({ file, index, oldName, newName }) {
-      if (!this.editable || this.disabled) return;
-
-      try {
-        if (file.attachmentId) {
-          // 调用重命名API
-          await this.apiConfig.renameApi({
-            id: file.attachmentId,
-            new_name: newName
-          });
-        }
-
-        // 更新本地文件列表
-        this.internalFileList[index].name = newName;
-        this.updateFileList(this.internalFileList);
-
-        this.$emit('rename', { file, index, oldName, newName });
-        this.$message.success('重命名成功');
-      } catch (error) {
-        console.error('重命名失败:', error);
-        this.$message.error('重命名失败');
-        // 回退
-        this.internalFileList[index].name = oldName;
-      }
-    },
-
     // 文件删除
     async handleFileDelete ({ file, index }) {
-      if (!this.editable || this.disabled) return;
+      if (this.readonly) return;
 
       try {
         await this.$confirm('确定删除这个文件吗？', '提示', {
@@ -582,23 +397,14 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         });
-        console.log('internalFileList:', this.internalFileList);
-        // return;
-        if (file.attachmentId) {
-          // 调用删除API
-          await this.apiConfig.deleteApi([file.attachmentId]);
+
+        if (file.id) {
+          await this.apiConfig.deleteApi([file.id]);
         }
 
-        // 从文件列表中移除
-        this.internalFileList.splice(index, 1);
-        this.updateFileList(this.internalFileList);
-        this.$emit('delete', { file, index });
         this.$message.success('删除成功');
+        this.$emit('update');
 
-        // 重新加载文件列表以确保数据同步
-        if (this.autoLoad) {
-          this.loadFileList();
-        }
       } catch (error) {
         if (error !== 'cancel') {
           console.error('删除失败:', error);
@@ -629,20 +435,6 @@ export default {
       return this.internalFileList;
     },
 
-    // 添加文件到列表
-    addFile (file) {
-      this.internalFileList.push({
-        ...file,
-        fileType: file.fileType || this.getFileType(file)
-      });
-      this.updateFileList(this.internalFileList);
-    },
-
-    // 设置文件列表
-    setFileList (fileList) {
-      this.internalFileList = [...fileList];
-      this.updateFileList(this.internalFileList);
-    },
   }
 };
 </script>

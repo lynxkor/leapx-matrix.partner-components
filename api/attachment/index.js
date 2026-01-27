@@ -124,7 +124,7 @@ export function deleteFile (params) {
 /**
  * 获取附件列表
  * @export
- * @param {Object} params
+ * @param {Object} params {businessId, attachType}
  * @returns
  */
 export function getFileList (params) {
@@ -132,7 +132,7 @@ export function getFileList (params) {
 }
 
 /**
- * 新增或更新附件信息
+ * 文件绑定到业务id
  * @export
  * @param {Object} params
  * @returns

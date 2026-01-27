@@ -130,6 +130,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    originalForm: {
+      type: Object,
+      default: () => ({}),
+    },
     /**
      * 详情页id
      */
@@ -183,7 +187,7 @@ export default {
       loading: false,
       // 表单初始值
       defaultForm: {},
-      originalForm: {},
+      innerOriginalForm: {},
       //
       detailLoading: false,
     };
@@ -209,7 +213,9 @@ export default {
         const transformedData = this.dataTransform ? this.dataTransform(res): res;
         const newForm = { ...this.defaultForm, ...transformedData };
         this.updateForm(newForm);
-        this.originalForm = cloneDeep(newForm);
+        this.innerOriginalForm = cloneDeep(newForm);
+        // 路由拦截需要使用
+        this.$emit('update:originalForm', newForm);
       } catch (error) {
         this.detailLoading = false;
       }
@@ -296,7 +302,7 @@ export default {
     },
     // 编辑，操作刷新时需要恢复操作前状态
     resetToOriginal () {
-      this.updateForm(cloneDeep(this.originalForm));
+      this.updateForm(cloneDeep(this.innerOriginalForm));
     },
     // 保存&再建一个 操作成功后需要初始化
     resetToDefault () {
@@ -309,7 +315,7 @@ export default {
         type: 'success'
       });
     },
-  }
+  },
 };
 </script>
 <style lang="scss" scoped>
