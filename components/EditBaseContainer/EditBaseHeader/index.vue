@@ -319,8 +319,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 .px-5{
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .header-container {

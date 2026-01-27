@@ -128,7 +128,11 @@ export function deleteFile (params) {
  * @returns
  */
 export function getFileList (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/list', params);
+  return fileServiceAxios.post('/web/attachment/attachment/list', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 /**
