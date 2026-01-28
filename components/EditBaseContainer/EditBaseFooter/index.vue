@@ -92,6 +92,7 @@ export default {
     if (!this.moduleKey) {
       console.log(`%c未能获取到moduleKey，按钮权限丢失`, 'color: red; font-weight: bold;');
     }
+    console.log(this.$router);
   },
   methods: {
     handleCancel () {
@@ -105,7 +106,7 @@ export default {
           this.$emit('reset');
         } else {
           const path = getRouterPath();
-          this.$router.push({
+          this.$router.replace({
             path,
             query: {
               id,

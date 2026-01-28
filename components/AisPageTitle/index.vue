@@ -38,13 +38,7 @@ export default {
       }
     },
     handleBack () {
-      const path = this.$route.path;
-      this.$router.back(); // 1-10ms
-      setTimeout(() => {
-        if (path === this.$route.path) {
-          this.handleBack();
-        }
-      }, 100);
+      this.$router.back();
     }
   }
 };

@@ -215,7 +215,7 @@ export default {
         this.updateForm(newForm);
         this.innerOriginalForm = cloneDeep(newForm);
         // 路由拦截需要使用
-        this.$emit('update:originalForm', newForm);
+        this.$emit('update:originalForm', cloneDeep(newForm));
       } catch (error) {
         this.detailLoading = false;
       }
