@@ -88,7 +88,6 @@
 </template>
 <script>
 
-import { handleBackForEdit } from '../../../utils/index';
 import permissions from '../../../mixins/permissions';
 import ButtonGroup from '../../ButtonGroup';
 import { getDomStyle } from '../../../utils';
@@ -256,7 +255,6 @@ export default {
       this.$emit('cancel');
     },
     handleBack () {
-      handleBackForEdit(this.$router);
     },
     handleEdit () {
       this.$emit('edit');

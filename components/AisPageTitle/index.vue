@@ -10,7 +10,6 @@
 </template>
 
 <script>
-import { handleBackForEdit } from '../../utils/index';
 
 export default {
   computed: {
@@ -39,7 +38,13 @@ export default {
       }
     },
     handleBack () {
-      handleBackForEdit(this.$router);
+      const path = this.$route.path;
+      this.$router.back(); // 1-10ms
+      setTimeout(() => {
+        if (path === this.$route.path) {
+          this.handleBack();
+        }
+      }, 100);
     }
   }
 };
