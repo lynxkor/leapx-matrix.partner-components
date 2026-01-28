@@ -3,7 +3,7 @@
     <transition-group name="file-list" tag="div" class="file-list-wrapper">
       <div
         v-for="(file, index) in fileList"
-        :key="file.id"
+        :key="file.id || file.uid"
         class="file-item"
         :class="{
           'file-item-image': file.isImage,
@@ -55,7 +55,7 @@
           <div class="file-actions-mask">
             <el-popover
               :ref="`popoverRef_${index}`"
-              v-if="!readonly"
+              v-if="!readonly && !file.raw"
               class="iconfont"
               placement="right"
               width="400"
@@ -84,8 +84,8 @@
 </template>
 
 <script>
-import AisVideo from '../AisVideo/index.vue';
-import { addOrUpdateFile } from '../../api/attachment/index';
+import AisVideo from '../../AisVideo/index.vue';
+import { addOrUpdateFile } from '../../../api/attachment/index';
 
 export default {
   name: 'FileDisplay',
@@ -96,7 +96,7 @@ export default {
     // 文件列表
     fileList: {
       type: Array,
-      default: () => []
+      default: () => ([])
     },
 
     // 是否只读
@@ -171,6 +171,20 @@ export default {
     // 下载文件
     handleDownload (file) {
       const { url, name } = file;
+      // 本地文件直接下载
+      if (file.raw) {
+        const url = URL.createObjectURL(file.raw);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      // 远程文件下载
       fetch(url)
         .then(response => response.blob())
         .then(blob => {
