@@ -4,18 +4,26 @@
  * @property {string|number} businessId - 业务ID，详情页或者编辑页的id
  * @property {String} configCode - 实体名称 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
  * @property {String} attachType - 附件类型 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
- * @property {boolean} readonly - 是否仅展示，默认为 false
- *
- * @event {Function} on-update - 附件更新时触发的事件
- *
+ * @property {boolean} readonly - 是否只读模式，默认为 false
+ *                        true: 仅展示附件，不允许上传和删除
+ *                        false: 允许上传和管理附件
+ * @property {Object} uploadConfig - 自定义上传配置，当 configCode 为空时生效
+ * @property {string} uploadConfig.acceptSuffix - 允许上传的文件后缀，多个用逗号分隔
+ * @property {number} uploadConfig.maxSize - 单个文件最大大小，单位：MB
+ * @property {number} uploadConfig.maxNum - 最大上传数量，0 表示无限制
+ * @property {string} uploadConfig.required - 是否必填，'0': 非必填，'1': 必填
+ * @property {boolean} noEcho - 是否不回显附件，默认为 false
+ *                      true: 每次打开都是新的，不显示历史附件
+ *                      false: 显示历史上传的附件
  * @example
- * <!-- 用法一  后端校验规则-->
+ * <!-- 基本用法 - 后端校验规则-->
     <AisAttachment
       :businessId="_id"
       configCode="xxxxxx"
       attachType="其他"
     />
-  // 用法二：纯展示，不进行上传和编辑
+
+    // 仅展示模式
     <AisAttachment
       :businessId="_id"
       configCode="xxxxxx"
@@ -23,14 +31,13 @@
       :readonly="true"
     />
 
-    // 用法三 不走后端校验规则，使用默认校验规则
+    // 使用前端默认校验规则
     <AisAttachment
       :businessId="_id"
       ref="attachment"
     />
-    this.$refs.attachment.getAttachment(); // 手动关联附件使用
 
-    // 用法四 自定义校验规则
+    // 自定义校验规则
     <AisAttachment
       :businessId="_id"
       :uploadConfig={
@@ -40,6 +47,25 @@
         required: '0',
       }
     />
+
+    // 不回显模式
+    <AisAttachment
+      :businessId="_id"
+      :noEcho="true"
+      ref="attachment"
+    />
+
+    * @example
+    * // 获取所有附件
+    * const allFiles = this.$refs.attachment.getFileList();
+    * console.log('总附件数:', allFiles.length);
+    *
+    * // 获取新增的附件
+    * const newAttachments = this.$refs.attachment.getAttachment();
+    * await submitForm({ attachments: newAttachments });
+    *
+    * // 手动更新附件内容
+    * this.$refs.attachment.update();
  */
 </script>
 <template>
@@ -74,7 +100,7 @@ export default {
   props: {
     businessId: {
       type: [String, Number],
-      default: null
+      default: '',
     },
     configCode: {
       type: String,
@@ -90,25 +116,42 @@ export default {
     uploadConfig: {
       type: Object,
     },
+    // 是否为不回显
+    noEcho: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
+    /**
+     * 组件数据
+     * @property {Object} internalUploadConfig - 内部使用的上传配置
+     * @property {string} internalUploadConfig.acceptSuffix - 默认支持的文件后缀
+     * @property {number} internalUploadConfig.maxSize - 默认最大文件大小（50MB）
+     * @property {number} internalUploadConfig.maxNum - 默认最大上传数量（0表示无限制）
+     * @property {string} internalUploadConfig.required - 默认是否必填（'0'表示非必填）
+     * @property {Array} fileList - 附件列表数据
+     * @property {boolean} loading - 加载状态
+     * @property {Array} attachFileList - 手动提交使用的附件列表
+     */
     return {
-      // 前端默认配置
       internalUploadConfig: {
-        // 前端默认配置
         acceptSuffix: ".png,.jpg,.jpeg,.gif,.pdf,.ppt,.pptx,.xlsx,.xls,.docx,.doc,.rar,.zip,.mp4",
         maxSize: 50, // 50M
         maxNum: 0,
         required: '0', // '0', '1'
       },
-      //
       fileList: [],
       loading: false,
-      // 手动提交使用
       attachFileList: [],
     };
   },
   watch: {
+    /**
+     * 监听器
+     * @listens businessId - 监听业务ID变化，重新初始化附件数据
+     * @listens uploadConfig - 监听上传配置变化，更新内部配置（当configCode为空时）
+     */
     businessId: {
       handler (newVal) {
         if (newVal) {
@@ -121,7 +164,6 @@ export default {
       handler (newVal) {
         if (!this.configCode) {
           this.internalUploadConfig = newVal;
-          console.log('xxxx', newVal);
         }
       },
       deep: true,
@@ -144,13 +186,12 @@ export default {
         // 第一步：获取配置
         await this.loadAttachmentConfig(configCode, attachType);
         // 第二步：获取文件列表
-        await this.loadAttachmentFiles(businessId, attachType);
+        await this.loadAttachmentFiles(businessId, attachType, this.noEcho);
 
         if (onSuccess && typeof onSuccess === 'function') {
           onSuccess();
         }
       } catch (error) {
-        console.error('初始化附件数据失败:', error);
         this.$message?.error('初始化附件数据失败');
 
         if (onError && typeof onError === 'function') {
@@ -193,8 +234,12 @@ export default {
      * 加载附件文件列表
      * @param {string|number} businessId - 业务ID
      */
-    async loadAttachmentFiles (businessId, attachType) {
+    async loadAttachmentFiles (businessId, attachType, noEcho) {
       if (!businessId) {
+        return;
+      }
+      // 首次加载不回显
+      if (noEcho) {
         return;
       }
 
@@ -263,7 +308,7 @@ export default {
     },
     // 更新
     update () {
-      this.loadAttachmentFiles(this.businessId, this.attachType);
+      this.loadAttachmentFiles(this.businessId, this.attachType, false);
     },
     addParam (param) {
       this.attachFileList.push(param);
@@ -272,9 +317,13 @@ export default {
       const index = this.attachFileList.findIndex(item => item?.file?.name === param.name);
       this.attachFileList.splice(index, 1);
     },
-    // 手动执行关联
+    // 获取新增附件
     getAttachment () {
       return this.attachFileList.map(item => item.addOrUpdateParams);
+    },
+    // 获取所有附件
+    getFileList () {
+      return this.fileList;
     }
   },
 };

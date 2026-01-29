@@ -11,6 +11,7 @@
  * @param {Function} detailRequest 获取表单内容的详情接口，编辑查看详情时使用；
  * @param {DataTransformFunction} dataTransform 详情接口数据转换函数，将详情接口数据转换成表单数据
  * @param {Boolean} direction 表单是横向排列，还是纵向排列，横向排列具有响应式，根据屏幕宽度自动换行
+ * @param {Boolean} showEditBtn - 是否显示编辑按钮，默认 true
  *
  * @event submit - 没有传递submitRequest时，会触发submit提交
  *

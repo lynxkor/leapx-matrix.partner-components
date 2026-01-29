@@ -35,7 +35,7 @@
                 <img :src="file.thumbnailUrl" alt="视频缩略图" class="thumbnail-image">
               </div>
               <div class="video-play-btn">
-                <img :src="require('./video.png')" alt="">
+                <img :src="require('../icon/video.png')" alt="">
               </div>
               <ais-video />
               <video

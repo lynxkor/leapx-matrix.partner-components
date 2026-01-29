@@ -17,6 +17,7 @@
   <splitpanes class="default-theme">
     <pane>
       <slot name="left"></slot>
+      <slot></slot>
     </pane>
     <pane v-if="showPane" :size="width">
       <div class="right-panel">
