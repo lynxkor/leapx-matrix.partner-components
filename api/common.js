@@ -64,10 +64,10 @@ export function exportTable (data) {
 
 /**
  * 枚举通用接口
- * @param {*} data
- */
-export function getEnum (code) {
-  return api.jsonPost('/datacenter/web/common/commonDictValue/get', { dictType: code });
+  * @param {*} data
+  */
+export function getEnum (code, size) {
+  return api.jsonPost('/datacenter/web/common/commonDictValue/get', { dictType: code, pageSize: size || 200 });
 }
 
 /**
