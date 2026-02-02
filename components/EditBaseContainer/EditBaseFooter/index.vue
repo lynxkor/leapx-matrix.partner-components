@@ -31,10 +31,10 @@
   <el-footer height="60px">
     <!-- 支持自定义插槽 -->
     <slot name="footer">
-      <el-button size="small" @click="handleCancel">{{ cancelText }}</el-button>
       <el-button v-if="canAddOrUpdate" size="small" type="primary" @click="handleSave" :loading="loading">{{ saveText }}</el-button>
-      <el-button v-if="canAddOrUpdate" size="small" plain type="primary" @click="handleSaveAndClose" :loading="loading">{{ saveAndCloseText }}</el-button>
+      <!-- <el-button v-if="canAddOrUpdate" size="small" plain type="primary" @click="handleSaveAndClose" :loading="loading">{{ saveAndCloseText }}</el-button> -->
       <el-button v-if="canAddOrUpdate" size="small" plain type="primary" @click="handleSaveAndNext" :loading="loading">{{ saveAndNextText }}</el-button>
+      <el-button size="small" @click="handleCancel">{{ cancelText }}</el-button>
     </slot>
   </el-footer>
 </template>
@@ -55,7 +55,7 @@ export default {
      */
     cancelText: {
       type: String,
-      default: '返回'
+      default: '取消'
     },
     /**
      * 保存按钮文本
@@ -76,7 +76,7 @@ export default {
      */
     saveAndNextText: {
       type: String,
-      default: '保存&再建一个'
+      default: '保存并再新增'
     },
     /**
      * 刷新按钮文本
