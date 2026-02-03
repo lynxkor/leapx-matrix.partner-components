@@ -230,7 +230,6 @@ export default {
 
     // 获取按钮宽度缓存，外部调用
     getWidth () {
-      this.cacheButtonWidths();
       return this.buttonWidths.reduce((total, width) => total + width, 0);
     }
   }

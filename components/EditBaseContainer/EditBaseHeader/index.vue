@@ -224,7 +224,7 @@ export default {
     },
     // 监听 $slots 对象的变化
     '$slots.extraButtons': {
-      handler(newVal, oldVal) {
+      handler (newVal, oldVal) {
         this.$nextTick(() => {
           this.updateGroupWidth();
         });
