@@ -221,6 +221,15 @@ export default {
       this.$nextTick(() => {
         this.measureButtonGroupWidth();
       });
+    },
+    // 监听 $slots 对象的变化
+    '$slots.extraButtons': {
+      handler(newVal, oldVal) {
+        this.$nextTick(() => {
+          this.updateGroupWidth();
+        });
+      },
+      deep: true, // 深度监听
     }
   },
   created () {
