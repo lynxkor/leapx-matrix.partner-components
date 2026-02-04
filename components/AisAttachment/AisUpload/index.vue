@@ -351,13 +351,21 @@ export default {
       if (!this.isAttached) {
         this.internalFileList = fileList.map(file => {
           if (file.raw && !file.url) {
-            const isImage = file.raw.type.startsWith('image/');
-            const isVideo = file.raw.type.startsWith('video/');
+            const fileType = file.raw.type;
+            const isImage = fileType.startsWith('image/');
+            const isVideo = fileType.startsWith('video/');
+            const isExcel = [
+              'application/vnd.ms-excel',
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ].includes(fileType);
+            const isPdf = fileType === 'application/pdf';
             return {
               ...file,
               url: URL.createObjectURL(file.raw),
               isImage,
               isVideo,
+              isExcel,
+              isPdf,
             }
           }
           return file;

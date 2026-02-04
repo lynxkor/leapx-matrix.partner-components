@@ -69,20 +69,9 @@
  */
 </script>
 <template>
-  <ais-upload
-    v-model="fileList"
-    :business-id="businessId"
-    :attach-type="attachType"
-    :isAttached="Boolean(configCode)"
-    :show-upload="true"
-    :readonly="readonly"
-    :uploadConfig="internalUploadConfig"
-    @update="update"
-    @addParam="addParam"
-    @removeParam="removeParam"
-    v-bind="$attrs"
-    v-on="$listeners"
-  />
+  <ais-upload v-model="fileList" :business-id="businessId" :attach-type="attachType" :isAttached="Boolean(configCode)"
+    :show-upload="true" :readonly="readonly" :uploadConfig="internalUploadConfig" @update="update" @addParam="addParam"
+    @removeParam="removeParam" v-bind="$attrs" v-on="$listeners" />
 </template>
 
 <script>
@@ -257,6 +246,8 @@ export default {
             fileType: file.fileType,
             isImage: this.isImageFile(file),
             isVideo: this.isVideoFile(file),
+            isExcel: this.isExcelFile(file),
+            isPdf: this.isPdfFile(file),
             response: file,
           };
         });
@@ -286,7 +277,7 @@ export default {
         return true;
       }
       // 从文件名后缀判断
-      const fileName = file.name || '';
+      const fileName = file.fileName || '';
       const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg'];
       const lowerFileName = fileName.toLowerCase();
       return imageExtensions.some(ext => lowerFileName.endsWith(ext));
@@ -301,10 +292,44 @@ export default {
         return true;
       }
       // 从文件名后缀判断
-      const fileName = file.name || '';
+      const fileName = file.fileName || '';
       const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm', '.mpeg', '.mpg'];
       const lowerFileName = fileName.toLowerCase();
       return videoExtensions.some(ext => lowerFileName.endsWith(ext));
+    },
+    // 判断是否为PDF文件
+    isPdfFile (file) {
+      if (!file) return false;
+      // 从文件类型字段判断
+      const fileType = (file.fileType || '').toLowerCase();
+      if (['pdf'].includes(fileType)) {
+        return true;
+      }
+      // 从文件名后缀判断
+      const fileName = file.fileName || '';
+      const pdfExtensions = ['.pdf'];
+      const lowerFileName = fileName.toLowerCase();
+      return pdfExtensions.some(ext => lowerFileName.endsWith(ext));
+    },
+    // 判断是否为Excel文件
+    isExcelFile (file) {
+      if (!file) return false;
+      // 从文件类型字段判断
+      const fileType = (file.fileType || '').toLowerCase();
+      const excelTypes = [
+        'xls',
+        'xlsx',
+        'csv',
+        'text/csv'
+      ];
+      if (excelTypes.includes(fileType)) {
+        return true;
+      }
+      // 从文件名后缀判断
+      const fileName = file.fileName || '';
+      const excelExtensions = ['.xls', '.xlsx', '.csv'];
+      const lowerFileName = fileName.toLowerCase();
+      return excelExtensions.some(ext => lowerFileName.endsWith(ext));
     },
     // 更新
     update () {
@@ -334,6 +359,7 @@ export default {
   .attachment-form {
     display: flex;
     flex-direction: column;
+
     .el-form-item {
       width: 100%;
     }

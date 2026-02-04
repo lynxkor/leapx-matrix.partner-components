@@ -47,7 +47,15 @@
                 @loadeddata="captureFirstFrame(file, index)"
               ></video>
             </div>
-            <!-- 文件 -->
+            <!-- excel -->
+            <div class="card-img" v-else-if="file.isExcel">
+              <img :src="require('../icon/xls.png')" alt="">
+            </div>
+            <!-- pdf -->
+            <div class="card-img" v-else-if="file.isPdf">
+              <img :src="require('../icon/pdf.png')" alt="">
+            </div>
+            <!-- 其他文件 -->
             <div v-else class="other">
               <i class="el-icon-document file-icon"></i>
             </div>
@@ -76,7 +84,10 @@
           </div>
         </div>
         <div class="desc">
-          <span>{{ file.name }}</span>
+          <el-popover>
+            {{ file.name }}
+            <span slot="reference">{{ file.name }}</span>
+          </el-popover>
         </div>
       </div>
     </transition-group>
@@ -357,6 +368,17 @@ export default {
             width: 100%;
             height: 100%;
           }
+        }
+      }
+      .card-img{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img{
+          width: 40px;
+          height: 40px;
         }
       }
       // 文件
