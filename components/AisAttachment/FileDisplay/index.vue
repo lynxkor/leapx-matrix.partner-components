@@ -52,7 +52,7 @@
               <img :src="require('../icon/xls.png')" alt="">
             </div>
             <!-- pdf -->
-            <div class="card-img" v-else-if="file.isPdf">
+            <div class="card-img" v-else-if="file.isPdf" @click.stop="handlePdf(file)">
               <img :src="require('../icon/pdf.png')" alt="">
             </div>
             <!-- 其他文件 -->
@@ -304,6 +304,11 @@ export default {
     onNameClose (index) {
       const ref = this.$refs[`popoverRef_${index}`]?.[0];
       ref.doClose();
+    },
+    handlePdf (file) {
+      if (file.url) {
+        window.open(file.url);
+      }
     }
   }
 };
