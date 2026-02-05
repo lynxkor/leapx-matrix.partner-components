@@ -9,7 +9,7 @@
     <el-form ref="auditForm" :model="auditForm" :rules="rules">
       <el-form-item
         v-if="auditDataList && auditDataList.length > 0"
-        label="批量审核数据"
+        :label="auditDataList && auditDataList.length > 1 ? '批量审核数据' : '审核数据'"
         prop="auditor"
       >
         <el-tooltip
