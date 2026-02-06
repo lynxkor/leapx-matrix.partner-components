@@ -123,9 +123,20 @@ const mimeTypeMap = {
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   '.xls': 'application/vnd.ms-excel',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  '.doc': 'application/msword',
-  '.rar': 'application/x-rar-compressed',
-  '.zip': 'application/zip',
+  '.doc': [
+    'application/msword',                     // 最标准、最常用
+    'application/vnd.ms-word.document.macroEnabled.12', // 带宏的 Word 2007+ 文档（.docm 格式也适用）
+    'application/x-msword',                   // 变体格式，常见于某些系统
+  ],
+  '.rar': [
+    'application/x-rar-compressed',
+    'application/vnd.rar',
+  ],
+  '.zip': [
+    'application/zip',               // 最标准、最推荐
+    'application/x-zip-compressed',  // 传统格式，广泛支持
+    'application/x-zip',             // 变体格式
+  ],
   '.mp4': 'video/mp4'
 };
 
@@ -304,6 +315,7 @@ export default {
 
     // 增强版的验证方法，同时验证后缀名和MIME类型
     validateFileType(file) {
+      // ".png,.jpg,.jpeg,.gif,.pdf,.ppt,.pptx,.xlsx,.xls,.docx,.doc,.rar,.zip,.mp4"
       if (!this.accept) {
         return true;
       }
@@ -320,7 +332,7 @@ export default {
       const mimeTypes = allowedExtensions.map(ext => {
         return mimeTypeMap[ext];
       });
-      const isValidMimeType = mimeTypes.includes(file.type);
+      const isValidMimeType = mimeTypes?.flat()?.includes(file.type);
 
       return isValidExtension && isValidMimeType;
     },
@@ -359,6 +371,19 @@ export default {
               'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ].includes(fileType);
             const isPdf = fileType === 'application/pdf';
+            const isPPT = [
+              'application/vnd.ms-powerpoint',
+              'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            ].includes(fileType);
+            const isText = fileType === 'text/plain';
+            const isWord = [
+              'application/msword',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ].includes(fileType);
+            const isZip = [
+              'application/zip',
+              'application/x-zip-compressed',
+            ].includes(fileType);
             return {
               ...file,
               url: URL.createObjectURL(file.raw),
@@ -366,6 +391,10 @@ export default {
               isVideo,
               isExcel,
               isPdf,
+              isPPT,
+              isWord,
+              isText,
+              isZip,
             }
           }
           return file;
