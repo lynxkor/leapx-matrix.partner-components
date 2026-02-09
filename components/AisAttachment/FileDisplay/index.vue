@@ -51,13 +51,25 @@
             <div class="card-img" v-else-if="file.isExcel">
               <img :src="require('../icon/xls.png')" alt="">
             </div>
+            <!-- ppt -->
+            <div class="card-img" v-else-if="file.isPPT">
+              <img :src="require('../icon/ppt.png')" alt="">
+            </div>
+            <!-- word -->
+            <div class="card-img" v-else-if="file.isWord">
+              <img :src="require('../icon/word.png')" alt="">
+            </div>
             <!-- pdf -->
             <div class="card-img" v-else-if="file.isPdf" @click.stop="handlePdf(file)">
               <img :src="require('../icon/pdf.png')" alt="">
             </div>
+            <!-- zip, rar -->
+            <div class="card-img" v-else-if="file.isZip || file.isRar">
+              <img :src="require('../icon/zip.png')" alt="">
+            </div>
             <!-- 其他文件 -->
-            <div v-else class="other">
-              <i class="el-icon-document file-icon"></i>
+            <div v-else class="card-img">
+              <img :src="require('../icon/text.png')" alt="">
             </div>
           </div>
           <div class="file-actions-mask">
@@ -69,8 +81,8 @@
               width="400"
               trigger="click">
               <el-form label-width="" class="form-edit">
-                <el-form-item label="">
-                  <el-input v-model="file.copyName"></el-input>
+                <el-form-item>
+                  <el-input @keydown.enter.native.prevent.stop v-model="file.copyName"/>
                 </el-form-item>
                 <el-form-item style="margin:0;">
                   <el-button size="small" type="primary" @click.stop="onNameSave(file, index)">保存</el-button>
@@ -309,7 +321,8 @@ export default {
       if (file.url) {
         window.open(file.url);
       }
-    }
+    },
+    onEnter () {}
   }
 };
 </script>

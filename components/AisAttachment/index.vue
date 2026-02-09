@@ -77,7 +77,7 @@
 <script>
 import AisUpload from './AisUpload';
 import { getByCode, getFileList } from '../../api/attachment';
-
+import { isFileType } from '../../utils/file.js';
 // 根据 configCode 进行缓存
 const attachmentConfigCache = new Map();
 
@@ -244,10 +244,15 @@ export default {
             url: file.fileUrl,
             size: file.fileSize,
             fileType: file.fileType,
-            isImage: this.isImageFile(file),
-            isVideo: this.isVideoFile(file),
-            isExcel: this.isExcelFile(file),
-            isPdf: this.isPdfFile(file),
+            isImage: isFileType(file, 'image'),
+            isVideo: isFileType(file, 'video'),
+            isPdf: isFileType(file, 'pdf'),
+            isExcel: isFileType(file, 'excel'),
+            isWord: isFileType(file, 'word'),
+            isPPT: isFileType(file, 'ppt'),
+            isText: isFileType(file, 'text'),
+            isZip: isFileType(file, 'zip'),
+            isRar: isFileType(file, 'rar'),
             response: file,
           };
         });
@@ -266,70 +271,6 @@ export default {
         (error) => {
         }
       );
-    },
-    // 判断是否是图片
-    isImageFile (file) {
-      if (!file) return false;
-      // 从文件类型字段判断
-      const fileType = (file.fileType || '').toLowerCase();
-      const imageTypes = ['image', 'img', 'picture', 'photo', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'];
-      if (imageTypes.includes(fileType)) {
-        return true;
-      }
-      // 从文件名后缀判断
-      const fileName = file.fileName || '';
-      const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg'];
-      const lowerFileName = fileName.toLowerCase();
-      return imageExtensions.some(ext => lowerFileName.endsWith(ext));
-    },
-    // 判断是否为视频文件
-    isVideoFile (file) {
-      if (!file) return false;
-      // 从文件类型字段判断
-      const fileType = (file.fileType || '').toLowerCase();
-      const videoTypes = ['video', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'mpeg', 'mpg'];
-      if (videoTypes.includes(fileType)) {
-        return true;
-      }
-      // 从文件名后缀判断
-      const fileName = file.fileName || '';
-      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm', '.mpeg', '.mpg'];
-      const lowerFileName = fileName.toLowerCase();
-      return videoExtensions.some(ext => lowerFileName.endsWith(ext));
-    },
-    // 判断是否为PDF文件
-    isPdfFile (file) {
-      if (!file) return false;
-      // 从文件类型字段判断
-      const fileType = (file.fileType || '').toLowerCase();
-      if (['pdf'].includes(fileType)) {
-        return true;
-      }
-      // 从文件名后缀判断
-      const fileName = file.fileName || '';
-      const pdfExtensions = ['.pdf'];
-      const lowerFileName = fileName.toLowerCase();
-      return pdfExtensions.some(ext => lowerFileName.endsWith(ext));
-    },
-    // 判断是否为Excel文件
-    isExcelFile (file) {
-      if (!file) return false;
-      // 从文件类型字段判断
-      const fileType = (file.fileType || '').toLowerCase();
-      const excelTypes = [
-        'xls',
-        'xlsx',
-        'csv',
-        'text/csv'
-      ];
-      if (excelTypes.includes(fileType)) {
-        return true;
-      }
-      // 从文件名后缀判断
-      const fileName = file.fileName || '';
-      const excelExtensions = ['.xls', '.xlsx', '.csv'];
-      const lowerFileName = fileName.toLowerCase();
-      return excelExtensions.some(ext => lowerFileName.endsWith(ext));
     },
     // 更新
     update () {
