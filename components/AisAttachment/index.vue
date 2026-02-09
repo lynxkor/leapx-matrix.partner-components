@@ -15,6 +15,7 @@
  * @property {boolean} noEcho - 是否不回显附件，默认为 false
  *                      true: 每次打开都是新的，不显示历史附件
  *                      false: 显示历史上传的附件
+ * @event upload-loading-change - 监听上传文件loading变化
  * @example
  * <!-- 基本用法 - 后端校验规则-->
     <AisAttachment

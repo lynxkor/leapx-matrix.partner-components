@@ -142,7 +142,11 @@ export function getFileList (params) {
  * @returns
  */
 export function addOrUpdateFile (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/addOrUpdate', params);
+  return fileServiceAxios.post('/web/attachment/attachment/addOrUpdate', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 /**

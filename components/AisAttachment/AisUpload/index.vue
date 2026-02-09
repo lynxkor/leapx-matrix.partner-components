@@ -220,7 +220,9 @@ export default {
     return {
       internalFileList: [],
       uploadLoading: false,
-      loading: false
+      loading: false,
+      // 记录正在上传的文件
+      uploadingFiles: new Set(),
     };
   },
 
@@ -256,6 +258,12 @@ export default {
         this.internalFileList = [...newVal];
       }
     },
+    uploadLoading: {
+      handler(newVal) {
+        this.$emit('upload-loading-change', newVal);
+      },
+      immediate: true
+    }
   },
 
   methods: {
@@ -266,8 +274,13 @@ export default {
     },
     async httpRequest (options) {
       const { file, onSuccess, onError } = options;
+      const fileId = file.uid;
       try {
-        this.uploadLoading = true;
+        this.uploadingFiles.add(fileId);
+        if (this.uploadingFiles.size === 1) {
+          this.uploadLoading = true;
+        }
+
         // 第一步：调用 uploadFile 上传文件
         const formData = new FormData();
         formData.append('file', file);
@@ -299,17 +312,21 @@ export default {
           await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
           this.$emit('update');
         } else {
-          this.$emit('addParam', {
+          const param = {
             addOrUpdateParams,
             file,
-          });
+          };
+          this.$emit('addParam', param);
         }
         onSuccess();
       } catch (error) {
         console.error('上传失败:', error);
         onError(error);
       } finally {
-        this.uploadLoading = false;
+        this.uploadingFiles.delete(fileId);
+        if (this.uploadingFiles.size === 0) {
+          this.uploadLoading = false;
+        }
       }
     },
 
@@ -340,7 +357,7 @@ export default {
       this.$message.warning(`最多只能上传 ${this.limit} 个文件`);
     },
     // 上传前处理
-    beforeUpload (file, xxs) {
+    beforeUpload (file) {
       // 文件类型
       if (!this.validateFileType(file)) {
         this.$message.info(`请上传文件类型为${this.accept}的文件`);
@@ -458,13 +475,15 @@ export default {
       this.internalFileList = [];
       this.$emit('input', []);
       this.$emit('change', []);
+      // 清空上传队列
+      this.uploadingFiles.clear();
+      this.uploadLoading = false;
     },
 
     // 获取文件列表
     getFileList () {
       return this.internalFileList;
     },
-
   }
 };
 </script>
