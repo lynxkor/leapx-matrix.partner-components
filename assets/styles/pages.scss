@@ -45,7 +45,7 @@
         margin-top: auto;
       }
     }
-    .el-select{
+    .el-select, .el-cascader{
       width: 100%;
     }
     .form-item-action {
@@ -397,6 +397,9 @@
     width: 100%;
   }
   .el-date-editor{
+    width: 100%;
+  }
+  .el-input-number, .el-cascader{
     width: 100%;
   }
   .el-footer{
