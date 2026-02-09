@@ -450,6 +450,10 @@ export default {
           start.setTime(start.getTime() - 7 * oneDay); // 最近一周开始时间
           end.setTime(end.getTime() - oneDay); // 当前时间
           break;
+        case '最近三个月':
+          start.setTime(start.getTime() - 90 * oneDay); // 最近三个月开始时间
+          end.setTime(end.getTime() - oneDay);
+          break;
 
         default:
           start.setTime(start.getTime() - days);
