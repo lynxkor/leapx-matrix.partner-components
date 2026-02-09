@@ -6,18 +6,39 @@
   "description": "",
   "glyphs": [
     {
-      "icon_id": "46763393",
-      "name": "trash",
-      "font_class": "trash",
-      "unicode": "e607",
-      "unicode_decimal": 58887
+      "icon_id": "46813215",
+      "name": "upload-mob",
+      "font_class": "upload-mob",
+      "unicode": "e66c",
+      "unicode_decimal": 58988
     },
     {
-      "icon_id": "46471254",
+      "icon_id": "46813193",
+      "name": "trash",
+      "font_class": "trash",
+      "unicode": "e66a",
+      "unicode_decimal": 58986
+    },
+    {
+      "icon_id": "46812659",
       "name": "eye-off",
       "font_class": "eye-off",
-      "unicode": "e61a",
-      "unicode_decimal": 58906
+      "unicode": "e669",
+      "unicode_decimal": 58985
+    },
+    {
+      "icon_id": "46812367",
+      "name": "centerlayout",
+      "font_class": "centerlayout",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "46809020",
+      "name": "circle",
+      "font_class": "circle",
+      "unicode": "e667",
+      "unicode_decimal": 58983
     },
     {
       "icon_id": "46471253",
@@ -32,13 +53,6 @@
       "font_class": "tablelayout",
       "unicode": "e618",
       "unicode_decimal": 58904
-    },
-    {
-      "icon_id": "46446568",
-      "name": "centerlayout",
-      "font_class": "centerlayout",
-      "unicode": "e619",
-      "unicode_decimal": 58905
     },
     {
       "icon_id": "46396512",

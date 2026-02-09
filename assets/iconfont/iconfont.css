@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4983741 */
-  src: url('iconfont.woff2?t=1769504966970') format('woff2'),
-       url('iconfont.woff?t=1769504966970') format('woff'),
-       url('iconfont.ttf?t=1769504966970') format('truetype'),
-       url('iconfont.svg?t=1769504966970#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1770627191656') format('woff2'),
+       url('iconfont.woff?t=1770627191656') format('woff'),
+       url('iconfont.ttf?t=1770627191656') format('truetype'),
+       url('iconfont.svg?t=1770627191656#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,12 +14,24 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-lxppc-upload-mob:before {
+  content: "\e66c";
+}
+
 .icon-lxppc-trash:before {
-  content: "\e607";
+  content: "\e66a";
 }
 
 .icon-lxppc-eye-off:before {
-  content: "\e61a";
+  content: "\e669";
+}
+
+.icon-lxppc-centerlayout:before {
+  content: "\e668";
+}
+
+.icon-lxppc-circle:before {
+  content: "\e667";
 }
 
 .icon-lxppc-eye:before {
@@ -28,10 +40,6 @@
 
 .icon-lxppc-tablelayout:before {
   content: "\e618";
-}
-
-.icon-lxppc-centerlayout:before {
-  content: "\e619";
 }
 
 .icon-lxppc-database-search:before {
