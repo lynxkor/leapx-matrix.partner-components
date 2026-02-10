@@ -362,7 +362,7 @@
     .m-vxe-table-empty-text {
       text-align: left;
     }
-    ::v-deep .vxe-table--empty-content {
+    .vxe-table--empty-content {
       color: var(--leap-color-default-light-2);
       width: 100%;
       padding: 0 16px;
