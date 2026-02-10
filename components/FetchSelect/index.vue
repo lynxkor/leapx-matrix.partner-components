@@ -233,7 +233,7 @@ export default {
         this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
         if (!this.initialLoaded && this.params) {
-          const target = formatedData.find(item => item[this.valueKey] === this.value);
+          const target = formatedData.find(item => item[this.valueKey] === String(this.value));
           if (!target) {
             this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params })
           }
