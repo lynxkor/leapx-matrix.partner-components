@@ -71,6 +71,7 @@
       <edit-base-header
         v-if="id"
         v-bind="$attrs"
+        :id="id"
         :title="title"
         :isEditing="isEditing"
         :loading="loading"

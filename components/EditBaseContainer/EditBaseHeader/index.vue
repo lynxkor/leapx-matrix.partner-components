@@ -70,15 +70,28 @@
             <el-button v-if="showSaveBtn" size="small" type="primary" @click="handleSave" :loading="loading">{{saveText}}</el-button>
             <el-button v-if="showSaveAndCloseBtn" size="small" type="primary" @click="handleSaveAndClose" :loading="loading">{{ saveAndCloseText }}</el-button>
           </template>
-          <template v-else-if="canAddOrUpdate">
+          <template v-else>
             <div v-if="$slots.extraButtons" class="extra-buttons" :style="{width: buttonGroupWidth}">
               <ButtonGroup ref="buttonGroupRef">
+                <el-button v-if="canLog" size="small" @click="handleJumpAuditLog">审核日志</el-button>
                 <slot name="extraButtons"></slot>
               </ButtonGroup>
             </div>
+            <div v-else class="extra-buttons" :style="{width: buttonGroupWidth}">
+              <ButtonGroup ref="buttonGroupRef">
+                <el-button v-if="canLog" size="small" @click="handleJumpAuditLog">审核日志</el-button>
+              </ButtonGroup>
+            </div>
             <div class="edit-button-wrapper" ref="editRef">
-              <el-divider v-if="$slots.extraButtons && showEditBtn" class="extra-divider" direction="vertical"></el-divider>
-              <el-button v-if="showEditBtn" size="small" @click="handleEdit"><i class="iconfont icon-lxppc-edit"></i>{{editText}}</el-button>
+              <el-divider
+                v-if="
+                  ($slots.extraButtons && showEditBtn && canAddOrUpdate) ||
+                  (!$slots.extraButtons && canLog)
+                "
+                class="extra-divider"
+                direction="vertical">
+              </el-divider>
+              <el-button v-if="showEditBtn && canAddOrUpdate" size="small" type="primary" plain @click="handleEdit"><i class="iconfont icon-lxppc-edit"></i>{{editText}}</el-button>
             </div>
           </template>
         </div>
@@ -97,6 +110,10 @@ export default {
     ButtonGroup,
   },
   props: {
+    id: {
+      type: String,
+      default: ''
+    },
     /**
      * 详情页标题
      */
@@ -320,7 +337,11 @@ export default {
           this.$refs.buttonGroupRef && this.$refs.buttonGroupRef.calculateLayout();
         }, 0);
       });
-    }
+    },
+    // 审核日志
+    handleJumpAuditLog () {
+      this.$auditLog.show({ id: this.id });
+    },
   }
 };
 </script>

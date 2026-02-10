@@ -452,6 +452,8 @@
     .el-form-item__content {
       color: var(--leap-color-default-dark-1);
       font-weight: 500;
+      word-break: break-all;
+      padding-right: 16px;
     }
   }
   .form-edit {
@@ -462,6 +464,7 @@
     .el-form-item__content {
       color: var(--leap-color-default-dark-1);
       font-weight: 500;
+      word-break: break-all;
     }
   }
 
