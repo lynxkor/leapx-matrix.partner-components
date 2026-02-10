@@ -359,6 +359,26 @@
       position: relative;
       top: 3px;
     }
+    .m-vxe-table-empty-text {
+      text-align: left;
+    }
+    ::v-deep .vxe-table--empty-content {
+      color: var(--leap-color-default-light-2);
+      width: 100%;
+      padding: 0 16px;
+    }
+    .btn-delete {
+      color: var(--leap-color-danger);
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+        color: var(--leap-color-danger-dark-1);
+      }
+      &.disabled{
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
   }
   .el-link {
     vertical-align: bottom;
@@ -450,7 +470,7 @@
   }
 
   .href-link {
-    color: #009100;
+    color: var(--leap-color-primary);
     cursor: pointer;
   }
 }
