@@ -84,9 +84,9 @@
                 <el-form-item>
                   <el-input @keydown.enter.native.prevent.stop v-model="file.copyName"/>
                 </el-form-item>
-                <el-form-item style="margin:0;">
-                  <el-button size="small" type="primary" @click.stop="onNameSave(file, index)">保存</el-button>
+                <el-form-item style="margin:0;text-align: right;">
                   <el-button size="small" @click.stop="onNameClose(index)">取消</el-button>
+                  <el-button size="small" type="primary" @click.stop="onNameSave(file, index)">保存</el-button>
                 </el-form-item>
               </el-form>
               <i slot="reference" class="iconfont icon-lxppc-edit" @click="onNameEdit(file, index)"></i>
@@ -445,6 +445,9 @@ export default {
     word-break: break-all;
     margin-top: 4px;
   }
+}
+.el-button{
+  font-weight: normal;
 }
 
 </style>

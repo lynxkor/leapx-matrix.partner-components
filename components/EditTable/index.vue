@@ -87,7 +87,7 @@
       @checkbox-change="checkboxChange"
       @checkbox-all="selectAllCheckboxChange"
     >
-      <vxe-column v-if="checkbox" type="checkbox" width="80" fixed="left" />
+      <vxe-column v-if="checkbox" type="checkbox" width="54" fixed="left" />
       <vxe-column v-if="seq" type="seq" width="70"></vxe-column>
       <vxe-column
         v-for="col in columns"

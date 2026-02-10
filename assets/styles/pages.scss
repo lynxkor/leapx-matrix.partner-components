@@ -450,6 +450,12 @@
 
   .el-button.link.el-button--text {
     padding: 0px;
+    font-weight: normal;
+    &:hover{
+      text-decoration-color: var(--leap-color-primary);
+      text-decoration-line: underline;
+      text-underline-offset: 0.2em; /* 可以是px, em, rem等单位 */
+    }
   }
 
   .href-link {

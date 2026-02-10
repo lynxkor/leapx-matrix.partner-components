@@ -14,7 +14,7 @@
   4. 即可使用
 -->
 <template>
-   <el-dialog title="" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print">
+   <el-dialog :title="printObj.popTitle" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print">
       <div class="print-content">
         <!-- 动态组件 -->
         <component :is="currentComponent" :id="id" :data="data" />
@@ -102,6 +102,9 @@ export default {
 .dialog-print {
   .el-dialog__header {
     display: none;
+  }
+  .el-dialog__body {
+    height: calc(80vh - 60px); // 总的高度 - footer高度
   }
 }
 #printArea {

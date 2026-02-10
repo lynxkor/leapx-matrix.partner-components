@@ -421,6 +421,7 @@ export default {
     .extra-divider{
       height: 24px;
       margin: 4px 12px;
+      background-color: #E6E6E5;
     }
   }
 }

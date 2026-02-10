@@ -278,11 +278,25 @@ export default {
     },
     // 编辑时，取消操作
     handleCancel () {
-      // 清除验证
-      for (let formRef of this.formRefs) {
-        formRef?.clearValidate();
+      const clear = () => {
+        for (let formRef of this.formRefs) {
+          formRef?.clearValidate();
+        }
+        this.cancelEdit();
       }
-      this.cancelEdit();
+      if (this.isEditing && JSON.stringify(this.innerOriginalForm) !== JSON.stringify(this.form)) {
+        const message = '<div class="ais-leave-tips-main"><i class="iconfont icon-lxppc-prompt"></i>确定要取消编辑？</div><div class="ais-leave-tips-sub">取消后，当前编辑数据会被清空。</div>';
+        this.$confirm(message, '', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          dangerouslyUseHTMLString: true,
+          customClass: 'ais-leave-tips',
+          showClose: false
+        }).then(clear);
+      } else {
+        clear();
+      }
+
     },
     handleRefresh () {
       this.resetToOriginal();
