@@ -817,7 +817,7 @@ export default {
       color:#4C4CD6;
     }
     &.btn-delete{
-      color:#B91919;
+      color: #b91919 !important;;
     }
     &.disabled{
       cursor: not-allowed;

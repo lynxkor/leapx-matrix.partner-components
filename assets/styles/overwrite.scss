@@ -171,9 +171,13 @@
 .el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
   right: 8px;
 }
-.el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
+.el-select-dropdown__item.hover, .el-select-dropdown__item:hover, .el-dropdown-menu__item:hover {
   background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
   border-radius: 4px;
+}
+.el-dropdown-menu__item:not(.is-disabled):hover {
+  background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
+  color: var(--leap-color-default);
 }
 .el-select-dropdown.is-multiple .el-select-dropdown__item.selected.hover {
   background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
@@ -181,7 +185,7 @@
 .el-select-dropdown__item.selected {
   font-weight: normal;
 }
-.el-select-dropdown__list {
+.el-select-dropdown__list, .el-dropdown-menu {
   padding: 8px 4px;
 }
 .el-input.is-disabled .el-input__inner,
@@ -264,7 +268,6 @@
   height: 1px;
   background-color: var(--leap-color-default-light-4);
 }
-
 // 下拉框与按钮组合样式
 .ais-select-group {
   display: flex;

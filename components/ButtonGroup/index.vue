@@ -1,11 +1,10 @@
 <template>
-  <div class="ais-button-group" ref="container" :style="{ maxWidth }">
-    <!-- 更多按钮下拉菜单 -->
+  <div class="ais-button-group" ref="container" :class="`collapse-${collapseDirection}`" :style="{ maxWidth }">
+    <!-- 从右往左折叠时(默认): 更多按钮在左侧 -->
     <el-dropdown
-      v-if="hasHiddenButtons"
+      v-if="hasHiddenButtons && collapseDirection === 'right'"
       @command="handleDropdownCommand"
-      class="more-dropdown"
-      ref="dropdownRef"
+      class="more-dropdown more-dropdown-left"
     >
       <el-button class="more-button" size="small">
         <i class="iconfont icon-lxppc-t-more"></i>
@@ -26,6 +25,27 @@
     <div class="visible-buttons" ref="visibleButtons">
       <slot/>
     </div>
+    <!-- 从左往右折叠时: 更多按钮在右侧 -->
+    <el-dropdown
+      v-if="hasHiddenButtons && collapseDirection === 'left'"
+      @command="handleDropdownCommand"
+      class="more-dropdown more-dropdown-right"
+    >
+      <el-button class="more-button" size="small">
+        <i class="iconfont icon-lxppc-t-more"></i>
+      </el-button>
+      <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item
+          v-for="button in hiddenButtons"
+          :key="button.key || button.text"
+          :command="button.key || button.text"
+          :divided="button.divided"
+        >
+          <i v-if="button.icon" :class="button.icon"></i>
+          {{ button.text }}
+        </el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
   </div>
 </template>
 
@@ -40,6 +60,12 @@ export default {
       type: [Number, String],
       default: '100%'
     },
+    // 折叠方向: 'right' 从右往左折叠(默认) | 'left' 从左往右折叠
+    collapseDirection: {
+      type: String,
+      default: 'right',
+      validator: (value) => ['left', 'right'].includes(value)
+    }
   },
   data () {
     return {
@@ -54,6 +80,16 @@ export default {
   computed: {
     hasHiddenButtons () {
       return this.hiddenButtons.length > 0;
+    }
+  },
+
+  watch: {
+    collapseDirection: {
+      handler () {
+        this.$nextTick(() => {
+          this.calculateLayout();
+        });
+      }
     }
   },
 
@@ -123,29 +159,48 @@ export default {
 
       const style = getDomStyle(this.$refs.container);
       const availableWidth = style.width;
+      const dropdownSize = 60; // 预留下拉菜单宽度(width + margin), 如果下拉菜单有变，需要修改
       let totalWidth = 0;
       let visibleCount = 0;
 
-      // 从后向前计算可以显示多少个按钮（保留右侧按钮）
-      for (let i = this.buttonWidths.length - 1; i >= 0; i--) {
-        const buttonWidth = this.buttonWidths[i];
-        if (totalWidth + buttonWidth <= availableWidth) {
-          totalWidth += buttonWidth;
-          visibleCount++;
-        } else {
-          const dropdownSize = 60; // 预留下拉菜单宽度(width + margin), 如果下拉菜单有变，需要修改
-          // 检查最后一个按钮是否需要隐藏
-          if (availableWidth - totalWidth <= dropdownSize) {
-            visibleCount = Math.max(0, visibleCount - 1);
+      if (this.collapseDirection === 'left') {
+        // 从左往右折叠: 从前向后遍历,优先保留左侧按钮
+        for (let i = 0; i < this.buttonWidths.length; i++) {
+          const buttonWidth = this.buttonWidths[i];
+          if (totalWidth + buttonWidth <= availableWidth) {
+            totalWidth += buttonWidth;
+            visibleCount++;
+          } else {
+            // 检查是否需要为下拉菜单预留空间
+            if (availableWidth - totalWidth <= dropdownSize) {
+              visibleCount = Math.max(0, visibleCount - 1);
+            }
+            break;
           }
-          break;
         }
+        // 可见按钮: 前N个
+        this.visibleButtons = this.originalButtons.slice(0, visibleCount);
+        // 隐藏按钮: 从第N个开始到末尾
+        this.hiddenButtons = this.originalButtons.slice(visibleCount);
+      } else {
+        // 从右往左折叠(默认): 从后向前遍历,优先保留右侧按钮
+        for (let i = this.buttonWidths.length - 1; i >= 0; i--) {
+          const buttonWidth = this.buttonWidths[i];
+          if (totalWidth + buttonWidth <= availableWidth) {
+            totalWidth += buttonWidth;
+            visibleCount++;
+          } else {
+            if (availableWidth - totalWidth <= dropdownSize) {
+              visibleCount = Math.max(0, visibleCount - 1);
+            }
+            break;
+          }
+        }
+        // 可见按钮: 后N个
+        this.visibleButtons = this.originalButtons.slice(this.originalButtons.length - visibleCount);
+        // 隐藏按钮: 从开头到第N个
+        this.hiddenButtons = this.originalButtons.slice(0, this.originalButtons.length - visibleCount);
       }
-
-      // 设置可见和隐藏的按钮（保留右侧，折叠左侧）
-      this.visibleButtons = this.originalButtons.slice(this.originalButtons.length - visibleCount);
-      this.hiddenButtons = this.originalButtons.slice(0, this.originalButtons.length - visibleCount);
-      // console.log('按钮组', availableWidth, this.buttonWidths, totalWidth, this.visibleButtons, this.hiddenButtons);
 
       // 更新按钮显示状态
       this.updateButtonVisibility();
@@ -156,15 +211,20 @@ export default {
       if (!this.$refs.visibleButtons) return;
 
       const allButtons = this.$refs.visibleButtons.querySelectorAll('.group-button, .el-button');
-      const visibleStartIndex = this.originalButtons.length - this.visibleButtons.length;
+      const isCollapseFromLeft = this.collapseDirection === 'left';
 
-      allButtons.forEach((button, index) => {
-        if (index >= visibleStartIndex) {
-          button.style.display = '';
-        } else {
-          button.style.display = 'none';
-        }
-      });
+      if (isCollapseFromLeft) {
+        // 从左往右折叠: 索引 0 到 visibleButtons.length-1 可见
+        allButtons.forEach((button, index) => {
+          button.style.display = index < this.visibleButtons.length ? '' : 'none';
+        });
+      } else {
+        // 从右往左折叠: 索引 visibleStartIndex 到末尾可见
+        const visibleStartIndex = this.originalButtons.length - this.visibleButtons.length;
+        allButtons.forEach((button, index) => {
+          button.style.display = index >= visibleStartIndex ? '' : 'none';
+        });
+      }
     },
 
     // 处理下拉菜单点击
@@ -243,7 +303,13 @@ export default {
   flex-wrap: nowrap;
   overflow: hidden;
   width: 100%;
-  justify-content: flex-end;
+  justify-content: flex-end; /* 默认从右往左排列 */
+}
+
+/* 从左往右折叠模式 */
+.ais-button-group.collapse-left {
+  flex-direction: row;
+  justify-content: flex-start; /* 按钮从左侧开始排列 */
 }
 
 .visible-buttons {
@@ -254,9 +320,20 @@ export default {
   overflow: hidden;
 }
 
-.more-dropdown {
+/* 从右往左折叠时的更多按钮(默认位置:左侧) */
+.more-dropdown-left {
   flex-shrink: 0;
-  margin-right: 8px;
+}
+
+/* 从左往右折叠时的更多按钮(位置:右侧) */
+.more-dropdown-right {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* 向后兼容 */
+.more-dropdown {
+  @extend .more-dropdown-left;
 }
 
 /* 确保按钮不会换行 */
