@@ -299,16 +299,6 @@
 // 对话框
 .el-dialog {
   border-radius: 8px;
-  margin-top: 0px !important;
-  position: fixed;
-  top: 10vh;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: auto;
-  height: 80vh;
-  max-width: 1200px;
-  overflow: hidden;
   .el-dialog__header{
     border-bottom: 1px solid var(--leap-color-default-light-4);
     padding: 13px 20px;
@@ -327,7 +317,7 @@
   .el-dialog__body {
     color: var(--leap-color-default);
     padding: 20px 20px 30px 20px;
-    height: calc(80vh - 50px - 60px); // 总的高度 - header高度 - footer高度
+    max-height: 80vh;
     overflow-y: auto;
   }
   .el-dialog__footer {

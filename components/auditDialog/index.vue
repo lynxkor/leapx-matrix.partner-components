@@ -45,8 +45,8 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="close"> 取消 </el-button>
-      <el-button type="primary" @click="auditFun"> 确定 </el-button>
+      <el-button @click="close" size="small"> 取消 </el-button>
+      <el-button type="primary" @click="auditFun" size="small"> 确定 </el-button>
     </div>
   </el-dialog>
 </template>

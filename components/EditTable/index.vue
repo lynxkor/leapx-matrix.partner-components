@@ -204,10 +204,10 @@
         <div class="m-vxe-table-empty-text" v-if="emptyText">
           {{ emptyText }}
         </div>
-        <div class="m-vxe-table-empty" v-else>
+        <!-- <div class="m-vxe-table-empty" v-else>
           <img :src="require('../../assets/images/empty.png')" />
           <p>暂无数据</p>
-        </div>
+        </div> -->
       </template>
     </vxe-table>
 
@@ -334,7 +334,7 @@ export default {
     // 空提示信息
     emptyText: {
       type: String,
-      default: ''
+      default: '暂无数据'
     },
     // 禁用模式
     disabled: {
