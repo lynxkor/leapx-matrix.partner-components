@@ -3,10 +3,10 @@
     :visible.sync="auditShow"
     append-to-body
     :title="auditTitle"
-    width="500px"
+    width="600px"
     @close="close"
   >
-    <el-form ref="auditForm" :model="auditForm" :rules="rules">
+    <el-form ref="auditForm" :model="auditForm" :rules="rules" label-width="80px" size="small" style="padding: 10px 0">
       <el-form-item
         v-if="auditDataList && auditDataList.length > 0"
         :label="auditDataList && auditDataList.length > 1 ? '批量审核数据' : '审核数据'"
@@ -21,7 +21,7 @@
         </el-tooltip>
       </el-form-item>
       <el-form-item
-        label="审核"
+        label="审核结果"
         prop="result"
       >
         <el-radio-group v-model="auditForm.result">

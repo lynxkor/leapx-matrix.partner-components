@@ -8,11 +8,10 @@
     @close="handleClose"
   >
     <div class="upload-modal-step">
-      1.模板下载：
-      <span
+      1.模板下载：<span
         class="upload-modal-link"
         @click="downloadTemplate"
-      >{{ downloadTitle }}</span>
+      >《{{ downloadTitle }}》</span>
     </div>
     <div class="upload-modal-step">2.上传填好的模板</div>
     <el-upload

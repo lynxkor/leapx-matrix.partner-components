@@ -17,7 +17,7 @@
 .vxe-table--render-default.size--medium .vxe-header--column.is--padding .vxe-cell, 
 .vxe-table--render-default .vxe-body--column:not(.col--active).col--ellipsis > .vxe-cell,
 .vxe-table--render-default.size--medium .vxe-body--column.is--padding .vxe-cell {
-  padding: 6px 24px !important;
+  padding: 6px 12px !important;
   min-height: 40px !important;
   // height: 40px !important;
 }
@@ -245,6 +245,24 @@
   &:hover {
     color: var(--leap-color-primary);
   }
+}
+.el-input-number .el-input__inner {
+  text-align: left;
+}
+.el-input-number.is-without-controls .el-input__inner {
+  padding: 0 8px;
+}
+.el-tabs__item {
+  color: var(--leap-color-default);
+  font-weight: 400;
+  padding: 0 10px;
+}
+.el-tabs__item.is-active {
+  font-weight: 600;
+}
+.el-tabs__nav-wrap::after {
+  height: 1px;
+  background-color: var(--leap-color-default-light-4);
 }
 
 // 下拉框与按钮组合样式
