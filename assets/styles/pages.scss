@@ -76,10 +76,10 @@
     top: -48px;
   }
   .ais-tabs {
-    height: 40px;
     border-bottom: 1px solid var(--leap-color-default-light-4);
     margin: 8px 0 16px 0;
     color: var(--leap-color-default);
+    padding-right: 60px;
     &-item {
       display: inline-block;
       margin-right: 20px;
@@ -87,6 +87,7 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 400;
+      height: 40px;
       &.active {
         border-bottom: 2px solid var(--leap-color-primary);
         color: var(--leap-color-primary);
