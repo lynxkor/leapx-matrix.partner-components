@@ -2,8 +2,8 @@
 /**
  * AisAttachment 组件 - 通用附件上传组件
  * @property {string|number} businessId - 业务ID，详情页或者编辑页的id
- * @property {String} configCode - 实体名称 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
- * @property {String} attachType - 附件类型 https://cepsit.leapmotor.com/cepsit/main.aspx#280103004
+ * @property {String} configCode - 实体名称 https://cepsit.leapmotor.com -> 附件管理 -> 附件类型配置
+ * @property {String} attachType - 附件类型 https://cepsit.leapmotor.com -> 附件管理 -> 附件类型配置
  * @property {boolean} readonly - 是否只读模式，默认为 false
  *                        true: 仅展示附件，不允许上传和删除
  *                        false: 允许上传和管理附件

@@ -86,7 +86,7 @@
               <el-divider
                 v-if="
                   ($slots.extraButtons && showEditBtn && canAddOrUpdate) ||
-                  (!$slots.extraButtons && canLog)
+                  (!$slots.extraButtons && showEditBtn && canLog)
                 "
                 class="extra-divider"
                 direction="vertical">
