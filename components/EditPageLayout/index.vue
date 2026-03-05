@@ -95,13 +95,14 @@ export default {
 
 <style>
   .splitpanes.default-theme .splitpanes__splitter {
-    width: 3px;
+    z-index: 99;
+    width: 0px;
   }
   .splitpanes.default-theme .splitpanes__splitter:before {
-    background-color: var(--aisDefaultTextColor)!important;
     border-radius: 10px;
     width: 3px;
     height: 24px;
+    background: url(./indicator.svg);
   }
   .splitpanes.default-theme .splitpanes__splitter:after {
     width: 0;
