@@ -163,7 +163,7 @@ export function handleBatchStatusChange ({
         ? `选中的数据已经是${statusText}状态，无需重复操作！`
         : `选中的数据中存在${statusText}状态的数据，无法批量${statusText}！`
     });
-    // return Promise.reject(new Error('状态不满足操作条件'));
+    return Promise.reject(new Error('状态不满足操作条件'));
   }
 
   const ids = selectionList.map(item => item.id) || [];
