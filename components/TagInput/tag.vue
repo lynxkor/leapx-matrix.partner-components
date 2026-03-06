@@ -33,11 +33,14 @@ export default {
   padding:0 8px;
   justify-content: space-between;
   align-items: center;
-  margin: 2px;
+  margin: 3px;
   background-color: #F8F7F7;
   border: 0;
   border-radius: 4px;
   color: var(--aisDefaultTextColor);
+  &:first-child {
+    margin-left: 0;
+  }
   .content {
     max-width: 80px;
     overflow: hidden;

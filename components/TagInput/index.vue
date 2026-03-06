@@ -1,5 +1,47 @@
 <template>
   <div :class="disabled?'tag-input disabled':'tag-input'">
+    <!-- 输入框区域 - 支持单条输入 -->
+    <div class="tag-list" @click="handleTagListClick">
+      <tag
+        v-for="(item, index) in tagList.slice(0, 1)"
+        :key="index"
+        closable
+        :disable-transitions="false"
+        @close="handleClose(item)"
+      >
+        <span>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            :content="item"
+            placement="top-start"
+          >
+            <span>{{ item }}</span>
+          </el-tooltip>
+        </span>
+      </tag>
+
+      <tag
+        v-if="tagList.length > 1"
+        :closable="false"
+      >
+        <span>
+          + {{ tagList.length - 1 }}
+        </span>
+      </tag>
+
+      <!-- 单条输入框 -->
+      <input
+        ref="singleInput"
+        v-model="singleInputValue"
+        class="single-input"
+        :placeholder="tagList.length === 0 ? placeholder : ''"
+        @blur="handleSingleInputBlur"
+        @keyup.enter="handleSingleInputEnter"
+      />
+    </div>
+
+    <!-- 批量输入按钮 -->
     <el-popover
       placement="bottom"
       width="400"
@@ -16,78 +58,32 @@
           placeholder="请输入内容"
         />
         <div>
-          <div style="display: inline">
+          <div class="footer-tips">
+            已输入{{ inputSize }}条
+          </div>
+          <div class="footer-btns">
             <el-button
-              type="primary"
               size="mini"
-              style="margin-top: 10px"
-              @click="handleInput"
-            >
-              确定
-            </el-button>
-            <el-button
-              type="warning"
-              size="mini"
-              style="margin-top: 10px"
               @click="handleClear"
             >
               清空
             </el-button>
-          </div>
-          <div style="float: right;margin-top: 5px">
-            已输入{{ inputSize }}条
+            <el-button
+              type="primary"
+              size="mini"
+              @click="handleInput"
+            >
+              确定
+            </el-button>
           </div>
         </div>
       </div>
-      <div class="tag-input"  slot="reference">
-        <div class="tag-list">
-          <!-- 最大渲染100条，避免数据量过大页面卡死情况 -->
-          <tag
-            v-for="(item, index) in tagList.slice(0, 1)"
-            :key="index"
-            closable
-            :disable-transitions="false"
-            @close="handleClose(item)"
-          >
-            <span>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="item"
-                placement="top-start"
-              >
-                <span>{{ item }}</span>
-              </el-tooltip>
-            </span>
-          </tag>
-
-          <tag
-            v-if="tagList.length > 1"
-            :closable="false"
-          >
-            <span>
-              + {{ tagList.length - 1 }}
-            </span>
-          </tag>
-
-          <div
-            v-if="tagList.length===0"
-            class="placeholder"
-          >
-            {{ placeholder }}
-          </div>
-        </div>
-        <div
-          class="action"
-          :class="disabled?'disabled':''"
-        >
+      <div class="action" slot="reference" :class="disabled?'disabled':''">
         <el-button :disabled="disabled">
-          <i class="el-icon-document-copy"/>
-          <!-- <i class="iconfont icon-lxppc-search"></i> -->
+          <i class="iconfont icon-lxppc-database-search"/>
         </el-button>
       </div>
-    </div>
-  </el-popover>
+    </el-popover>
   </div>
 </template>
 
@@ -118,7 +114,8 @@ export default {
     return {
       inputSize: 0,
       inputValue: null,
-      tagList: []
+      tagList: [],
+      singleInputValue: ''
     };
   },
   watch: {
@@ -136,6 +133,27 @@ export default {
     }
   },
   methods: {
+    // 单条输入 - 点击输入框区域
+    handleTagListClick () {
+      if (this.disabled) return;
+      this.$refs.singleInput.focus();
+    },
+    // 单条输入 - 失去焦点时添加
+    handleSingleInputBlur () {
+      this.addSingleInput();
+    },
+    // 单条输入 - 回车时添加
+    handleSingleInputEnter () {
+      this.addSingleInput();
+    },
+    // 添加单条输入内容
+    addSingleInput () {
+      const value = this.singleInputValue.trim();
+      if (value && !this.tagList.includes(value)) {
+        this.tagList = [...this.tagList, value];
+      }
+      this.singleInputValue = '';
+    },
     handleClose (tag) {
       this.$emit('tagClose', tag);
       this.tagList.splice(this.tagList.indexOf(tag), 1);
@@ -187,7 +205,6 @@ export default {
   }
   &>span {
     display: inline-block;
-    width: 100%;
   }
 
   .tag-list {
@@ -198,15 +215,29 @@ export default {
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: center;
     max-height: 80px;
-    overflow: hidden;
     text-overflow: ellipsis;
     cursor: text;
+    padding: 0 8px;
     &:hover {
       border-color: #9D9F9D;
     }
     .tag {
       height: 24px;
+    }
+    .single-input {
+      flex: 1;
+      min-width: 80px;
+      border: none;
+      outline: none;
+      height: 30px;
+      line-height: 30px;
+      font-size: 13px;
+      background: transparent;
+      &::placeholder {
+        color: #9D9F9D;
+      }
     }
   }
 
@@ -233,5 +264,17 @@ export default {
 }
 .disabled:hover {
   cursor: not-allowed;
+}
+.footer-tips{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 5px;
+}
+.footer-btns{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 12px;
 }
 </style>
