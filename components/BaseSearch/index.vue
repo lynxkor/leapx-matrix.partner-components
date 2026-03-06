@@ -1,18 +1,31 @@
 <template>
-  <div class="fetch-box">
+  <div class="base-search-container">
     <i class="iconfont icon-lxppc-search"></i>
-    <slot></slot>
+    <fetch-select
+      v-bind="$attrs"
+      v-on="$listeners"
+      />
     <span class="suffix">添加</span>
   </div>
 </template>
 <script>
+import FetchSelect from '../FetchSelect';
 export default {
-  methods: {
-  }
+  name: 'BaseSearch',
+  inheritAttrs: false,
+  components: {
+    FetchSelect,
+  },
+  props: {
+  },
+  computed: {
+  },
+  mounted () {
+  },
 };
 </script>
 <style lang="scss" scoped>
-.fetch-box{
+.base-search-container{
   display: flex;
   position: relative;
   width: 345px;
