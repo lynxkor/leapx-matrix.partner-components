@@ -102,6 +102,7 @@
         :loading="loading"
         @reset="handleReset"
         @submit="handleSubmit"
+        @cancel="handleFooterCancel"
       >
         <!-- 使用具名插槽传递 footer -->
         <template v-if="$slots.footer" #footer>
@@ -297,6 +298,28 @@ export default {
         clear();
       }
 
+    },
+    // 新增页，取消操作（底部取消按钮）
+    handleFooterCancel () {
+      const clear = () => {
+        for (let formRef of this.formRefs) {
+          formRef?.clearValidate();
+        }
+        this.$router.back();
+      }
+      // 检查表单是否有修改
+      if (JSON.stringify(this.defaultForm) !== JSON.stringify(this.form)) {
+        const message = '<div class="ais-leave-tips-main"><i class="iconfont icon-lxppc-prompt"></i>确定要取消？</div><div class="ais-leave-tips-sub">取消后，当前填写的数据会被清空。</div>';
+        this.$confirm(message, '', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          dangerouslyUseHTMLString: true,
+          customClass: 'ais-leave-tips',
+          showClose: false
+        }).then(clear);
+      } else {
+        clear();
+      }
     },
     handleRefresh () {
       this.resetToOriginal();

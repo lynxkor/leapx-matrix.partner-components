@@ -34,7 +34,7 @@
       <el-button v-if="canAddOrUpdate" size="small" type="primary" @click="handleSave" :loading="loading">{{ saveText }}</el-button>
       <!-- <el-button v-if="canAddOrUpdate" size="small" plain type="primary" @click="handleSaveAndClose" :loading="loading">{{ saveAndCloseText }}</el-button> -->
       <el-button v-if="canAddOrUpdate" size="small" plain type="primary" @click="handleSaveAndNext" :loading="loading">{{ saveAndNextText }}</el-button>
-      <el-button size="small" @click="handleCancel">{{ cancelText }}</el-button>
+      <el-button size="small" @click="handleCancelClick">{{ cancelText }}</el-button>
     </slot>
   </el-footer>
 </template>
