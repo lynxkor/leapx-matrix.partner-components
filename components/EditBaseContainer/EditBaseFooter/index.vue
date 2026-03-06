@@ -95,6 +95,9 @@ export default {
     console.log(this.$router);
   },
   methods: {
+    handleCancelClick () {
+      this.$emit('cancel');
+    },
     handleCancel () {
       this.$router.back();
     },
