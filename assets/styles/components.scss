@@ -17,19 +17,20 @@
   }
   .iconfont {
     font-size: 16px;
-    margin-right: 5px;
+    margin-right: 8px;
     color: var(--leap-color-primary);
     font-weight: normal;
   }
   &-main {
-    font-weight: 700;
-    color: var(--leap-color-default);
+    font-weight: 600;
+    color: var(--leap-color-default-dark-1);
     word-break: break-all;
   }
   &-sub {
-    color: var(--leap-color-default-light-2);
+    color: var(--leap-color-default-light-1);
     font-size: 14px;
-    margin-top: 3px;
+    margin-top: 5px;
+    font-weight: 400;
   }
   .el-input__inner {
     height: 32px;
