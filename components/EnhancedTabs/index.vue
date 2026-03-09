@@ -329,8 +329,14 @@ export default {
       const processedItems = data.map((item, index) => {
 
         const value = item[this.itemConfig.valueKey];
-        const label = this.itemConfig.labelFormat
-        ? renderTemplate(item, this.itemConfig.labelFormat) : item[this.itemConfig.labelKey];
+        let label;
+        if (item.noFormat) {
+          label = item[this.itemConfig.labelKey];
+        } else if (this.itemConfig.labelFormat) {
+          label = renderTemplate(item, this.itemConfig.labelFormat);
+        } else {
+          label = item[this.itemConfig.labelKey];
+        }
 
         const disableClose = this.itemConfig.disableFirst && index === 0;
         return {

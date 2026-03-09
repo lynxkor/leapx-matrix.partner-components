@@ -249,6 +249,11 @@
     align-items: center;
   }
 }
+
+.el-input__suffix{
+  display: flex;
+  align-items: center;
+}
 .el-link.el-link--success {
   color: var(--leap-color-primary);
   &:hover {
