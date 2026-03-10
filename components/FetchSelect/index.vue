@@ -80,7 +80,26 @@
     :remote="remote"
     :remote-method="loadRemoteMethod"
     popper-class="ais-el-select"
+    :ref="selectRefCallback"
   >
+    <template v-if="isTree">
+      <el-option
+        style="height: auto; padding: 0"
+        value=""
+        disabled
+      >
+        <el-tree
+          :ref="treeRefCallback"
+          :data="computedOptions"
+          node-key="id"
+          highlight-current
+          :expand-on-click-node="false"
+          v-bind="treeProps"
+          v-on="treeListeners"
+        />
+      </el-option>
+    </template>
+    <template v-else>
     <el-option
       v-for="item in computedOptions"
       :key="item[optionKey || valueKey]"
@@ -93,6 +112,7 @@
         <div class="el-select-sub-text"> {{ item[subLabelKey] }}</div>
       </template>
     </el-option>
+    </template>
   </el-select>
 </template>
 
@@ -166,6 +186,23 @@ export default {
       type: Number, // 远程模糊搜索默认展示前100条
       default: 100,
     },
+    selectRef: {
+      type: Function,
+      default: () => (() => {}),
+    },
+    // 是否是树形展示
+    isTree: {
+      type: Boolean,
+      default: false,
+    },
+    treeProps: {
+      type: Object,
+      default: () => ({}),
+    },
+    treeListeners: {
+      type: Object,
+      default: () => ({}),
+    }
   },
   data () {
     return {
@@ -213,11 +250,22 @@ export default {
     }
   },
   methods: {
+    treeRefCallback (el) {
+      if (typeof this.treeProps.ref === 'function') {
+        this.treeProps.ref(el);
+      }
+    },
+    selectRefCallback (el) {
+      if (typeof this.selectRef === 'function') {
+        this.selectRef(el);
+      }
+    },
     // 加载远程搜索方法
     async loadRemoteMethod (v) {
       this.loading = true;
       try {
         const response = await this.remoteMethod(v ?? this.params);
+        console.log(response);
         if (!response) {
           this.loading = false;
           return;
@@ -354,5 +402,11 @@ export default {
 
 ::v-deep .el-select__tags {
   flex-wrap: nowrap;
+}
+::v-deep .el-tree-node__content:not(:has(.is-leaf)):hover {
+  background-color: transparent !important;
+}
+::v-deep .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content:not(:has(.is-leaf)) {
+  background-color: transparent !important;
 }
 </style>
