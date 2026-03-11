@@ -265,7 +265,6 @@ export default {
       this.loading = true;
       try {
         const response = await this.remoteMethod(v ?? this.params);
-        console.log(response);
         if (!response) {
           this.loading = false;
           return;
