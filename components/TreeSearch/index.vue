@@ -8,7 +8,7 @@
  * @param {Object} treeListeners - https://element.eleme.cn/#/zh-CN/component/tree
  *
  * 其他参数用法参考 Fetch-Select 组件
- * @example
+ * @example 完整使用参考 demo.vue 文件
   <tree-search
     :selectRef="onSelectRef"
     :style="{width: '305px', marginRight: '8px'}"
@@ -19,7 +19,6 @@
     :value="ccc"
     :remote-method="cccRemote"
     :params="ccc"
-    @change="handleCCC"
     placeholder="请输入CCC编码或名称"
     label-key="name"
     value-key="id"
@@ -30,6 +29,7 @@
         children: 'children',
         label: 'name'
       },
+      'render-content': renderContent
     }"
     :treeListeners="{
       'node-click': handleNodeClick
