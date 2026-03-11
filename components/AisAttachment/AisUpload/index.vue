@@ -295,7 +295,7 @@ export default {
         const data = uploadRes.data || {};
         const addOrUpdateParams = {
           fileId: data.id,
-          fileName: data.filename,
+          fileName: data.originalFilename || data.filename,
           fileUrl: data.url,
           fileSize: data.size,
           fileType: data.ext,

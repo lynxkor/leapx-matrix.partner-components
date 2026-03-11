@@ -1,11 +1,14 @@
 <template>
-  <div class="base-search-container">
-    <i class="iconfont icon-lxppc-search"></i>
+  <div class="base-search-container" :class="{
+    showSearch: showSearch,
+    showAdd: showAdd,
+  }">
+    <i v-if="showSearch" class="iconfont icon-lxppc-search"></i>
     <fetch-select
       v-bind="$attrs"
       v-on="$listeners"
       />
-    <span class="suffix">添加</span>
+    <span v-if="showAdd" class="suffix">添加</span>
   </div>
 </template>
 <script>
@@ -17,6 +20,14 @@ export default {
     FetchSelect,
   },
   props: {
+    showAdd: {
+      type: Boolean,
+      default: true,
+    },
+    showSearch: {
+      type: Boolean,
+      default: true,
+    }
   },
   computed: {
   },
@@ -50,12 +61,18 @@ export default {
     border-left: 1px solid #E6E6E5;
   }
 
-  ::v-deep .el-input__inner{
-    padding-left: 28px;
-    padding-right: 78px;
+  &.showSearch {
+    ::v-deep .el-input__inner{
+      padding-left: 28px;
+    }
   }
-  ::v-deep .el-input__suffix {
-    right: 53px;
+  &.showAdd {
+    ::v-deep .el-input__inner{
+      padding-right: 72px;
+    }
+    ::v-deep .el-input__suffix {
+      right: 53px;
+    }
   }
   ::v-deep .el-input{
     .el-input__suffix-inner{
