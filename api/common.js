@@ -313,11 +313,12 @@ export function locationListShort (data) {
 /**
  * 销售顾问/交付顾问/交付衍生工程师、
  * 配置项唯一标识 salesConfigKey:
- *  saleUser-销售顾问配置
+ * saleUser-销售顾问配置
  * deliveryUser-交付顾问配置
  * deliveryDerive-交付衍生工程师配置
+ * -现场交付工程师配置
  * @param {*} data
  */
 export function engineerList (data) {
-  return api.get('/web/order/common/userList', data);
+  return api.jsonPost('vr/web/order/common/userList', data);
 }
