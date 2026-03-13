@@ -90,7 +90,7 @@
     ref="select"
     :remote="true"
     :remoteMethod="remoteMethod"
-    placeholder="请选择"
+    :placeholder="placeholder"
     v-bind="$attrs"
     v-model="ids"
     @change="handleChange"
@@ -227,6 +227,10 @@ export default {
     showCode: {
       type: Boolean,
       default: true
+    },
+    placeholder: {
+      type: String,
+      default: '请选择'
     }
   },
   data () {
