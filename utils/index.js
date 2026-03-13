@@ -411,3 +411,89 @@ const prefixRegex = new RegExp(`^${appPrefix}`);
 export const getRouterPath = () => {
   return location.pathname.replace(prefixRegex, '');
 };
+
+// 通用配置 对应导出表格 方法
+export function generateTitleMap (columns) {
+  if (!Array.isArray(columns)) return {};
+
+  return columns.reduce((acc, col) => {
+    if (col.field) {
+      acc[col.field] = col.title;
+    }
+    return acc;
+  }, {});
+};
+
+/**
+ * 通用表格导出处理函数
+ * @param {Object} options - 配置项
+ * @param {String} apiFunc - 导出接口
+ * @param {Function} download - 导出下载方法
+ * @param {Function} message - 消息提示函数 (如 Element UI 的 ElMessage)
+ * @param {Function} options.exportApiParamsFn - 生成导出参数的函数 (返回 Promise 或 对象)
+ * @param {String} options.fileName - 导出的文件名 (不含后缀)
+ * @param {Object} options.titleMap - 表头映射对象 { field: title }
+ * @param {String} options.dataFetchPath - 后端数据获取路径
+ * @param {String} options.businessType - 业务类型标识
+ * @param {String} options.httpMethod - 请求方法，默认 'POST'
+ * @param {Function} options.onStart - 开始回调 (通常用于开启 loading)
+ * @param {Function} options.onEnd - 结束回调 (通常用于关闭 loading)
+ */
+export async function handleCommonExport (options) {
+  const {
+    apiFunc,
+    download,
+    message,
+    exportApiParamsFn,
+    fileName,
+    titleMap,
+    dataFetchPath,
+    businessType,
+    httpMethod = 'POST',
+    onStart,
+    onEnd
+  } = options;
+
+  // 1. 执行开始回调 (开启 loading)
+  if (typeof onStart === 'function') {
+    onStart();
+  }
+
+  try {
+    // 2. 获取参数 (支持异步获取，比如需要先算出某些值)
+    const reqParams = typeof exportApiParamsFn === 'function'
+      ? await exportApiParamsFn()
+      : exportApiParamsFn;
+
+    // 3. 调用导出接口
+    const res = await apiFunc({
+      businessType,
+      dataFetchPath,
+      reqParams,
+      titleMap,
+      httpMethod
+    });
+
+    // 4. 处理结果
+    if (res && res.excelUrl) {
+      try {
+        await download(res.excelUrl, `${fileName}.xlsx`);
+        // 可选：下载成功提示
+        // ElMessage.success('导出成功');
+      } catch (downloadError) {
+        console.error(downloadError);
+        message({ type: 'error', message: '文件下载失败，请稍后重试' });
+      }
+    } else {
+      // 后端返回了但没有 url，通常是异步生成
+      message({ type: 'info', message: '任务已提交，请前往“导出中心”查询结果' });
+    }
+  } catch (error) {
+    message({ type: 'error', message: '导出请求失败' });
+  } finally {
+    // 5. 执行结束回调 (关闭 loading)
+    if (typeof onEnd === 'function') {
+      onEnd();
+    }
+  }
+}
