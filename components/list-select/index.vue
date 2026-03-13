@@ -279,7 +279,6 @@ export default {
     }
   },
   mounted () {
-    console.log('mounted', hasValue(this.value), this.noParamLoad, this.listUrl);
     if (hasValue(this.value)) {
       // mounted时带值,是回写, 理论上也一定有参数
       this.ids = this.value;
@@ -337,8 +336,11 @@ export default {
         }
       }
     },
-    handleFocus () {
-
+    handleFocus (e) {
+      if (this.options.length === 0 && this.autoLoadOptions) {
+        this.remoteMethod();
+      }
+      this.$emit('focus', e.target.value);
     },
 
   }
