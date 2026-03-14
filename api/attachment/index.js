@@ -162,3 +162,115 @@ export function getByCode (params) {
     }
   });
 }
+
+/**
+ * 查询附件配置列表
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function getConfigList (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfig/page', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置新增或修改
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function addOrUpdateConfig (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfig/addOrUpdate', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置删除
+ * @export
+ * @param {Array} params
+ * @returns
+ */
+export function deleteConfig (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfig/delete', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置查询详情
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function getConfigDetail (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfig/get', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 传附件配置明细分页查询
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function geConfigDetailList (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/page', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细查询详情
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function getConfigDetailDetail (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/get', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细新增或修改
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function addOrUpdateConfigDetail (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/addOrUpdate', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细删除
+ * @export
+ * @param {Array} params
+ * @returns
+ */
+export function deleteConfigDetail (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/delete', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
