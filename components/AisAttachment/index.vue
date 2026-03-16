@@ -56,6 +56,16 @@
       ref="attachment"
     />
 
+    // 9宫格样式
+    <AisAttachment
+      :businessId="_id"
+      configCode="mcs_spmusedprtdestory_apply"
+      attachType="其他"
+      ref="attachment"
+      type="card"
+      title="车辆信息"
+    />
+
     * @example
     * // 获取所有附件
     * const allFiles = this.$refs.attachment.getFileList();
@@ -70,9 +80,20 @@
  */
 </script>
 <template>
-  <ais-upload v-model="fileList" :business-id="businessId" :attach-type="attachType" :isAttached="Boolean(configCode)"
-    :show-upload="true" :readonly="readonly" :uploadConfig="internalUploadConfig" @update="update" @addParam="addParam"
-    @removeParam="removeParam" v-bind="$attrs" v-on="$listeners" />
+  <ais-upload
+    v-model="fileList"
+    :business-id="businessId"
+    :attach-type="attachType"
+    :isAttached="Boolean(configCode)"
+    :show-upload="true"
+    :readonly="readonly"
+    :uploadConfig="internalUploadConfig"
+    @update="update"
+    @addParam="addParam"
+    @removeParam="removeParam"
+    v-bind="$attrs"
+    v-on="$listeners"
+    />
 </template>
 
 <script>
@@ -110,7 +131,7 @@ export default {
     noEcho: {
       type: Boolean,
       default: false
-    }
+    },
   },
   data () {
     /**

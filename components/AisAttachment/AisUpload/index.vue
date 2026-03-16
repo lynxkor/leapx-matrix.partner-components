@@ -58,7 +58,7 @@
  */
 </script>
 <template>
-  <div class="business-upload">
+  <div class="business-upload" :class="uploadClasses">
     <!-- 上传按钮区域 -->
     <el-upload
       v-if="!readonly"
@@ -84,6 +84,7 @@
       v-on="$listeners"
     >
       <slot name="trigger">
+        <span class="title" v-if="title">{{ title }}</span>
         <el-button
           size="small"
           type="primary"
@@ -213,6 +214,19 @@ export default {
         deleteApi: deleteFile,
         addOrUpdateFileApi: addOrUpdateFile,
       })
+    },
+    //
+    type: {
+      type: 'default' | 'card',
+      default: 'default'
+    },
+    title: {
+      type: String,
+      default: '',
+    },
+    uploadClass: {
+      type: String,
+      default: '',
     }
   },
 
@@ -227,6 +241,12 @@ export default {
   },
 
   computed: {
+    uploadClasses() {
+      return {
+        [this.uploadClass]: true,
+        'card': this.type === 'card',
+      }
+    },
     uploadRef () {
       return this.$refs.uploadRef;
     },
@@ -491,9 +511,25 @@ export default {
 <style lang="scss" scoped>
 .business-upload {
   width: 100%;
+  &.card{
+    width: 33.33%;
+    background-color: #F8F7F7;
+    border-radius: 4px;
+    padding: 16px;
+  }
 }
 
 .business-upload-area {
   margin-bottom: 16px;
+  ::v-deep .el-upload{
+    display: flex;
+  }
+  .title{
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: left;
+  }
 }
 </style>
