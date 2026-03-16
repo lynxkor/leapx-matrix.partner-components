@@ -217,10 +217,10 @@ export function handleBatchStatusChange ({
           resolve();
         })
         .catch((error) => {
-          this.$message({
-            type: 'error',
-            message: errorMessage
-          });
+          // this.$message({
+          //   type: 'error',
+          //   message: error.msg
+          // });
           reject(error);
         });
     }).catch((err) => {
