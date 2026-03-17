@@ -340,6 +340,8 @@ export default {
         // eslint-disable-next-line no-useless-concat
         this.time2.splice(1, 1, time2 + ' ' + '23' + ':59' + ':59');
         this.changeTime(this.time2);
+        // 触发 input 事件更新父组件的 v-model 值
+        this.$emit('input', this.time2);
       }
     },
     changeTime (value) {
@@ -444,21 +446,37 @@ export default {
         case '今天截止':
           // start.setTime(null);
           start.setTime(this.upToTodayStart);
-          end.setTime(end.getTime());
+          end.setTime(new Date().setHours(23, 59, 59, 0));
+          break;
+        case '昨天':
+          start.setTime(start.getTime() - oneDay);
+          end.setTime(start.getTime() + endTsFn);
+          break;
+        case '最近 3 天':
+          start.setTime(start.getTime() - 3 * oneDay);
+          end.setTime(new Date().setHours(23, 59, 59, 0));
           break;
         case '最近一周':
           start.setTime(start.getTime() - 7 * oneDay); // 最近一周开始时间
-          end.setTime(end.getTime() - oneDay); // 当前时间
+          end.setTime(new Date().setHours(23, 59, 59, 0));
+          break;
+        case '最近一个月':
+          start.setTime(start.getTime() - 30 * oneDay);
+          end.setTime(new Date().setHours(23, 59, 59, 0));
           break;
         case '最近三个月':
           start.setTime(start.getTime() - 90 * oneDay); // 最近三个月开始时间
-          end.setTime(end.getTime() - oneDay);
+          end.setTime(new Date().setHours(23, 59, 59, 0));
+          break;
+        case '最近半年':
+          start.setTime(start.getTime() - 180 * oneDay);
+          end.setTime(new Date().setHours(23, 59, 59, 0));
           break;
 
         default:
           start.setTime(start.getTime() - days);
-          // 截至到昨天
-          end.setTime(end.getTime() - oneDay);
+          // 截至到今天 23:59:59
+          end.setTime(new Date().setHours(23, 59, 59, 0));
       }
       // console.log([start, end], '@@@@');
       return [start, end];
