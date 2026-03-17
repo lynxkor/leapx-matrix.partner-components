@@ -341,12 +341,15 @@ export default {
   width: 100px;
   margin-right: 12px;
   margin-bottom: 12px;
-  background: #FCFBFB;
   cursor: pointer;
+  &:nth-child(3n+3) {
+    margin-right: 0;
+  }
 
   .card {
     height: 100px;
     width: 100%;
+    background: #FCFBFB;
     border: 1px solid #E6E6E5;
     border-radius: 4px;
     position: relative;
