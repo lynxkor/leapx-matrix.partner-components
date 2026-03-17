@@ -59,6 +59,7 @@
 </script>
 <template>
   <div class="business-upload" :class="uploadClasses">
+    <div class="content">
     <!-- 上传按钮区域 -->
     <el-upload
       v-if="!readonly"
@@ -106,6 +107,7 @@
       @delete="handleFileDelete"
       @update="$emit('update')"
     />
+    </div>
   </div>
 </template>
 
@@ -508,14 +510,35 @@ export default {
 };
 </script>
 
+<style lang="scss">
+div:has(.business-upload.card) {
+  &::after{
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+</style>
 <style lang="scss" scoped>
 .business-upload {
   width: 100%;
+  .content{
+    width: 100%;
+  }
   &.card{
-    width: 33.33%;
-    background-color: #F8F7F7;
+    width: calc(33.333%); /* 改为33.333%更精确 */
     border-radius: 4px;
-    padding: 16px;
+    padding-bottom: 16px;
+    float: left;
+    padding-left: 16px;
+    &:nth-child(3n+1) {
+      padding-left: 0;
+    }
+    .content{
+      padding: 16px;
+      border-radius: 4px;
+      background-color: #F8F7F7;
+    }
   }
 }
 
