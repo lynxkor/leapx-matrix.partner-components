@@ -1,5 +1,5 @@
 <template>
-  <div class="file-display-container">
+  <div class="file-display-container" :class="{nine: type === 'card'}">
     <transition-group name="file-list" tag="div" class="file-list-wrapper">
       <div
         v-for="(file, index) in fileList"
@@ -132,6 +132,10 @@ export default {
     fileTypeDetector: {
       type: Function,
       default: null
+    },
+    type: {
+      type: 'default' | 'card',
+      default: 'default'
     },
   },
 
@@ -330,6 +334,13 @@ export default {
 <style lang="scss" scoped>
 .file-display-container {
   width: 100%;
+  &.nine{
+    .file-item{
+      &:nth-child(3n+3) {
+        margin-right: 0;
+      }
+    }
+  }
 }
 
 .file-list-wrapper {
@@ -342,9 +353,6 @@ export default {
   margin-right: 12px;
   margin-bottom: 12px;
   cursor: pointer;
-  &:nth-child(3n+3) {
-    margin-right: 0;
-  }
 
   .card {
     height: 100px;

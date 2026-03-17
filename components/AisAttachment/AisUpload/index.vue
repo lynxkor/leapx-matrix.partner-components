@@ -105,6 +105,7 @@
       :readonly="readonly"
       @delete="handleFileDelete"
       @update="$emit('update')"
+      :type="type"
     />
   </div>
 </template>
