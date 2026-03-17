@@ -64,7 +64,7 @@ export function getTimeRangeByType (type = '', days = 0) {
   switch (type) {
     case '今天':
       start.setTime(start.getTime());
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(start.getTime() + endTsFn);
       break;
     case '本周':
       start.setTime(currWeekStartTime);
@@ -100,36 +100,36 @@ export function getTimeRangeByType (type = '', days = 0) {
       break;
     case '昨天':
       start.setTime(start.getTime() - oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(start.getTime() + endTsFn);
       break;
     case '最近 3 天':
       start.setTime(start.getTime() - 3 * oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(new Date().setHours(23, 59, 59, 0));
       break;
     case '最近一周':
       start.setTime(start.getTime() - 7 * oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(new Date().setHours(23, 59, 59, 0));
       break;
     case '最近一个月':
       start.setTime(start.getTime() - 30 * oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(new Date().setHours(23, 59, 59, 0));
       break;
     case '最近三个月':
       start.setTime(start.getTime() - 90 * oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(new Date().setHours(23, 59, 59, 0));
       break;
     case '最近半年':
       start.setTime(start.getTime() - 180 * oneDay);
-      end.setTime(end.getTime() - oneDay);
+      end.setTime(new Date().setHours(23, 59, 59, 0));
       break;
     default:
       // 支持自定义天数，如 '最近 7 天' 传 days = 7
       if (days > 0) {
         start.setTime(start.getTime() - days * oneDay);
-        end.setTime(end.getTime() - oneDay);
+        end.setTime(new Date().setHours(23, 59, 59, 0));
       } else {
         start.setTime(start.getTime());
-        end.setTime(end.getTime());
+        end.setTime(start.getTime() + endTsFn);
       }
   }
 
