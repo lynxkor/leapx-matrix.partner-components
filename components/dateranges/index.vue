@@ -340,6 +340,8 @@ export default {
         // eslint-disable-next-line no-useless-concat
         this.time2.splice(1, 1, time2 + ' ' + '23' + ':59' + ':59');
         this.changeTime(this.time2);
+        // 触发 input 事件更新父组件的 v-model 值
+        this.$emit('input', this.time2);
       }
     },
     changeTime (value) {
