@@ -439,3 +439,12 @@
 .el-tree-node__content{
   height: 28px;
 }
+
+// el-drawer
+.el-drawer__header{
+  span{
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--aisDefaultTextColor);
+  }
+}
