@@ -136,6 +136,20 @@ export function getFileList (params) {
 }
 
 /**
+ * 获取附件列表（分页）
+ * @export
+ * @param {Object} params {businessId, attachType, pageNum, pageSize, fileName}
+ * @returns
+ */
+export function getFileListPage (params) {
+  return fileServiceAxios.post('/web/attachment/attachment/page', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
  * 文件绑定到业务id
  * @export
  * @param {Object} params
