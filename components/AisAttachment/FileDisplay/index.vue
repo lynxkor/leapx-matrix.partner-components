@@ -134,9 +134,11 @@ export default {
       default: null
     },
     type: {
-      type: 'default' | 'card',
-      default: 'default'
-    },
+      type: String,
+      default: 'default',
+      validator: function (value) {
+        return ['default', 'card'].indexOf(value) !== -1;
+    }
   },
 
   data () {
