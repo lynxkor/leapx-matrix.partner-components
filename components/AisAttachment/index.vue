@@ -102,6 +102,8 @@ import { getByCode, getFileList } from '../../api/attachment';
 import { isFileType } from '../../utils/file.js';
 // 根据 configCode 进行缓存
 const attachmentConfigCache = new Map();
+// 请求防抖缓存 - 防止同时发起多个相同请求
+const pendingRequests = new Map();
 
 export default {
   name: 'AisAttachment',
@@ -223,12 +225,38 @@ export default {
         // 走后端的校验配置
         if (configCode) {
           let data = null;
+
+          // 检查缓存
           if (attachmentConfigCache.has(configCode)) {
             data = attachmentConfigCache.get(configCode);
           } else {
-            const response = await getByCode(configCode);
-            data = response?.data;
+            // 检查是否有正在进行的相同请求
+            if (pendingRequests.has(configCode)) {
+              // 等待正在进行的请求完成
+              data = await pendingRequests.get(configCode);
+            } else {
+              // 创建新的请求 Promise
+              const requestPromise = getByCode(configCode).then(response => {
+                const result = response?.data;
+                // 缓存结果
+                if (result) {
+                  attachmentConfigCache.set(configCode, result);
+                }
+                // 请求完成后清除 pending
+                pendingRequests.delete(configCode);
+                return result;
+              }).catch(error => {
+                // 请求失败也要清除 pending
+                pendingRequests.delete(configCode);
+                throw error;
+              });
+
+              // 将请求加入 pending
+              pendingRequests.set(configCode, requestPromise);
+              data = await requestPromise;
+            }
           }
+
           if (data && data.detailList) {
             this.internalUploadConfig = data.detailList.find(config => config.attachType === attachType);
           } else {
