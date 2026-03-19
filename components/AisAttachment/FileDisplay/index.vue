@@ -136,8 +136,8 @@ export default {
     type: {
       type: String,
       default: 'default',
-      validator: function (value) {
-        return ['default', 'card'].indexOf(value) !== -1;
+      validator: (value) => {
+        return ['default', 'card'].includes(value);
       }
     },
   },
