@@ -132,8 +132,11 @@ export default {
   props: {
     // 展示类型
     type: {
-      type: 'normal' | 'menu' | 'rect',
-      default: 'normal',
+      type: String,
+      default: 'default',
+      validator: function (value) {
+        return ['normal' | 'menu' | 'rect'].indexOf(value) !== -1;
+      }
     },
     // 添加 value 支持 v-model
     value: {

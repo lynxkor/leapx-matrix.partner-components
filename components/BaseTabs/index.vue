@@ -143,8 +143,11 @@ export default {
     // menu: 下拉菜单
     // rect: 边框+关闭图标
     type: {
-      type: 'normal' | 'menu' | 'rect',
-      default: 'normal',
+      type: String,
+      default: 'default',
+      validator: function (value) {
+        return ['normal' | 'menu' | 'rect'].indexOf(value) !== -1;
+      }
     },
     // type = 'menu' 时使用，下拉菜单功能
     menus: {
