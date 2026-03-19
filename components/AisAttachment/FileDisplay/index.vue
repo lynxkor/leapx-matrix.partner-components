@@ -138,9 +138,9 @@ export default {
       default: 'default',
       validator: function (value) {
         return ['default', 'card'].indexOf(value) !== -1;
-    }
+      }
+    },
   },
-
   data () {
     return {
       editable: true,
