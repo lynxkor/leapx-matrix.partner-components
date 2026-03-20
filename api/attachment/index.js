@@ -288,3 +288,59 @@ export function deleteConfigDetail (params) {
     }
   });
 }
+
+/**
+ * 附件配置明细分页
+ * @export
+ * @param {Array} params
+ * @returns
+ */
+export function attachmentConfigConditionPage (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/page', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细列表
+ * @export
+ * @param {Array} params
+ * @returns
+ */
+export function attachmentConfigConditionList (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/list', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细列表查询详情
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function attachmentConfigConditionDetail (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/get', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+/**
+ * 附件配置明细列表新增编辑
+ * @export
+ * @param {Object} params
+ * @returns
+ */
+export function attachmentConfigConditionAddOrUpdate (params) {
+  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/addOrUpdate', params, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
