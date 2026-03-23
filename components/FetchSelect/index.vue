@@ -280,9 +280,20 @@ export default {
         this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
         if (!this.initialLoaded && this.params) {
-          const target = formatedData.find(item => item[this.valueKey] === String(this.value));
-          if (!target) {
-            this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params })
+          if (Array.isArray(this.value)) {
+            // 多选模式：处理每个值
+            this.value.forEach(v => {
+              const target = formatedData.find(item => String(item[this.valueKey]) === String(v));
+              if (!target) {
+                this.remoteOptions.push({ [this.valueKey]: v, [this.labelKey]: this.params });
+              }
+            });
+          } else {
+            // 单选模式
+            const target = formatedData.find(item => String(item[this.valueKey]) === String(this.value));
+            if (!target) {
+              this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params });
+            }
           }
         }
         this.initialLoaded = true;
@@ -346,12 +357,12 @@ export default {
       if (Array.isArray(val)) {
         // 多选：返回匹配的选项对象数组
         selectedOption = val.map(v =>
-          this.computedOptions.find(option => option[this.valueKey] === v)
+          this.computedOptions.find(option => String(option[this.valueKey]) === String(v))
         ).filter(Boolean); // 过滤掉未找到的 null/undefined
       } else {
         // 单选：返回单个选项对象
         selectedOption = this.computedOptions.find(
-          option => option[this.valueKey] === val
+          option => String(option[this.valueKey]) === String(val)
         );
       }
       this.$emit('change', val, selectedOption);
