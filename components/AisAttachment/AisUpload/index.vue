@@ -251,7 +251,7 @@ export default {
 
   computed: {
     uploadTitleCls() {
-      const isRequired = this.uploadConfig.required === '1';
+      const isRequired = this.uploadConfig?.required === '1';
       return {
         isRequired,
       };
@@ -527,7 +527,7 @@ export default {
 
 <style lang="scss">
 div:has(.business-upload.card) {
-  display: flex;
+  display: flex !important;
   width: 100%;
   flex-wrap: wrap;
 }
