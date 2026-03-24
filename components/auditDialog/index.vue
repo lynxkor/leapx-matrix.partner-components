@@ -37,7 +37,7 @@
         <el-input
           v-model="auditForm.remark"
           :rows="4"
-          maxlength="500"
+          :maxlength="maxlength"
           placeholder="审核说明"
           show-word-limit
           type="textarea"
@@ -66,6 +66,10 @@ export default {
     field: {
       type: String,
       default: 'id'
+    },
+    maxlength: {
+      type: Number,
+      default: 500
     }
   },
   data () {
