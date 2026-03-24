@@ -527,7 +527,7 @@ export default {
 
 <style lang="scss">
 div:has(.business-upload.card) {
-  display: flex !important;
+  display: flex;
   width: 100%;
   flex-wrap: wrap;
 }
