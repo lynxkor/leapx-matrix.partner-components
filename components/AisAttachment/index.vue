@@ -85,6 +85,7 @@
     :business-id="businessId"
     :attach-type="attachType"
     :isAttached="Boolean(configCode)"
+    :configCode="configCode"
     :show-upload="true"
     :readonly="readonly"
     :uploadConfig="internalUploadConfig"
