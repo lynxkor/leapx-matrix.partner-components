@@ -60,7 +60,7 @@
 <template>
   <div class="business-upload" :class="uploadClasses">
     <!-- 上传按钮区域 -->
-    <span v-if="type==='card' && title" class="upload-title">{{ title }}</span>
+    <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
       v-if="!readonly"
       ref="uploadRef"
@@ -250,6 +250,12 @@ export default {
   },
 
   computed: {
+    uploadTitleCls() {
+      const isRequired = this.uploadConfig.required === '1';
+      return {
+        isRequired,
+      };
+    },
     uploadClasses() {
       return {
         [this.uploadClass]: true,
@@ -294,7 +300,8 @@ export default {
       immediate: true
     }
   },
-
+  mounted () {
+  },
   methods: {
     // 获取token
     getToken () {
@@ -551,6 +558,12 @@ div:has(.business-upload.card) {
     font-weight: 500;
     line-height: 32px;
     text-align: left;
+    &.isRequired::before{
+      content: '*';
+      display: inline-block;
+      margin-right: 4px;
+      color: var(--leap-color-danger);
+    }
   }
 }
 

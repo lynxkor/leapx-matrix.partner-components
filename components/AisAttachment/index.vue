@@ -135,6 +135,11 @@ export default {
       type: Boolean,
       default: false
     },
+    // 业务数据json, 根据业务数据、附加条件，动态判断附件是否必传
+    businessData: {
+      type: String,
+      default: '',
+    }
   },
   data () {
     /**
@@ -182,6 +187,12 @@ export default {
       },
       deep: true,
     },
+    businessData: {
+      handler (newVal) {
+        this.loadAttachmentConfig(this.configCode, this.attachType, true);
+      },
+      deep: true,
+    }
   },
   computed: {
   },
@@ -220,15 +231,16 @@ export default {
      * 加载附件配置
      * @param {string} configCode - 配置代码
      * @param {String} attachType
+     * @param {String} isRefresh 是否需要获取最新数据
      */
-    async loadAttachmentConfig (configCode, attachType) {
+    async loadAttachmentConfig (configCode, attachType, isRefresh) {
       try {
         // 走后端的校验配置
         if (configCode) {
           let data = null;
 
           // 检查缓存
-          if (attachmentConfigCache.has(configCode)) {
+          if (attachmentConfigCache.has(configCode) && !isRefresh) {
             data = attachmentConfigCache.get(configCode);
           } else {
             // 检查是否有正在进行的相同请求
@@ -237,7 +249,10 @@ export default {
               data = await pendingRequests.get(configCode);
             } else {
               // 创建新的请求 Promise
-              const requestPromise = getByCode(configCode).then(response => {
+              const requestPromise = getByCode({
+                configCode,
+                businessData: this.businessData,
+              }).then(response => {
                 const result = response?.data;
                 // 缓存结果
                 if (result) {

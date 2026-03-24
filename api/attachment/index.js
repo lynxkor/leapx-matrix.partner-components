@@ -170,7 +170,7 @@ export function addOrUpdateFile (params) {
  * @returns
  */
 export function getByCode (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/getByCode', params, {
+  return fileServiceAxios.post('/web/attachment/attachmentConfig/getByCodeWithBusinessData', params, {
     headers: {
       'Content-Type': 'application/json'
     }
