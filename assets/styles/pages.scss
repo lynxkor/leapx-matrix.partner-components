@@ -103,6 +103,8 @@
   width: 100%;
   height: 100%;
   justify-content: center;
+  background-color: #fff;
+
   .common-section{
     width: 700px;
     margin-bottom: 20px;
@@ -171,6 +173,8 @@
 .page-common-detail {
   padding: 16px;
   container: card-container / inline-size;
+  background-color: #fff;
+
   .el-descriptions-item__label{
     color: var(--leap-color-default-dark-1);
   }
@@ -253,6 +257,7 @@
   height: 100%;
   container: card-container / inline-size;
   min-width: 300px;
+  background-color: #fff;
   .el-main{
     padding: 0 16px;
   }
