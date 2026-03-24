@@ -20,7 +20,7 @@
         <component :is="currentComponent" :id="id" :data="data" />
       </div>
     <div slot="footer" class="dialog-footer">
-      <el-button size="small" @click="dialogVisible = false">取消</el-button>
+      <el-button size="small" @click="close">取消</el-button>
       <el-button size="small" type="primary" v-print="printObj">打印</el-button>
     </div>
    </el-dialog>
@@ -57,7 +57,45 @@ export default {
     };
   },
 
+  watch: {
+    dialogVisible (newVal, oldVal) {
+      // 当窗口关闭时，清理路由监听
+      if (oldVal === true && newVal === false) {
+        this.removeRouteListeners();
+      }
+    }
+  },
+
   methods: {
+    handleRouteChange () {
+      if (this.dialogVisible) {
+        this.close();
+      }
+    },
+
+    addRouteListeners () {
+      if (this.hasRouteListeners) return;
+
+      // 绑定 this
+      this.boundHandleRouteChange = this.handleRouteChange.bind(this);
+      // history 模式主要监听 popstate 事件
+      window.addEventListener('popstate', this.boundHandleRouteChange);
+      // 也监听 hashchange 作为补充（某些情况下可能触发）
+      window.addEventListener('hashchange', this.boundHandleRouteChange);
+
+      this.hasRouteListeners = true;
+    },
+
+    removeRouteListeners () {
+      if (!this.hasRouteListeners) return;
+
+      window.removeEventListener('popstate', this.boundHandleRouteChange);
+      window.removeEventListener('hashchange', this.boundHandleRouteChange);
+
+      this.boundHandleRouteChange = null;
+      this.hasRouteListeners = false;
+    },
+
     async show (options = {}) {
       const { title = '', template, id, data, width } = options;
       this.printObj.popTitle = title;
@@ -72,6 +110,8 @@ export default {
         if (component) {
           this.currentComponent = component;
           this.dialogVisible = true;
+          // 窗口打开后添加路由监听
+          this.addRouteListeners();
         }
       } catch (error) {
         console.error(`加载模板 ${template} 失败:`, error);
@@ -94,6 +134,8 @@ export default {
 
     close () {
       this.dialogVisible = false;
+      // 关闭窗口时移除路由监听
+      this.removeRouteListeners();
     },
   },
 };

@@ -60,6 +60,7 @@
 <template>
   <div class="business-upload" :class="uploadClasses">
     <!-- 上传按钮区域 -->
+    <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
       v-if="!readonly"
       ref="uploadRef"
@@ -84,7 +85,6 @@
       v-on="$listeners"
     >
       <slot name="trigger">
-        <span class="title" v-if="title">{{ title }}</span>
         <el-button
           size="small"
           type="primary"
@@ -161,6 +161,11 @@ export default {
       required: true
     },
 
+    configCode: {
+      type: String,
+      default: '',
+    },
+
     /**
      * 可空，如果为空，文件大小不校验，只进行文件类型校验
      */
@@ -218,8 +223,11 @@ export default {
     },
     //
     type: {
-      type: 'default' | 'card',
-      default: 'default'
+      type: String,
+      default: 'default',
+      validator: (value) => {
+        return ['default', 'card'].includes(value);
+      }
     },
     title: {
       type: String,
@@ -242,6 +250,12 @@ export default {
   },
 
   computed: {
+    uploadTitleCls() {
+      const isRequired = this.uploadConfig.required === '1';
+      return {
+        isRequired,
+      };
+    },
     uploadClasses() {
       return {
         [this.uploadClass]: true,
@@ -286,7 +300,8 @@ export default {
       immediate: true
     }
   },
-
+  mounted () {
+  },
   methods: {
     // 获取token
     getToken () {
@@ -322,7 +337,8 @@ export default {
           fileType: data.ext,
           // 从外部传入的参数
           attachType: this.attachType,
-          businessId: this.businessId
+          businessId: this.businessId,
+          configCode: this.configCode,
         };
         // 如果有 id 属性，也添加进去
         if (this.id) {
@@ -518,6 +534,7 @@ div:has(.business-upload.card) {
 </style>
 <style lang="scss" scoped>
 .business-upload {
+  position: relative;
   width: 100%;
   &.card{
     width: calc((100% - 32px) / 3);
@@ -531,6 +548,22 @@ div:has(.business-upload.card) {
     &:nth-child(3n+3) {
       margin-right: 0;
     }
+    ::v-deep .el-upload{
+      justify-content: flex-end;
+    }
+  }
+  .upload-title{
+    position: absolute;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 32px;
+    text-align: left;
+    &.isRequired::before{
+      content: '*';
+      display: inline-block;
+      margin-right: 4px;
+      color: var(--leap-color-danger);
+    }
   }
 }
 
@@ -538,13 +571,6 @@ div:has(.business-upload.card) {
   margin-bottom: 16px;
   ::v-deep .el-upload{
     display: flex;
-  }
-  .title{
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22px;
-    text-align: left;
   }
 }
 </style>

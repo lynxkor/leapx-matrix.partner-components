@@ -79,7 +79,7 @@ export function getUserByNameOrNo (data) {
 }
 
 /**
- * 门店模糊搜索
+ * 网发门店模糊搜索
  * @param {*} data
  */
 export function listOrgStoreInfo (data) {
