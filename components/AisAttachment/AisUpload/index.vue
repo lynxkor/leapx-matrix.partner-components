@@ -251,7 +251,7 @@ export default {
 
   computed: {
     uploadTitleCls() {
-      const isRequired = this.uploadConfig.required === '1';
+      const isRequired = this.uploadConfig?.required === '1';
       return {
         isRequired,
       };
