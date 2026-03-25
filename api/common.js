@@ -322,3 +322,19 @@ export function locationListShort (data) {
 export function engineerList (data) {
   return api.jsonPost('vr/web/order/common/userList', data);
 }
+
+/**
+   * 网发--用户仓库列表
+   * @param {*} data
+   */
+export function getApplyUserStoreList (data) {
+  return api.get('/network/portal/user/store/list', data);
+}
+
+/**
+   * 网发--用户信息
+   * @param {*} data
+   */
+export function getLoginUser (data) {
+  return api.get('/passport/users/current', data);
+}
