@@ -133,9 +133,9 @@ export default {
     // 展示类型
     type: {
       type: String,
-      default: 'default',
-      validator: function (value) {
-        return ['normal' | 'menu' | 'rect'].indexOf(value) !== -1;
+      default: 'normal',
+      validator: (value) => {
+        return ['normal', 'menu', 'rect'].includes(value);
       }
     },
     // 添加 value 支持 v-model
@@ -266,9 +266,11 @@ export default {
       this.$data._items.splice(index, 1);
       const defer = createDefer();
       this.$emit('remove', item, index, defer);
-      defer.promise.then(() => {}).catch((e) => {
+      defer.promise.then(() => {
+        //
+      }).catch((e) => {
         // 删除失败回退
-        this.$data._items.splice(rowIndex, 0, item);
+        this.$data._items.splice(index, 0, item);
       });
 
       // 4. 处理删除后的选中状态

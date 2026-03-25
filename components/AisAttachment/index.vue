@@ -65,6 +65,7 @@
       type="card"
       title="车辆信息"
       @ocr-success="ocrSuccess"
+      :businessData="businessData"
     />
 
     * @example

@@ -144,9 +144,9 @@ export default {
     // rect: 边框+关闭图标
     type: {
       type: String,
-      default: 'default',
-      validator: function (value) {
-        return ['normal' | 'menu' | 'rect'].indexOf(value) !== -1;
+      default: 'normal',
+      validator: (value) => {
+        return ['normal', 'menu', 'rect'].includes(value);
       }
     },
     // type = 'menu' 时使用，下拉菜单功能
