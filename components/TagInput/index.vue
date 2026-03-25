@@ -1,7 +1,7 @@
 <template>
-  <div :class="disabled?'tag-input disabled':'tag-input'">
+  <div :class="['tag-input', disabled ? 'disabled' : '', isFocused ? 'focused' : '']">
     <!-- 输入框区域 - 支持单条输入 -->
-    <div class="tag-list" @click="handleTagListClick">
+    <div :class="['tag-list', isFocused ? 'focused' : '']" @click="handleTagListClick">
       <tag
         v-for="(item, index) in tagList.slice(0, 1)"
         :key="index"
@@ -31,18 +31,27 @@
       </tag>
 
       <!-- 单条输入框 -->
-      <input
-        ref="singleInput"
-        v-model="singleInputValue"
-        class="single-input"
-        :placeholder="tagList.length === 0 ? placeholder : ''"
-        @blur="handleSingleInputBlur"
-        @keyup.enter="handleSingleInputEnter"
-      />
+      <div class="single-input-wrapper">
+        <input
+          ref="singleInput"
+          v-model="singleInputValue"
+          class="single-input"
+          :placeholder="tagList.length === 0 ? placeholder : ''"
+          @focus="handleSingleInputFocus"
+          @blur="handleSingleInputBlur"
+          @keyup.enter="handleSingleInputEnter"
+        />
+        <i
+          v-if="tagList.length > 0"
+          class="el-icon-circle-close clear-icon"
+          @click="handleClearSingleInput"
+        />
+      </div>
     </div>
 
     <!-- 批量输入按钮 -->
     <el-popover
+      ref="popoverRef"
       placement="bottom"
       width="400"
       trigger="click"
@@ -71,7 +80,7 @@
             <el-button
               type="primary"
               size="mini"
-              @click="handleInput"
+              @click="handleConfirm"
             >
               确定
             </el-button>
@@ -115,7 +124,8 @@ export default {
       inputSize: 0,
       inputValue: null,
       tagList: [],
-      singleInputValue: ''
+      singleInputValue: '',
+      isFocused: false
     };
   },
   watch: {
@@ -138,8 +148,13 @@ export default {
       if (this.disabled) return;
       this.$refs.singleInput.focus();
     },
+    // 单条输入 - 获得焦点
+    handleSingleInputFocus () {
+      this.isFocused = true;
+    },
     // 单条输入 - 失去焦点时添加
     handleSingleInputBlur () {
+      this.isFocused = false;
       this.addSingleInput();
     },
     // 单条输入 - 回车时添加
@@ -164,6 +179,14 @@ export default {
         return;
       }
       this.tagList = this.inputValue2Array();
+    },
+    handleConfirm () {
+      this.handleInput();
+      this.$refs.popoverRef.doClose();
+    },
+    handleClearSingleInput () {
+      this.tagList = [];
+      this.$refs.singleInput.focus();
     },
     inputValue2Array () {
       // console.log('inputValue2Array', this.inputValue);
@@ -223,20 +246,49 @@ export default {
     &:hover {
       border-color: #9D9F9D;
     }
+
+    &.focused {
+      border-color: var(--leap-color-primary);
+    }
     .tag {
       height: 24px;
     }
-    .single-input {
+    .single-input-wrapper {
       flex: 1;
+      display: flex;
+      align-items: center;
       min-width: 80px;
-      border: none;
-      outline: none;
-      height: 30px;
-      line-height: 30px;
-      font-size: 13px;
-      background: transparent;
-      &::placeholder {
-        color: #9D9F9D;
+      position: relative;
+      .single-input {
+        flex: 1;
+        min-width: 80px;
+        border: none;
+        outline: none;
+        height: 30px;
+        line-height: 30px;
+        font-size: 13px;
+        background: transparent;
+        &::placeholder {
+          color: #9D9F9D;
+        }
+        &:focus + .clear-icon {
+          display: block;
+        }
+      }
+      .clear-icon {
+        font-size: 14px;
+        color: #c0c4cc;
+        cursor: pointer;
+        margin-left: 4px;
+        display: none;
+        &:hover {
+          color: #909399;
+        }
+      }
+      &:hover {
+        .clear-icon {
+          display: block;
+        }
       }
     }
   }
