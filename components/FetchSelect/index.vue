@@ -202,6 +202,11 @@ export default {
     treeListeners: {
       type: Object,
       default: () => ({}),
+    },
+    // （多选时）选中的选项，等接口请求完毕进行合并
+    defaultOptions: {
+      type: Array,
+      default: () => ([]),
     }
   },
   data () {
@@ -279,22 +284,21 @@ export default {
         }
         this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
-        if (!this.initialLoaded && this.params) {
-          if (Array.isArray(this.value)) {
-            // 多选模式：处理每个值
-            this.value.forEach(v => {
-              const target = formatedData.find(item => String(item[this.valueKey]) === String(v));
-              if (!target) {
-                this.remoteOptions.push({ [this.valueKey]: v, [this.labelKey]: this.params });
-              }
-            });
-          } else {
-            // 单选模式
-            const target = formatedData.find(item => String(item[this.valueKey]) === String(this.value));
-            if (!target) {
-              this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params });
-            }
+        if (!this.initialLoaded && this.params && !Array.isArray(this.value)) {
+          // 单选模式
+          const target = formatedData.find(item => String(item[this.valueKey]) === String(this.value));
+          if (!target) {
+            this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params });
           }
+        }
+        if (!this.initialLoaded && this.defaultOptions?.length && Array.isArray(this.value)) {
+          // 多选模式：处理每个值
+          this.defaultOptions.forEach(option => {
+            const target = formatedData.find(item => String(item[this.valueKey]) === String(option[this.valueKey]));
+            if (!target) {
+              this.remoteOptions.push(option);
+            }
+          });
         }
         this.initialLoaded = true;
       } catch (error) {

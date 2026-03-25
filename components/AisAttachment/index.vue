@@ -64,6 +64,7 @@
       ref="attachment"
       type="card"
       title="车辆信息"
+      @ocr-success="ocrSuccess"
     />
 
     * @example
@@ -159,6 +160,7 @@ export default {
         maxSize: 50, // 50M
         maxNum: 0,
         required: '0', // '0', '1'
+        needOcr: '0', // '0', '1'
       },
       fileList: [],
       loading: false,
@@ -341,6 +343,9 @@ export default {
     // 更新
     update () {
       this.loadAttachmentFiles(this.businessId, this.attachType, false);
+      if (this.internalUploadConfig?.needOcr === '1') {
+        this.$emit('ocr-success');
+      }
     },
     addParam (param) {
       this.attachFileList.push(param);

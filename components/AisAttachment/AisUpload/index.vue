@@ -246,6 +246,8 @@ export default {
       loading: false,
       // 记录正在上传的文件
       uploadingFiles: new Set(),
+      // 防抖定时器
+      updateTimer: null,
     };
   },
 
@@ -347,7 +349,6 @@ export default {
         //
         if (this.isAttached) {
           await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
-          this.$emit('update');
         } else {
           const param = {
             addOrUpdateParams,
@@ -363,6 +364,10 @@ export default {
         this.uploadingFiles.delete(fileId);
         if (this.uploadingFiles.size === 0) {
           this.uploadLoading = false;
+          // 全部上传完更新
+          if (this.isAttached) {
+            this.$emit('update');
+          }
         }
       }
     },
