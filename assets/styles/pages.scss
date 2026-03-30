@@ -517,3 +517,11 @@
   position: relative;
   top: 2px;
 }
+.ais-required.el-message-box__status{
+  top: 0px;
+  transform: none;
+  font-size: 14px !important;
+}
+.ais-required.el-message-box__status + .el-message-box__message{
+  padding-left: 12px;
+}
