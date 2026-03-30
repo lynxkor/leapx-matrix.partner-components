@@ -136,6 +136,57 @@ export default {
     }
   }
 };
+/**
+ * auditDialog 审核对话框组件
+ *
+ * 通用的审核/审批对话框组件，支持单选/批量审核，带审核结果选择和审核说明输入功能
+ *
+ * @description 功能特性:
+ * - 支持单条或批量审核
+ * - 审核结果选择（通过/不通过）
+ * - 审核说明输入（支持字数限制和必填校验）
+ * - 审核数据展示（支持 tooltip 显示完整列表）
+ *
+ * @props {String} auditTitle - 对话框标题，默认'审批'
+ * @props {Array} auditDataList - 待审核的数据列表，默认[]
+ * @props {String} field - 用于显示的字段名，默认'id'
+ * @props {Number} maxlength - 审核说明最大字符数，默认 500
+ *
+ * @event {Function} audit - 点击确定按钮时触发，返回 { result, remark, auditDataList }
+ * @event {Function} close - 关闭对话框时触发
+ *
+ * @method {Function} show - 打开对话框
+ * @method {Function} close - 关闭对话框并重置表单
+ *
+ * @example
+ * <!-- 基础用法 -->
+ * <auditDialog
+ *   ref="auditDialog"
+ *   @audit="handleAuditConfirm"
+ * />
+ *
+ * // 打开对话框
+ * this.$refs.auditDialog.auditDataList = [currentRow];
+ * this.$refs.auditDialog.show();
+ *
+ * // 处理审核
+ * handleAuditConfirm (data) {
+ *   // data.result: 1 通过，0 不通过
+ *   // data.remark: 审核说明
+ *   // data.auditDataList: 审核数据列表
+ *   auditApi(data.auditDataList.map(item => item.id), data.result, data.remark);
+ * }
+ *
+ * @example
+ * <!-- 批量审核 -->
+ * <auditDialog
+ *   ref="auditDialog"
+ *   auditTitle="批量审核"
+ *   :audit-data-list="selectedRows"
+ *   field="orderCode"
+ *   @audit="handleBatchAuditConfirm"
+ * />
+ */
 </script>
 
 <style lang="scss" scoped>
