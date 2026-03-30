@@ -508,6 +508,7 @@
   }
 }
 
+// 必填项样式
 .ais-required::before {
   content: '*';
   color: #b91919;

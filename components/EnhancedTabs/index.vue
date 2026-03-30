@@ -50,6 +50,7 @@
  *   :select-config="{
  *     valueKey: 'id',
  *     labelKey: 'name',
+ *     subLabelKey: 'code',
  *     labelFormat: '${name}(${code})',
  *     placeholder: '输入项目零件代码、名称',
  *   }"
@@ -102,6 +103,7 @@
         @change="onAdd"
         :value-key="selectConfig.valueKey"
         :label-key="selectConfig.labelKey"
+        :sub-label-key="selectConfig.subLabelKey"
         :placeholder="selectConfig.placeholder"
       />
       <base-input
@@ -185,6 +187,7 @@ export default {
       default: () => ({
         valueKey: 'id',
         labelKey: 'name',
+        subLabelKey: 'code',
         placeholder: '请选择',
         labelFormat: '', // 是否需要对tab的展示内容进行格式化，例如 '${name}($code)' = '名称(编码)'
       })
