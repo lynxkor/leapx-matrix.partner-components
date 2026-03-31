@@ -140,13 +140,16 @@ export default {
   },
 };
 </script>
-<style lang="scss">
-.dialog-print {
+<style lang="scss" scoped>
+::v-deep .dialog-print.el-dialog {
+  height: calc(100% - 160px);
+  margin-top: 80px !important;
   .el-dialog__header {
     display: none;
   }
   .el-dialog__body {
-    height: calc(80vh - 60px); // 总的高度 - footer高度
+    height: 100%;
+    max-height: calc(100% - 60px);
   }
 }
 #printArea {
