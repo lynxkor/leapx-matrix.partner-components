@@ -140,8 +140,8 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
-::v-deep .dialog-print.el-dialog {
+<style lang="scss">
+.dialog-print.el-dialog {
   height: calc(100% - 160px);
   margin-top: 80px !important;
   .el-dialog__header {
