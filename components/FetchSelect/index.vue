@@ -286,14 +286,14 @@ export default {
           ? [{ [this.valueKey]: '__NO_DATA__', [this.labelKey]: '无数据', disabled: true }]
           : formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
-        if (!this.initialLoaded && this.params && !Array.isArray(this.value)) {
+        if (!this.initialLoaded && this.params && !Array.isArray(this.value) && !this.isTree) {
           // 单选模式
           const target = formatedData.find(item => String(item[this.valueKey]) === String(this.value));
           if (!target) {
             this.remoteOptions.push({ [this.valueKey]: this.value, [this.labelKey]: this.params });
           }
         }
-        if (!this.initialLoaded && this.defaultOptions?.length && Array.isArray(this.value)) {
+        if (!this.initialLoaded && this.defaultOptions?.length && Array.isArray(this.value) && !this.isTree) {
           // 多选模式：处理每个值
           this.defaultOptions.forEach(option => {
             const target = formatedData.find(item => String(item[this.valueKey]) === String(option[this.valueKey]));
