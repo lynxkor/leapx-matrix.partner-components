@@ -220,7 +220,6 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  align-content: flex-start;
   justify-content: space-between;
   max-height: 80px;
   &:hover {
@@ -236,11 +235,7 @@ export default {
     border-radius: 4px;
     height: 32px;
     display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
     align-items: center;
-    max-height: 80px;
-    text-overflow: ellipsis;
     cursor: text;
     padding: 0 8px;
     &:hover {
@@ -257,11 +252,9 @@ export default {
       flex: 1;
       display: flex;
       align-items: center;
-      min-width: 80px;
       position: relative;
       .single-input {
         flex: 1;
-        min-width: 80px;
         border: none;
         outline: none;
         height: 30px;
