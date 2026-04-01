@@ -118,6 +118,12 @@ export default {
       type: [String, Number],
       default: '',
     },
+    /**
+     * 不传configCode时
+     *  1.启用uploadConfig配置项
+     *  2.不会调用getByCode接口
+     *  3.不会关联单据，上传后需要手动调用getAttachment接口获取附件列表，进行后续操作
+     */
     configCode: {
       type: String,
     },
@@ -128,9 +134,9 @@ export default {
       type: Boolean,
       default: false
     },
-    // configCode为空时 启用默认配置
     uploadConfig: {
       type: Object,
+      default: () => null,
     },
     // 是否为不回显
     noEcho: {
@@ -184,11 +190,12 @@ export default {
     },
     uploadConfig: {
       handler (newVal) {
-        if (!this.configCode) {
+        if (newVal) {
           this.internalUploadConfig = newVal;
         }
       },
       deep: true,
+      immediate: true,
     },
     businessData: {
       handler (newVal) {
@@ -239,7 +246,7 @@ export default {
     async loadAttachmentConfig (configCode, attachType, isRefresh) {
       try {
         // 走后端的校验配置
-        if (configCode) {
+        if (configCode && !this.uploadConfig) {
           let data = null;
 
           // 检查缓存

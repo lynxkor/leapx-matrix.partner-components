@@ -313,6 +313,7 @@ export default {
       addOrUpdateFile({
         id: file.id,
         fileName: file.copyName + '.' + file.fileType,
+        fileUrl: file?.response?.fileUrl,
       }).then(res => {
         this.$emit('update');
         this.onNameClose(index);
