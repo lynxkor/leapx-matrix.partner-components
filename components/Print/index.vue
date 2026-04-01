@@ -14,7 +14,7 @@
   4. 即可使用
 -->
 <template>
-   <el-dialog :title="printObj.popTitle" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print">
+   <el-dialog :title="printObj.popTitle" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print" :destroy-on-close="true">
       <div class="print-content">
         <!-- 动态组件 -->
         <component :is="currentComponent" :id="id" :data="data" />
@@ -134,8 +134,12 @@ export default {
 
     close () {
       this.dialogVisible = false;
-      // 关闭窗口时移除路由监听
+      this.id = '';
+      this.data = {}; // 清空数据
       this.removeRouteListeners();
+      this.$nextTick(() => {
+        this.currentComponent = null;
+      });
     },
   },
 };
