@@ -346,7 +346,7 @@ export default {
         if (this.id) {
           addOrUpdateParams.id = this.id;
         }
-        //
+        // 是否需要关联到单据
         if (this.isAttached) {
           await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
         } else {
