@@ -282,9 +282,7 @@ export default {
             el[this.valueKey] = String(el[this.valueKey]);
           });
         }
-        this.remoteOptions = formatedData.length === 0
-          ? [{ [this.valueKey]: '__NO_DATA__', [this.labelKey]: '无数据', disabled: true }]
-          : formatedData.slice(0, this.filterNum);
+        this.remoteOptions = formatedData.slice(0, this.filterNum);
         // 初始反显，且选项中没有搜到（数据项被删除或禁用），为了反显默认增加一项
         if (!this.initialLoaded && this.params && !Array.isArray(this.value) && !this.isTree) {
           // 单选模式
