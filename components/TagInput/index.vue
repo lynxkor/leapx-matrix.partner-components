@@ -31,30 +31,32 @@
       </tag>
 
       <!-- 单条输入框 -->
-      <div class="single-input-wrapper">
+      <div class="single-input-wrapper" v-if="tagList.length === 0">
         <input
           ref="singleInput"
           v-model="singleInputValue"
           class="single-input"
-          :placeholder="tagList.length === 0 ? placeholder : ''"
+          :placeholder="placeholder"
           @focus="handleSingleInputFocus"
           @blur="handleSingleInputBlur"
           @keyup.enter="handleSingleInputEnter"
         />
-        <i
-          v-if="tagList.length > 0"
-          class="el-icon-circle-close clear-icon"
-          @click="handleClearSingleInput"
-        />
       </div>
+
+      <i
+        v-if="tagList.length > 0"
+        class="el-icon-circle-close clear-icon"
+        @click.stop="handleClearSingleInput"
+      />
     </div>
 
     <!-- 批量输入按钮 -->
     <el-popover
       ref="popoverRef"
+      v-model="popoverVisible"
       placement="bottom"
       width="400"
-      trigger="click"
+      trigger="manual"
       @hide="handleHide"
       @show="handleShow"
     >
@@ -87,7 +89,7 @@
           </div>
         </div>
       </div>
-      <div class="action" slot="reference" :class="disabled?'disabled':''">
+      <div class="action" slot="reference" :class="disabled?'disabled':''" @click="popoverVisible = !popoverVisible">
         <el-button :disabled="disabled">
           <i class="iconfont icon-lxppc-database-search"/>
         </el-button>
@@ -125,7 +127,8 @@ export default {
       inputValue: null,
       tagList: [],
       singleInputValue: '',
-      isFocused: false
+      isFocused: false,
+      popoverVisible: false
     };
   },
   watch: {
@@ -143,10 +146,14 @@ export default {
     }
   },
   methods: {
-    // 单条输入 - 点击输入框区域
+    // 点击输入框区域
     handleTagListClick () {
       if (this.disabled) return;
-      this.$refs.singleInput.focus();
+      if (this.tagList.length > 0) {
+        this.popoverVisible = true;
+      } else {
+        this.$refs.singleInput?.focus();
+      }
     },
     // 单条输入 - 获得焦点
     handleSingleInputFocus () {
@@ -182,7 +189,7 @@ export default {
     },
     handleConfirm () {
       this.handleInput();
-      this.$refs.popoverRef.doClose();
+      this.popoverVisible = false;
     },
     handleClearSingleInput () {
       this.tagList = [];
@@ -205,10 +212,23 @@ export default {
     },
     handleHide () {
       this.handleClear();
+      this.popoverVisible = false;
+      document.removeEventListener('click', this.handleClickOutside);
     },
     handleShow () {
       this.inputValue = this.tagList.join('\n');
+      document.addEventListener('click', this.handleClickOutside);
+    },
+    handleClickOutside (e) {
+      const popoverEl = this.$refs.popoverRef?.$el;
+      const tagListEl = this.$el.querySelector('.tag-list');
+      if (popoverEl && !popoverEl.contains(e.target) && !tagListEl?.contains(e.target)) {
+        this.popoverVisible = false;
+      }
     }
+  },
+  beforeDestroy () {
+    document.removeEventListener('click', this.handleClickOutside);
   }
 };
 </script>
@@ -222,6 +242,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   max-height: 80px;
+  position: relative;
   &:hover {
     border-color: #9D9F9D;
   }
@@ -264,25 +285,24 @@ export default {
         &::placeholder {
           color: #9D9F9D;
         }
-        &:focus + .clear-icon {
-          display: block;
-        }
       }
-      .clear-icon {
-        font-size: 14px;
-        color: #c0c4cc;
-        cursor: pointer;
-        margin-left: 4px;
-        display: none;
-        &:hover {
-          color: #909399;
-        }
-      }
+    }
+
+    .clear-icon {
+      font-size: 14px;
+      color: #c0c4cc;
+      cursor: pointer;
+      margin-left: 4px;
+      display: none;
+      position: absolute;
+      right: 50px;
       &:hover {
-        .clear-icon {
-          display: block;
-        }
+        color: #909399;
       }
+    }
+
+    &:hover .clear-icon {
+      display: block;
     }
   }
 

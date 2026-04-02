@@ -374,6 +374,7 @@ export default {
       this.$emit('change', val, selectedOption);
     },
     handleBlur () {
+      this.initialLoaded = false;
       this.$emit('blur');
     },
     handleFocus (e) {
