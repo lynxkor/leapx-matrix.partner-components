@@ -17,7 +17,7 @@
    <el-dialog :title="printObj.popTitle" :width="width + 'px'" :visible.sync="dialogVisible" :append-to-body="true" :show-close="false" custom-class="dialog-print" :destroy-on-close="true">
       <div class="print-content">
         <!-- 动态组件 -->
-        <component :is="currentComponent" :id="id" :data="data" />
+        <component :is="currentComponent" :id="id" :data="data" v-bind="rest" />
       </div>
     <div slot="footer" class="dialog-footer">
       <el-button size="small" @click="close">取消</el-button>
@@ -53,7 +53,8 @@ export default {
         closeCallback (vue) {
           console.log('关闭了打印工具');
         }
-      }
+      },
+      rest: {}, // 其他参数
     };
   },
 
@@ -97,10 +98,11 @@ export default {
     },
 
     async show (options = {}) {
-      const { title = '', template, id, data, width } = options;
+      const { title = '', template, id, data, width, ...rest } = options;
       this.printObj.popTitle = title;
       this.id = id;
       this.data = data;
+      this.rest = { ...rest }; // 确保是对象格式
       if (width) {
         this.width = width;
       }
