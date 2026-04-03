@@ -11,7 +11,6 @@
  * @param {String} optionKey - 选项数据key值，默认没有用valueKey代替
  * @param {String} valueKey - 选项数据中作为值的键名，默认'code'
  * @param {String} labelKey - 选项数据中作为标签的键名，默认'message'
- * @param {String} customOptionKey -  针对下拉内容跟 labelKey展示不一样的时候使用
  * @param {Array} options - 直接传入的静态选项数据，优先级最高
  * @param {Boolean} filterable - 是否可搜索
  * @param {Boolean} remote - 是否可远程搜索
@@ -112,9 +111,7 @@
         <div> {{ item[labelKey] }}</div>
         <div class="el-select-sub-text"> {{ item[subLabelKey] }}</div>
       </template>
-      <template v-else-if="customOptionKey">
-        <div>{{ item[customOptionKey] }}</div>
-      </template>
+      <slot v-else name="option" :item="item" :label="item[labelKey]" :value="item[valueKey]"></slot>
     </el-option>
     </template>
   </el-select>
@@ -164,11 +161,6 @@ export default {
     subLabelKey: {
       type: String,
       default: null
-    },
-    // 针对下拉内容跟 labelKey展示不一样的时候使用
-    customOptionKey: {
-      type: String,
-      default: '',
     },
     // 直接传入选项数据，如果有这个值则不调用request方法
     options: {
