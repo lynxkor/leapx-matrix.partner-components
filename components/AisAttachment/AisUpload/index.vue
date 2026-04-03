@@ -62,7 +62,6 @@
     <!-- 上传按钮区域 -->
     <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
-      v-if="!readonly"
       ref="uploadRef"
       class="business-upload-area"
       action="#"
@@ -84,7 +83,7 @@
       v-bind="$attrs"
       v-on="$listeners"
     >
-      <slot name="trigger">
+      <slot name="trigger" v-if="!readonly">
         <el-button
           size="small"
           type="primary"
@@ -574,6 +573,7 @@ div:has(.business-upload.card) {
 
 .business-upload-area {
   margin-bottom: 16px;
+  height: 32px;
   ::v-deep .el-upload{
     display: flex;
   }
