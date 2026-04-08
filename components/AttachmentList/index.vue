@@ -17,6 +17,7 @@
     <AisAttachment
       v-for="(config) in attachmentConfigs"
       :key="config.id"
+      :ref="el => setAttachmentRef(el, config.id)"
       :businessId="businessId"
       :configCode="configCode"
       :attachType="config.attachType"
@@ -27,7 +28,6 @@
       :businessData="businessData"
       v-bind="$attrs"
       v-on="$listeners"
-      @ocr-success="handleOcrSuccess"
     />
   </div>
 </template>
@@ -76,6 +76,7 @@ export default {
   data () {
     return {
       attachmentConfigs: [],
+      attachmentRefs: {},
       loading: false,
     };
   },
@@ -101,7 +102,7 @@ export default {
      */
     async loadAttachmentConfig () {
       if (!this.configCode) {
-        return;
+        return Promise.resolve();
       }
 
       try {
@@ -141,26 +142,24 @@ export default {
           this.attachmentConfigs = data.detailList;
           console.log('附件配置加载成功:', this.attachmentConfigs);
         }
+        return Promise.resolve();
       } catch (error) {
         console.error('获取附件配置失败:', error);
         this.$message?.error('获取附件配置失败');
+        return Promise.reject(error);
       } finally {
         this.loading = false;
       }
     },
 
     /**
-     * OCR识别成功回调
-     */
-    handleOcrSuccess (data) {
-      this.$emit('ocr-success', data);
-    },
-
-    /**
      * 刷新附件列表
      */
     refresh () {
-      this.loadAttachmentConfig();
+      this.clearCache();
+      this.loadAttachmentConfig().then(() => {
+        this.refreshAll();
+      });
     },
 
     /**
@@ -168,6 +167,26 @@ export default {
      */
     clearCache () {
       configCache.delete(this.configCode);
+    },
+
+    /**
+     * 设置子组件引用
+     */
+    setAttachmentRef (el, id) {
+      if (el) {
+        this.attachmentRefs[id] = el;
+      }
+    },
+
+    /**
+     * 刷新所有附件列表
+     */
+    refreshAll () {
+      Object.values(this.attachmentRefs).forEach(ref => {
+        if (ref && typeof ref.refresh === 'function') {
+          ref.refresh();
+        }
+      });
     }
   }
 };

@@ -375,6 +375,11 @@ export default {
     // 获取所有附件
     getFileList () {
       return this.fileList;
+    },
+    // 刷新附件列表
+    async refresh () {
+      await this.loadAttachmentConfig(this.configCode, this.attachType, true);
+      await this.loadAttachmentFiles(this.businessId, this.attachType, false);
     }
   },
 };

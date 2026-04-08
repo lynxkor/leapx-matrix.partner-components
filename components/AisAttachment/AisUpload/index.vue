@@ -103,7 +103,7 @@
       :file-list="internalFileList"
       :readonly="readonly"
       @delete="handleFileDelete"
-      @update="$emit('update')"
+      @update="handleUpdate"
       :type="type"
     />
   </div>
@@ -365,7 +365,7 @@ export default {
           this.uploadLoading = false;
           // 全部上传完更新
           if (this.isAttached) {
-            this.$emit('update');
+            this.handleUpdate();
           }
         }
       }
@@ -485,7 +485,7 @@ export default {
         if (file.id && !file.raw) {
           await this.apiConfig.deleteApi([file.id]);
           this.$message.success('删除成功');
-          this.$emit('update');
+          this.handleUpdate();
         } else {
           this.internalFileList.splice(index, 1);
           this.$emit('input', this.internalFileList);
@@ -499,6 +499,10 @@ export default {
           this.$message.error('删除失败');
         }
       }
+    },
+
+    handleUpdate () {
+      this.$emit('update');
     },
 
     // 手动上传
