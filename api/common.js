@@ -338,3 +338,11 @@ export function getApplyUserStoreList (data) {
 export function getLoginUser (data) {
   return api.get('/passport/users/current', data);
 }
+
+/**
+   * 网发--查询门店子级组织
+   * @param {*} data
+   */
+export function getFindDescendant (data) {
+  return api.get('/accountService/orgInfo/findDescendant', data);
+}
