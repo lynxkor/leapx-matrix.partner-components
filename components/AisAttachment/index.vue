@@ -354,6 +354,12 @@ export default {
       if (this.internalUploadConfig?.needOcr === '1') {
         this.$emit('ocr-success');
       }
+      this.$emit('update', {
+        fileList: this.fileList,
+        attachFileList: this.attachFileList,
+        configCode: this.configCode,
+        attachType: this.attachType,
+      });
     },
     addParam (param) {
       this.attachFileList.push(param);
