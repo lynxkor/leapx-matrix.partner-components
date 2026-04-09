@@ -163,7 +163,9 @@ export default {
         }
         const res = await importExcelConfirmFile(formData, config);
         if (res.failExcelUrl) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
-          this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
+          if (res.failNum > 0) { // 判断有文件 未上传成功时 在提示
+            this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
+          }
           setTimeout(() => {
             downloadExcel(res?.failExcelUrl, res?.fileName || res?.businessType || '模板.xlsx');
           }, 2000);
