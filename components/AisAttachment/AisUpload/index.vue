@@ -24,6 +24,10 @@
  * @event success - 上传成功时触发，参数为(response, file, fileList)
  * @event error - 上传失败时触发，参数为(err, file, fileList)
  * @event preview - 文件预览时触发，参数为file对象
+ * @event before-upload-click - 上传按钮点击前触发，参数为{ allow, openFileDialog }
+ *        - allow(val): 业务页判断完成后调用，传入true继续上传，false阻止
+ *        - openFileDialog(): 手动打开文件对话框
+ *        - 如果业务页不监听此事件，则默认直接打开文件对话框
  * @event rename - 文件重命名时触发，参数为{file, index, oldName, newName}
  * @event delete - 文件删除时触发，参数为{file, index}
  *
@@ -84,16 +88,17 @@
       v-on="$listeners"
     >
       <slot name="trigger" v-if="!readonly">
-        <el-button
-          size="small"
-          type="primary"
-          plain
-          :loading="uploadLoading"
-          :disabled="uploadDisabled"
-          v-bind="buttonProps"
-        >
-          {{ buttonText }}
-        </el-button>
+      <el-button
+        size="small"
+        type="primary"
+        plain
+        :loading="uploadLoading"
+        :disabled="uploadDisabled"
+        v-bind="buttonProps"
+        @click="handleTriggerClick"
+      >
+        {{ buttonText }}
+      </el-button>
       </slot>
     </el-upload>
 
@@ -304,6 +309,54 @@ export default {
   mounted () {
   },
   methods: {
+    // 触发按钮点击处理
+    handleTriggerClick (e) {
+      // 阻止原生事件的传播，防止 el-upload 的原生监听器打开对话框
+      e.stopPropagation();
+      e.preventDefault();
+
+      // 打开文件对话框的方法
+      const openFileDialog = () => {
+        if (this.uploadRef) {
+          // 尝试多种方式获取 el-upload 内部的 file input
+          let fileInput = this.uploadRef.$refs.input;
+          if (!fileInput) {
+            // Element UI 可能把 input 放在 $el 下面
+            const uploadEl = this.uploadRef.$el;
+            fileInput = uploadEl?.querySelector('input[type="file"]');
+          }
+          if (!fileInput) {
+            // 尝试从组件内部查找
+            const uploadInner = this.uploadRef.$refs.uploadInner;
+            fileInput = uploadInner?.$refs?.input;
+          }
+          if (fileInput) {
+            fileInput.click();
+          }
+        }
+      };
+
+      // 抛出事件，业务页判断完调用 allow(true) 继续，否则调用 allow(false)
+      // 使用 Promise 等待业务层的异步判断结果
+      // 如果外部没有监听事件，则默认放行
+      const hasListener = this.$listeners['before-upload-click'];
+      new Promise((resolve) => {
+        this.$emit('before-upload-click', {
+          allow: (val = true) => {
+            resolve(val);
+          },
+          openFileDialog,
+        });
+        // 如果外部没有监听器，则立即默认放行
+        if (!hasListener) {
+          resolve(true);
+        }
+      }).then((allowUpload) => {
+        if (allowUpload) {
+          openFileDialog();
+        }
+      });
+    },
     // 获取token
     getToken () {
       // 根据你的实际情况获取token
