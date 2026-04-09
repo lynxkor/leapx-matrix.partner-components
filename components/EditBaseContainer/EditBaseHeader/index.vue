@@ -239,6 +239,16 @@ export default {
         this.measureButtonGroupWidth();
       });
     },
+    loading() {
+      // loading 状态变化时，强制 ButtonGroup 重新获取按钮数据并计算布局
+      this.$nextTick(() => {
+        if (this.$refs.buttonGroupRef) {
+          this.$refs.buttonGroupRef.setupButtons();
+          this.$refs.buttonGroupRef.calculateLayout();
+        }
+        this.measureButtonGroupWidth();
+      });
+    },
     // 监听 $slots 对象的变化
     '$slots.extraButtons': {
       handler (newVal, oldVal) {
