@@ -1,5 +1,5 @@
 // 子应用路由前缀
-const prefixes = ['/partner', '/marketing', '/serviceProduct', '/sales', '/service'].filter(item => item !== process.env.VUE_APP_ROUTER_BASE);
+const prefixes = ['/partner', '/marketing', '/serviceProduct', '/sales', '/service'].filter(item => item !== (window.APP_AIS_WEB_CONFIG?.VUE_APP_ROUTER_BASE || process.env.VUE_APP_ROUTER_BASE));
 
 /**
  * 路由跳转

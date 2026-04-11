@@ -406,7 +406,7 @@ export function getElementZoomValue (element = document.body) {
   return isNaN(numericValue) ? 1 : numericValue;
 }
 
-export const appPrefix = process.env.VUE_APP_ROUTER_BASE;
+export const appPrefix = window.APP_AIS_WEB_CONFIG?.VUE_APP_ROUTER_BASE || process.env.VUE_APP_ROUTER_BASE;
 const prefixRegex = new RegExp(`^${appPrefix}`);
 export const getRouterPath = () => {
   return location.pathname.replace(prefixRegex, '');

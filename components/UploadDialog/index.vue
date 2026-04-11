@@ -99,7 +99,7 @@ export default {
   computed: {
   // 使用计算属性动态获取上传地址
     uploadAction () {
-      return process.env.VUE_APP_WORK_ORDER_URL + '/file/fileService/uploadMultipartFile';
+      return (window.APP_AIS_WEB_CONFIG?.VUE_APP_WORK_ORDER_URL || process.env.VUE_APP_WORK_ORDER_URL) + '/file/fileService/uploadMultipartFile';
     }
   },
   methods: {

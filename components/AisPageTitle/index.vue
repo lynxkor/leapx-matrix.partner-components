@@ -23,13 +23,14 @@ export default {
         return;
       }
       const path = this.$route.path.split('/').slice(0, -1).join('/');
+      const router_base = window.APP_AIS_WEB_CONFIG?.VUE_APP_ROUTER_BASE || process.env.VUE_APP_ROUTER_BASE;
       if (window.__POWERED_BY_QIANKUN__) {
         if (window.__PARENT_ROUTER__) {
           window.__PARENT_ROUTER__.push({
-            path: `${process.env.VUE_APP_ROUTER_BASE}${path}`
+            path: `${router_base}${path}`
           });
         } else {
-          window.location.href = `${process.env.VUE_APP_ROUTER_BASE}${path}`;
+          window.location.href = `${router_base}${path}`;
         }
       } else {
         this.$router.push({
