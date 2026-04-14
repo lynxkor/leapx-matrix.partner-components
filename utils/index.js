@@ -497,3 +497,81 @@ export async function handleCommonExport (options) {
     }
   }
 }
+
+/**
+ * 通用操作处理函数
+ * @param {Object} params - 参数对象
+ * @param {Function} params.$confirm - Vue 实例中的 this.$confirm 方法
+ * @param {Function} params.$message - Vue 实例中的 this.$message 方法
+ * @param {Function} params.apiFn - 需要执行的 API 函数
+ * @param {Object} params.config - 配置对象 { title, success }
+ * @param {String|Number} params.id - 业务ID
+ * @param {Function} [params.onSuccess] - 成功后的额外回调（可选）
+ */
+export function handleCommonAction ({
+  $confirm,
+  $message,
+  apiFn,
+  config,
+  id,
+  onSuccess
+}) {
+  const message = `<div class="ais-leave-tips-main"><i class="iconfont icon-lxppc-prompt"></i>${config.title}</div>`;
+
+  return $confirm(message, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    dangerouslyUseHTMLString: true,
+    customClass: 'ais-leave-tips',
+    showClose: false
+  }).then(() => {
+    // 调用 API
+    return apiFn({ id });
+  }).then(() => {
+    // 提示成功
+    $message.success(config.success);
+    // 执行额外回调（比如刷新列表）
+    if (onSuccess) onSuccess();
+  }).catch((err) => {
+    // 错误处理
+    if (err !== 'cancel') {
+      console.error('操作失败:', err);
+    }
+  });
+}
+
+/**
+ * 通用带输入的弹窗处理函数
+ * @param {Object} params - 参数对象
+ * @param {Function} params.$prompt - Vue 实例中的 this.$prompt 方法
+ * @param {Function} params.$message - Vue 实例中的 this.$message 方法
+ * @param {Function} params.apiFn - 需要执行的 API 函数
+ * @param {Object} params.config - 配置对象 { title, placeholder, success }
+ * @param {String|Number} params.id - 业务ID
+ * @param {Function} [params.onSuccess] - 成功后的额外回调（可选）
+ */
+export function handleCommonPrompt ({
+  $prompt,
+  $message,
+  apiFn,
+  config,
+  id,
+  onSuccess
+}) {
+  return $prompt(config.placeholder, config.title, {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputPattern: /.+/, // 校验非空
+    inputErrorMessage: '请输入备注',
+  }).then(({ value }) => {
+    // 调用 API，并传入用户输入的备注
+    return apiFn({ id, description: value });
+  }).then(() => {
+    // 提示成功
+    $message.success(config.success);
+    // 执行额外回调（比如刷新列表）
+    if (onSuccess) onSuccess();
+  }).catch(() => {
+    // 用户取消或校验失败，静默处理
+  });
+}
