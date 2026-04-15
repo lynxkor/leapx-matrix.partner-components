@@ -368,7 +368,7 @@ export default {
   width: 100%;
 }
 .left-content {
-  flex: 0 1 70%; /* 最大宽度为 70% */
+  flex: 0 1 50%; /* 最大宽度为 50% */
   min-width: 300px; /* 重要：允许内容收缩 */
   margin-right: 32px;
   .title-wrapper {
