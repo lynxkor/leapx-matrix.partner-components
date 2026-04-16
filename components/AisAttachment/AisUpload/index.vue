@@ -67,7 +67,7 @@
     <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
       ref="uploadRef"
-      class="business-upload-area"
+      :class=" type==='card' && title ? 'business-upload-area card-upload' : 'business-upload-area'"
       action="#"
       :http-request="httpRequest"
       :headers="uploadHeaders"
@@ -631,9 +631,12 @@ div:has(> .business-upload.card) {
 .business-upload-area {
   margin-bottom: 16px;
   height: 32px;
-  // width: 120px;
+  width: 120px;
   ::v-deep .el-upload{
     display: flex;
   }
+}
+.card-upload {
+  width: 100%;
 }
 </style>
