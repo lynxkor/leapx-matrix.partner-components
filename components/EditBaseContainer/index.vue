@@ -254,6 +254,7 @@ export default {
                 success();
               } else if (this.detailRequest) {
                 this.loadDetail?.(); // 普通保存重新获取数据（留在当页）
+                this.$emit('update:isEditing', false)
               }
             } else if (success) {
               // 新建时必须调用
