@@ -631,6 +631,7 @@ div:has(> .business-upload.card) {
 .business-upload-area {
   margin-bottom: 16px;
   height: 32px;
+  width: 120px;
   ::v-deep .el-upload{
     display: flex;
   }
