@@ -104,6 +104,7 @@
 
     <!-- 文件展示区域 -->
     <file-display
+      v-if="showFilelist"
       ref="fileDisplayRef"
       :file-list="internalFileList"
       :readonly="readonly"
@@ -240,7 +241,12 @@ export default {
     uploadClass: {
       type: String,
       default: '',
-    }
+    },
+    // 是否展示文件列表
+    showFilelist: {
+      type: Boolean,
+      default: true
+    },
   },
 
   data () {
