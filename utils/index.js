@@ -582,27 +582,35 @@ export function handleCommonPrompt ({
  * @param {object} options - 配置项
  * @param {number} [options.integerDigits=12] - 整数部分最大位数
  * @param {number} [options.decimalDigits=2] - 小数部分最大位数
+ * @param {boolean} [options.allowDecimal=true] - 是否允许小数
  * @returns {string} - 格式化后的字符串
  */
 export function formatNumberInput (value, options = {}) {
   const {
     integerDigits = 12, // 默认整数位 12
-    decimalDigits = 2 // 默认小数位 2
+    decimalDigits = 2, // 默认小数位 2
+    allowDecimal = true // 默认允许小数
   } = options;
 
   // 1. 转为字符串
   let val = String(value);
 
-  // 2. 核心清洗：只保留数字和小数点，去除 e, -, + 等非法字符
-  val = val.replace(/[^\d.]/g, '');
+  // 2. 核心清洗：只保留数字和小数点（如果允许小数）
+  if (allowDecimal) {
+    val = val.replace(/[^\d.]/g, '');
+  } else {
+    val = val.replace(/[^\d]/g, '');
+  }
 
   // 3. 确保只有一个小数点 (防止出现 1.2.3)
-  const firstDotIndex = val.indexOf('.');
-  if (firstDotIndex !== -1) {
-    // 重新拼接：第一个小数点前的内容 + 小数点 + 第一个小数点后的内容(且去掉里面剩余的小数点)
-    const beforeDot = val.substring(0, firstDotIndex);
-    const afterDot = val.substring(firstDotIndex + 1).replace(/\./g, '');
-    val = beforeDot + '.' + afterDot;
+  if (allowDecimal) {
+    const firstDotIndex = val.indexOf('.');
+    if (firstDotIndex !== -1) {
+      // 重新拼接：第一个小数点前的内容 + 小数点 + 第一个小数点后的内容(且去掉里面剩余的小数点)
+      const beforeDot = val.substring(0, firstDotIndex);
+      const afterDot = val.substring(firstDotIndex + 1).replace(/\./g, '');
+      val = beforeDot + '.' + afterDot;
+    }
   }
 
   // 4. 分割处理
@@ -615,14 +623,14 @@ export function formatNumberInput (value, options = {}) {
     integerPart = integerPart.slice(0, integerDigits);
   }
 
-  // 6. 限制小数部分最多 2 位
-  if (decimalPart.length > decimalDigits) {
+  // 6. 限制小数部分最多 2 位（如果允许小数）
+  if (allowDecimal && decimalPart.length > decimalDigits) {
     decimalPart = decimalPart.slice(0, decimalDigits);
   }
 
   // 7. 重新组装并赋值
-  // 如果有小数点，拼接回原样
-  if (val.includes('.')) {
+  // 如果有小数点且允许小数，拼接回原样
+  if (allowDecimal && val.includes('.')) {
     val = integerPart + '.' + decimalPart;
   } else {
     val = integerPart;
