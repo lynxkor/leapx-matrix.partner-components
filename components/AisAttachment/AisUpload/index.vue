@@ -66,6 +66,7 @@
     <!-- 上传按钮区域 -->
     <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
+      v-if="!readonly"
       ref="uploadRef"
       :class=" type==='card' && title ? 'business-upload-area card-upload' : 'business-upload-area'"
       action="#"
