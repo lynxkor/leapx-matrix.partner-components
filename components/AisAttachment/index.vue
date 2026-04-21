@@ -82,7 +82,11 @@
  */
 </script>
 <template>
+  <div v-if="readonly && !fileList.length && emptyText" class="ais-attachment-empty">
+    {{ emptyText }}
+  </div>
   <ais-upload
+    v-else
     v-model="fileList"
     :business-id="businessId"
     :attach-type="attachType"
@@ -147,7 +151,12 @@ export default {
     businessData: {
       type: String,
       default: '',
-    }
+    },
+    // readonly 且无附件时显示的空状态提示文案
+    emptyText: {
+      type: String,
+      default: '',
+    },
   },
   data () {
     /**
@@ -386,6 +395,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.ais-attachment-empty {
+  color: var(--leap-color-default-light-1);
+  font-size: 14px;
+  line-height: 32px;
+  font-weight: normal;
+}
 .ais-attachment-form {
   .attachment-form {
     display: flex;
