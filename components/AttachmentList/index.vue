@@ -29,12 +29,25 @@
       v-bind="$attrs"
       v-on="$listeners"
     />
+    <!-- 未在配置中的附件 -->
+    <AisAttachment
+      v-for="type in unclassifiedTypes"
+      :key="'unclassified-' + type"
+      :businessId="businessId"
+      :attachType="type"
+      :title="type"
+      :readonly="readonly"
+      :noEcho="noEcho"
+      :businessData="businessData"
+      v-bind="$attrs"
+      v-on="$listeners"
+    />
   </div>
 </template>
 
 <script>
 import AisAttachment from '../AisAttachment';
-import { getByCode } from '../../api/attachment';
+import { getByCode, getFileList } from '../../api/attachment';
 
 // 缓存配置
 const configCache = new Map();
@@ -77,6 +90,7 @@ export default {
     return {
       attachmentConfigs: [],
       attachmentRefs: {},
+      unclassifiedTypes: [],
       loading: false,
     };
   },
@@ -97,6 +111,23 @@ export default {
     }
   },
   methods: {
+    /**
+     * 加载未在配置中的附件类型
+     */
+    async loadUnclassifiedTypes () {
+      if (!this.businessId) return;
+      try {
+        const res = await getFileList({ businessId: this.businessId });
+        const allFiles = res?.data || [];
+        const configTypes = new Set(this.attachmentConfigs.map(c => c.attachType));
+        this.unclassifiedTypes = [...new Set(
+          allFiles.filter(f => !configTypes.has(f.attachType)).map(f => f.attachType)
+        )];
+      } catch (e) {
+        console.error('获取未分类附件失败:', e);
+      }
+    },
+
     /**
      * 加载附件配置
      */
@@ -140,7 +171,7 @@ export default {
 
         if (data && data.detailList) {
           this.attachmentConfigs = data.detailList;
-          console.log('附件配置加载成功:', this.attachmentConfigs);
+          await this.loadUnclassifiedTypes();
         }
         return Promise.resolve();
       } catch (error) {
