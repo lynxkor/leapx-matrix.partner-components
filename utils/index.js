@@ -124,7 +124,7 @@ export function handleBatchStatusChange ({
 }) {
   const {
     successMessage = '操作成功!',
-    errorMessage = '操作失败!',
+    // errorMessage = '操作失败!',
     confirmTitle = '',
     statusName = 'status',
     requireInput = true,
