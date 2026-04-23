@@ -548,6 +548,7 @@ export function handleCommonAction ({
  * @param {Function} params.apiFn - 需要执行的 API 函数
  * @param {Object} params.config - 配置对象 { title, placeholder, success }
  * @param {String|Number} params.id - 业务ID
+ * @param {Number} [params.maxLength=100] - 最大字数限制，默认100
  * @param {Function} [params.onSuccess] - 成功后的额外回调（可选）
  */
 export function handleCommonPrompt ({
@@ -556,6 +557,7 @@ export function handleCommonPrompt ({
   apiFn,
   config,
   id,
+  maxLength = 100, // 🔥 关键点：设置默认值为 100
   onSuccess
 }) {
   return $prompt(config.placeholder, config.title, {
@@ -564,6 +566,11 @@ export function handleCommonPrompt ({
     inputPattern: /.+/, // 校验非空
     inputErrorMessage: '请输入备注',
   }).then(({ value }) => {
+    // 2. 二次校验：防止通过特殊手段绕过前端限制或处理粘贴超长文本的情况
+    if (!value || value.length > maxLength) {
+      $message.warning(`请输入不超过 ${maxLength} 字的${config.title}`);
+      return Promise.reject(new Error('中断链条')); //  中断链条
+    }
     // 调用 API，并传入用户输入的备注
     return apiFn({ id, description: value });
   }).then(() => {
