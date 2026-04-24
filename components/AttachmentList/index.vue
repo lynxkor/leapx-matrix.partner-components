@@ -153,7 +153,7 @@ export default {
               configCode: this.configCode,
               businessData: this.businessData,
             }).then(response => {
-              const result = response?.data;
+              const result = response || [];
               if (result) {
                 configCache.set(this.configCode, result);
               }
