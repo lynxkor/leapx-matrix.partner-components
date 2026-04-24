@@ -272,7 +272,7 @@ export default {
                 configCode,
                 businessData: this.businessData,
               }).then(response => {
-                const result = response?.data;
+                const result = response;
                 // 缓存结果
                 if (result) {
                   attachmentConfigCache.set(configCode, result);
@@ -322,7 +322,7 @@ export default {
           businessId: businessId,
           attachType: attachType
         });
-        this.fileList = (response?.data || []).map(file => {
+        this.fileList = (response || []).map(file => {
           return {
             id: file.id,
             name: file.fileName,

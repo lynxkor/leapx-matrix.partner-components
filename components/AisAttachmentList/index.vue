@@ -49,9 +49,16 @@
     <!-- 表格 -->
     <el-table :data="tableData" border style="width: 100%" :header-cell-class-name="'attachment-table-header'">
       <el-table-column label="附件名称" min-width="280">
-        <template slot-scope="{ row, $index }">
+        <template slot-scope="{ row }">
           <div class="file-name-cell">
-            <img v-if="getFileIcon(row.fileType)" :src="getFileIcon(row.fileType)" class="file-icon-img" />
+            <el-image
+              v-if="isImageType(row.fileType)"
+              :src="row.fileUrl"
+              :preview-src-list="[row.fileUrl]"
+              class="file-icon-img"
+              fit="contain"
+            />
+            <img v-else-if="getFileIcon(row.fileType)" :src="getFileIcon(row.fileType)" class="file-icon-img" />
             <template v-if="editingIndex === $index">
               <el-input
                 v-model="editFileName"
@@ -255,15 +262,15 @@ export default {
 
         const res = await getFileListPage(params);
 
-        if (res && res.data) {
+        if (res) {
           // 分页响应格式：{ rows: [], total: 0 }
-          if (res.data.records) {
-            this.tableData = res.data.records;
-            this.pagination.total = res.data.total || 0;
-          } else if (Array.isArray(res.data)) {
+          if (res.records) {
+            this.tableData = res.records;
+            this.pagination.total = res.total || 0;
+          } else if (Array.isArray(res)) {
             // 非分页情况（数组直接返回）
-            this.tableData = res.data;
-            this.pagination.total = res.data.length;
+            this.tableData = res;
+            this.pagination.total = res.length;
           }
         }
       } catch (error) {
@@ -411,6 +418,12 @@ export default {
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
     },
 
+    // 判断是否为图片类型（可预览）
+    isImageType(fileType) {
+      const type = (fileType || '').toLowerCase();
+      return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(type);
+    },
+
     // 获取文件图标（返回图片路径）
     getFileIcon(fileType) {
       const iconMap = {
@@ -421,10 +434,6 @@ export default {
         pptx: require('../AisAttachment/icon/ppt.png'),
         doc: require('../AisAttachment/icon/word.png'),
         docx: require('../AisAttachment/icon/word.png'),
-        jpg: require('../AisAttachment/icon/video.png'), // 临时使用 video 图标，后续可添加 image.png
-        jpeg: require('../AisAttachment/icon/video.png'),
-        png: require('../AisAttachment/icon/video.png'),
-        gif: require('../AisAttachment/icon/video.png'),
         mp4: require('../AisAttachment/icon/video.png'),
         avi: require('../AisAttachment/icon/video.png'),
         zip: require('../AisAttachment/icon/zip.png'),

@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { Message } from 'element-ui';
 import store from '@/store';
+import api from '@/axios';
 
 // 获取文件服务的baseURL，使用环境变量
 const fileServiceBaseURL = process.env.VUE_APP_FILE_SERVICE_URL || 'https://aisfile-sit.leapmotor.com';
@@ -92,6 +93,9 @@ fileServiceAxios.interceptors.response.use(res => {
   return Promise.reject(error);
 });
 
+// 附件接口前缀
+const attachmentPrefix = '/file/web/attachment/';
+
 /**
  * 上传文件 - 使用文件服务专用域名
  * @export
@@ -114,11 +118,7 @@ export function uploadFile (params) {
  * @returns
  */
 export function deleteFile (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/delete', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachment/delete', params);
 }
 
 /**
@@ -128,11 +128,7 @@ export function deleteFile (params) {
  * @returns
  */
 export function getFileList (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/list', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachment/list', params);
 }
 
 /**
@@ -142,11 +138,7 @@ export function getFileList (params) {
  * @returns
  */
 export function getFileListPage (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/page', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachment/page', params);
 }
 
 /**
@@ -156,11 +148,7 @@ export function getFileListPage (params) {
  * @returns
  */
 export function addOrUpdateFile (params) {
-  return fileServiceAxios.post('/web/attachment/attachment/addOrUpdate', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachment/addOrUpdate', params);
 }
 
 /**
@@ -170,11 +158,7 @@ export function addOrUpdateFile (params) {
  * @returns
  */
 export function getByCode (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/getByCodeWithBusinessData', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfig/getByCodeWithBusinessData', params);
 }
 
 /**
@@ -184,11 +168,7 @@ export function getByCode (params) {
  * @returns
  */
 export function getConfigList (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/page', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfig/page', params);
 }
 
 /**
@@ -198,11 +178,7 @@ export function getConfigList (params) {
  * @returns
  */
 export function addOrUpdateConfig (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/addOrUpdate', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfig/addOrUpdate', params);
 }
 
 /**
@@ -212,11 +188,7 @@ export function addOrUpdateConfig (params) {
  * @returns
  */
 export function deleteConfig (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/delete', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfig/delete', params);
 }
 
 /**
@@ -226,11 +198,7 @@ export function deleteConfig (params) {
  * @returns
  */
 export function getConfigDetail (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfig/get', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfig/get', params);
 }
 
 /**
@@ -240,11 +208,7 @@ export function getConfigDetail (params) {
  * @returns
  */
 export function geConfigDetailList (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/page', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigDetail/page', params);
 }
 
 /**
@@ -254,11 +218,7 @@ export function geConfigDetailList (params) {
  * @returns
  */
 export function getConfigDetailDetail (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/get', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigDetail/get', params);
 }
 
 /**
@@ -268,11 +228,7 @@ export function getConfigDetailDetail (params) {
  * @returns
  */
 export function addOrUpdateConfigDetail (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/addOrUpdate', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigDetail/addOrUpdate', params);
 }
 
 /**
@@ -282,11 +238,7 @@ export function addOrUpdateConfigDetail (params) {
  * @returns
  */
 export function deleteConfigDetail (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigDetail/delete', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigDetail/delete', params);
 }
 
 /**
@@ -296,11 +248,7 @@ export function deleteConfigDetail (params) {
  * @returns
  */
 export function attachmentConfigConditionPage (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/page', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigCondition/page', params);
 }
 
 /**
@@ -310,11 +258,7 @@ export function attachmentConfigConditionPage (params) {
  * @returns
  */
 export function attachmentConfigConditionList (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/list', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigCondition/list', params);
 }
 
 /**
@@ -324,11 +268,7 @@ export function attachmentConfigConditionList (params) {
  * @returns
  */
 export function attachmentConfigConditionDetail (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/get', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigCondition/get', params);
 }
 
 /**
@@ -338,9 +278,5 @@ export function attachmentConfigConditionDetail (params) {
  * @returns
  */
 export function attachmentConfigConditionAddOrUpdate (params) {
-  return fileServiceAxios.post('/web/attachment/attachmentConfigCondition/addOrUpdate', params, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return api.jsonPost(attachmentPrefix + 'attachmentConfigCondition/addOrUpdate', params);
 }
