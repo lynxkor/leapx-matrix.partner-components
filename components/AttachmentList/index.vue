@@ -118,7 +118,7 @@ export default {
       if (!this.businessId) return;
       try {
         const res = await getFileList({ businessId: this.businessId });
-        const allFiles = res?.data || [];
+        const allFiles = res || [];
         const configTypes = new Set(this.attachmentConfigs.map(c => c.attachType));
         this.unclassifiedTypes = [...new Set(
           allFiles.filter(f => !configTypes.has(f.attachType)).map(f => f.attachType)
