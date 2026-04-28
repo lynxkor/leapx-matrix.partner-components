@@ -212,7 +212,13 @@
         font-size: 16px;
         color: var(--leap-color-default-dark-1);
       }
-  }
+    }
+    &-body{
+      padding-left: 16px;
+      &.not-commit{
+        color: var(--leap-color-default-light-2);
+      }
+    }
   &:last-child{
       border-bottom: none;
     }
