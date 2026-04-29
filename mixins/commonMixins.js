@@ -72,19 +72,15 @@ export default {
   mounted () {
     // 统一给高级编辑页标题注入展开缩起逻辑
     if (this.pageType === 'edit') {
-      const el = document.querySelectorAll('.common-section-header h2');
-      for (let i = 0; i < el.length; i++) {
-        el[i].addEventListener('click', this.addHeaderActions);
-      }
+      const el = document.querySelectorAll('.page-common-edit');
+      el?.[0]?.addEventListener('click', this._handleCollapseClick);
     }
     this.updateFormRefs();
   },
   beforeDestroy () {
     if (this.pageType === 'edit') {
-      const el = document.querySelectorAll('.common-section-header h2');
-      for (let i = 0; i < el.length; i++) {
-        el[i].removeEventListener('click', this.addHeaderActions);
-      }
+      const el = document.querySelectorAll('.page-common-edit');
+      el?.[0]?.removeEventListener('click', this._handleCollapseClick);
     }
   },
   provide () {
@@ -132,6 +128,11 @@ export default {
       } else {
         parent.classList.add('fold');
         el.style.display = 'none';
+      }
+    },
+    _handleCollapseClick (e) {
+      if (e.target.closest('.common-section-header h2')) {
+        this.addHeaderActions(e);
       }
     },
     /**
