@@ -72,6 +72,7 @@
     @blur="handleBlur"
     @focus="handleFocus"
     @clear="handleClear"
+    @visible-change="handleVisibleChange"
     :loading="loading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
@@ -215,7 +216,8 @@ export default {
       remoteOptions: [],
       loading: false,
       showValue: this.value,
-      initialLoaded : false
+      initialLoaded : false,
+      dropdownVisible: false
     };
   },
   computed: {
@@ -247,6 +249,21 @@ export default {
         }
       },
       immediate: true
+    },
+    dropdownVisible (val) {
+      // remote+filterable时Element UI不会添加is-reverse类，需要手动控制箭头旋转
+      if (this.remote && this.filterable) {
+        this.$nextTick(() => {
+          const caret = this.$el && this.$el.querySelector('.el-select__caret');
+          if (caret) {
+            if (val) {
+              caret.classList.add('is-reverse');
+            } else {
+              caret.classList.remove('is-reverse');
+            }
+          }
+        });
+      }
     }
   },
   mounted () {
@@ -265,6 +282,9 @@ export default {
       if (typeof this.selectRef === 'function') {
         this.selectRef(el);
       }
+    },
+    handleVisibleChange (visible) {
+      this.dropdownVisible = visible;
     },
     // 加载远程搜索方法
     async loadRemoteMethod (v) {
@@ -423,5 +443,15 @@ export default {
 }
 ::v-deep .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content:not(:has(.is-leaf)) {
   background-color: transparent !important;
+}
+::v-deep .el-select__caret {
+  display: inline-block !important;
+  &::before {
+    content: "\e6e1";
+  }
+  transform: rotateZ(180deg);
+  &.is-reverse {
+    transform: rotateZ(0);
+  }
 }
 </style>
