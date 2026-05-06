@@ -265,7 +265,7 @@ export default {
     display: flex;
     align-items: center;
     cursor: text;
-    padding: 0 4px;
+    padding: 0 8px;
     &:hover {
       border-color: #9D9F9D;
     }
@@ -285,7 +285,7 @@ export default {
         flex: 1;
         border: none;
         outline: none;
-        height: 30px;
+        height: 32px;
         line-height: 30px;
         font-size: 13px;
         background: transparent;

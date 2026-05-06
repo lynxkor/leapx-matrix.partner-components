@@ -39,7 +39,7 @@ export default {
   border-radius: 4px;
   color: var(--aisDefaultTextColor);
   &:first-child {
-    margin-left: 0;
+    margin-left: -4px;
   }
   .content {
     max-width: 80px;
