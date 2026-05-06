@@ -73,5 +73,9 @@ export default {
   .breadTail{
     cursor: default;
   }
+  ::v-deep .el-breadcrumb__separator{
+    margin: 0 4px;
+    font-weight: 400;
+  }
 }
 </style>

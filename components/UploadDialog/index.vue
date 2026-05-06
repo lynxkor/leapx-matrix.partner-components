@@ -35,13 +35,13 @@
       </div>
     </el-upload>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="handleClose" size="small">取 消</el-button>
+      <el-button @click="handleClose" size="small">取消</el-button>
       <el-button
         type="primary"
         :loading="isUploading"
         @click="submitFileForm"
         size="small"
-      >确 定</el-button>
+      >确定</el-button>
     </div>
   </el-dialog>
 </template>

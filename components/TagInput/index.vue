@@ -62,6 +62,7 @@
     >
       <div>
         <el-input
+          ref="popoverInputRef"
           v-model="inputValue"
           type="textarea"
           :clearable="true"
@@ -89,7 +90,7 @@
           </div>
         </div>
       </div>
-      <div class="action" slot="reference" :class="disabled?'disabled':''" @click="popoverVisible = !popoverVisible">
+      <div class="action" slot="reference" :class="disabled?'disabled':''" @click="handleOpenPopover">
         <el-button :disabled="disabled">
           <i class="iconfont icon-lxppc-database-search"/>
         </el-button>
@@ -150,10 +151,16 @@ export default {
     handleTagListClick () {
       if (this.disabled) return;
       if (this.tagList.length > 0) {
-        this.popoverVisible = true;
+        this.handleOpenPopover();
       } else {
         this.$refs.singleInput?.focus();
       }
+    },
+    handleOpenPopover () {
+      this.popoverVisible = true;
+      this.$nextTick(() => {
+        this.$refs.popoverInputRef?.focus();
+      });
     },
     // 单条输入 - 获得焦点
     handleSingleInputFocus () {
@@ -258,7 +265,7 @@ export default {
     display: flex;
     align-items: center;
     cursor: text;
-    padding: 0 8px;
+    padding: 0 4px;
     &:hover {
       border-color: #9D9F9D;
     }
@@ -335,11 +342,16 @@ export default {
   justify-content: flex-end;
   align-items: center;
   margin-top: 5px;
+  color: var(--leap-color-default-light-1);
+  font-size: 12px;
 }
 .footer-btns{
   display: flex;
   justify-content: flex-end;
   align-items: center;
   margin-top: 12px;
+  .el-button{
+    font-weight: 400;
+  }
 }
 </style>

@@ -102,6 +102,7 @@
 .el-button--primary.is-plain{
   background-color: #fff;
   font-weight: normal;
+  border-color: var(--leap-color-primary);
 }
 .el-button--danger {
   background-color: var(--leap-color-danger);
@@ -192,6 +193,10 @@
 }
 .el-select-dropdown__list, .el-dropdown-menu {
   padding: 8px 4px;
+}
+.el-select__tags .el-tag.el-tag--info {
+  height: 24px;
+  line-height: 24px;
 }
 .el-input.is-disabled .el-input__inner,
 .el-radio__input.is-disabled .el-radio__inner,

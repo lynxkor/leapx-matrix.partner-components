@@ -389,28 +389,28 @@ export default {
   .status {
     display: inline-block;
     padding: 2px 10px;
-    color: #2261DD;
+    color: var(--leap-color-primary);
     line-height: 20px;
     font-size: 12px;
-    background: #E9EEF9;
+    background: #E6F4E6;
     margin-left: 6px;
     border-radius: 4px;
     position: relative;
     top: 1px;
     &.primary{
-      color: #2261DD;
-      background: #E9EEF9;
+      color: var(--leap-color-primary);
+      background: #E6F4E6;
     }
     &.warning{
-      color: #C8A12B;
+      color: var(--leap-color-warning);
       background: #FAF6EA;
     }
     &.success{
-      color: #009100;
+      color: var(--leap-color-primary);
       background: #E6F4E6;
     }
     &.danger{
-      color: #B91919;
+      color: var(--leap-color-danger);
       background: #F8E8E8;
     }
   }
