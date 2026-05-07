@@ -198,7 +198,9 @@ export default {
   computed: {
   },
   mounted () {
-    this.defaultForm = cloneDeep(this.form);
+    this.$nextTick(() => {
+      this.defaultForm = cloneDeep(this.form);
+    });
     this.loadDetail();
   },
   methods: {
