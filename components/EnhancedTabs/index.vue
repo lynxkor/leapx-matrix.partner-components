@@ -85,6 +85,7 @@
     :items="$data._items"
     :value="internalValue"
     :closeTip="closeTip"
+    :closeText="closeText"
     :disabled="disabled"
     @change="onTabChange"
     @close="onTabClose"
@@ -196,6 +197,11 @@ export default {
     closeTip: {
       type: String,
       default: '确定删除该项吗？'
+    },
+    // 关闭确认按钮文字
+    closeText: {
+      type: String,
+      default: '确定'
     },
     // 是否自动选中第一项
     autoSelectFirst: {

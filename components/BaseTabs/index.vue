@@ -54,6 +54,7 @@
               v-show="!item.disableClose"
               :title="closeTip"
               confirm-button-type="danger"
+              :confirm-button-text="closeText"
               @confirm="handleClose(item, index)"
             >
               <i slot="reference" class="iconfont icon-lxppc-close"></i>
@@ -163,6 +164,10 @@ export default {
     },
     closeTip: {
       type: String,
+    },
+    closeText: {
+      type: String,
+      default: '确定'
     },
     disabled: {
       type: Boolean,
