@@ -301,7 +301,6 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  overflow: hidden;
   width: 100%;
   justify-content: flex-end; /* 默认从右往左排列 */
 }
@@ -317,7 +316,6 @@ export default {
   flex-wrap: nowrap;
   flex-shrink: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
 /* 从右往左折叠时的更多按钮(默认位置:左侧) */
