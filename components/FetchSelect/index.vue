@@ -254,7 +254,7 @@ export default {
       // remote+filterable时Element UI不会添加is-reverse类，需要手动控制箭头旋转
       if (this.remote && this.filterable) {
         this.$nextTick(() => {
-          const caret = this.$el && this.$el.querySelector('.el-select__caret');
+          const caret = this.$el && this.$el.querySelector('.el-select__caret.el-icon-');
           if (caret) {
             if (val) {
               caret.classList.add('is-reverse');
@@ -444,7 +444,7 @@ export default {
 ::v-deep .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content:not(:has(.is-leaf)) {
   background-color: transparent !important;
 }
-::v-deep .el-select__caret {
+::v-deep .el-select__caret.el-icon- {
   display: inline-block !important;
   &::before {
     content: "\e6e1";
