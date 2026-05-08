@@ -509,12 +509,13 @@
     color: #6C6E6C;
     margin-top: 8px;
   }
-  // 分页器样式
-  .table-pagination {
-    margin-top: 15px;
-    display: flex;
-    justify-content: flex-end;
-  }
+}
+
+// 分页器样式
+.table-pagination {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 // 必填项样式
