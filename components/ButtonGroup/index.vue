@@ -344,4 +344,8 @@ export default {
 .group-button {
   flex-shrink: 0;
 }
+.more-button {
+  width: 32px;
+  padding: 8px 0;
+}
 </style>
