@@ -47,9 +47,17 @@
 <template>
   <div class="ais-attachment-list" v-loading="loading">
     <!-- 表格 -->
-    <el-table :data="tableData" border style="width: 100%" :header-cell-class-name="'attachment-table-header'">
-      <el-table-column label="附件名称" min-width="280">
-        <template slot-scope="{ row }">
+    <vxe-table
+      ref="tableRef"
+      :data="tableData"
+      border
+      stripe
+      :header-cell-class-name="'attachment-table-header'"
+      show-overflow
+      size="small"
+    >
+      <vxe-column field="fileName" title="附件名称" min-width="280">
+        <template #default="{ row, rowIndex }">
           <div class="file-name-cell">
             <el-image
               v-if="isImageType(row.fileType)"
@@ -59,7 +67,7 @@
               fit="contain"
             />
             <img v-else-if="getFileIcon(row.fileType)" :src="getFileIcon(row.fileType)" class="file-icon-img" />
-            <template v-if="editingIndex === $index">
+            <template v-if="editingIndex === rowIndex">
               <el-input
                 v-model="editFileName"
                 size="small"
@@ -73,34 +81,34 @@
             </template>
           </div>
         </template>
-      </el-table-column>
+      </vxe-column>
 
-      <el-table-column label="操作人" width="120" align="center">
-        <template slot-scope="{ row }">
+      <vxe-column field="creatorName" title="操作人" width="120" align="center">
+        <template #default="{ row }">
           {{ row.creatorName || '-' }}
         </template>
-      </el-table-column>
+      </vxe-column>
 
-      <el-table-column label="附件大小 (KB)" width="140" align="center">
-        <template slot-scope="{ row }">
+      <vxe-column field="fileSize" title="附件大小 (KB)" width="140" align="center">
+        <template #default="{ row }">
           {{ row.fileSize }}
         </template>
-      </el-table-column>
+      </vxe-column>
 
-      <el-table-column label="创建时间" width="180" align="center">
-        <template slot-scope="{ row }">
+      <vxe-column field="createTime" title="创建时间" width="180" align="center">
+        <template #default="{ row }">
           {{ row.createTime }}
         </template>
-      </el-table-column>
+      </vxe-column>
 
-      <el-table-column label="操作" width="300" align="center" fixed="right">
-        <template slot-scope="{ row, $index }">
-          <template v-if="editingIndex === $index">
+      <vxe-column title="操作" width="300" align="center" fixed="right">
+        <template #default="{ row, rowIndex }">
+          <template v-if="editingIndex === rowIndex">
             <el-button type="text" size="small" class="btn-confirm" @click="confirmEdit(row)">确认</el-button>
             <el-button type="text" size="small" @click="cancelEdit">取消</el-button>
           </template>
           <template v-else>
-            <el-button v-if="!readonly" type="text" size="small" class="btn-edit" @click="startEdit(row, $index)">编辑</el-button>
+            <el-button v-if="!readonly" type="text" size="small" class="btn-edit" @click="startEdit(row, rowIndex)">编辑</el-button>
             <el-button type="text" size="small" @click="handleDownload(row)">下载</el-button>
             <el-popconfirm
               v-if="!readonly"
@@ -114,8 +122,8 @@
             </el-popconfirm>
           </template>
         </template>
-      </el-table-column>
-    </el-table>
+      </vxe-column>
+    </vxe-table>
 
     <!-- 分页 -->
     <el-pagination
@@ -469,14 +477,14 @@ export default {
     text-align: right;
   }
 
-  ::v-deep .el-table {
+  ::v-deep .vxe-table {
     th {
       background-color: #f5f5f5;
       color: #666;
       font-weight: 500;
     }
 
-    .el-table__row {
+    .vxe-body--row {
       &:hover {
         background-color: #f5f7fa;
       }

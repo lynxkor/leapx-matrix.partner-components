@@ -340,12 +340,28 @@ export default {
   flex-shrink: 0;
 }
 
+/* 更多按钮 - 正方形 */
+.ais-button-group ::v-deep .more-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 确保iconfont图标居中 */
+.ais-button-group ::v-deep .more-button i.iconfont {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+
 /* 按钮组内的按钮 */
 .group-button {
   flex-shrink: 0;
-}
-.more-button {
-  width: 32px;
-  padding: 8px 0;
 }
 </style>
