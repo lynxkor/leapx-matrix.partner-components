@@ -518,6 +518,11 @@
   justify-content: flex-end;
 }
 
+.search-btn {
+  margin-left: 8px;
+  border-radius: 4px;
+}
+
 // 必填项样式
 .ais-required::before {
   content: '*';
