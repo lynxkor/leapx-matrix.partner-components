@@ -37,7 +37,7 @@
  *
  插槽使用：状态显示
   <template #status>
-    <!-- 支持primary,warning,success,danger等状态 -->
+    <!-- 支持primary,warning,success,danger,link等状态 -->
     <span class="status primary">状态</span>
   </template>
 
@@ -412,6 +412,10 @@ export default {
     &.danger{
       color: var(--leap-color-danger);
       background: #F8E8E8;
+    }
+    &.link {
+      color: var(--leap-color-link);
+      background: #E9EEF9;
     }
   }
 }
