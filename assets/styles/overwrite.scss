@@ -198,6 +198,19 @@
   height: 24px;
   line-height: 24px;
 }
+.el-autocomplete-suggestion__wrap {
+  padding: 0;
+}
+.el-autocomplete-suggestion__list {
+  padding: 8px 4px;
+  li {
+    padding: 0 8px;
+  }
+  li:hover{
+    background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
+    border-radius: 4px;
+  }
+}
 .el-input.is-disabled .el-input__inner,
 .el-radio__input.is-disabled .el-radio__inner,
 .el-textarea.is-disabled .el-textarea__inner {
@@ -302,6 +315,10 @@
 
 // 提示框
 .el-popconfirm {
+  .el-popconfirm__main {
+    text-align: left;
+    color: var(--leap-color-default);
+  }
   .el-popconfirm__icon {
     display: none;
   }
