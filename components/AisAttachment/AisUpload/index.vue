@@ -64,9 +64,49 @@
 <template>
   <div class="business-upload" :class="uploadClasses">
     <!-- 上传按钮区域 -->
-    <span v-if="type==='card' && title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
+    <div v-if="type==='card'" class="card-header">
+      <span v-if="title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
+      <el-upload
+        v-if="!readonly"
+        ref="uploadRef"
+        :class=" type==='card' && title ? 'business-upload-area card-upload' : 'business-upload-area'"
+        action="#"
+        :http-request="httpRequest"
+        :headers="uploadHeaders"
+        :data="uploadData"
+        :multiple="true"
+        :limit="limit"
+        :fileList="internalFileList"
+        :on-change="handleFileChange"
+        :on-exceed="handleExceed"
+        :before-upload="beforeUpload"
+        :on-success="handleUploadSuccess"
+        :on-error="handleUploadError"
+        :auto-upload="true"
+        :accept="accept"
+        :disabled="uploadDisabled"
+        :show-file-list="false"
+        v-bind="$attrs"
+        v-on="$listeners"
+      >
+        <slot name="trigger" v-if="!readonly">
+        <el-button
+          size="small"
+          type="primary"
+          plain
+          :loading="uploadLoading"
+          :disabled="uploadDisabled"
+          v-bind="buttonProps"
+          @click="handleTriggerClick"
+        >
+          {{ buttonText }}
+        </el-button>
+        </slot>
+      </el-upload>
+    </div>
+    <span v-else-if="title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
     <el-upload
-      v-if="!readonly || type==='card'"
+      v-if="!readonly && type!=='card'"
       ref="uploadRef"
       :class=" type==='card' && title ? 'business-upload-area card-upload' : 'business-upload-area'"
       action="#"
@@ -604,20 +644,23 @@ div:has(> .business-upload.card) {
 .business-upload {
   position: relative;
   width: 100%;
-  &.card{
+  &.card {
     width: calc((100% - 32px) / 3);
     border-radius: 4px;
-    padding: 16px;
+    padding: 16px 16px 0 16px ;
     background-color: #F8F7F7;
     margin-right: 16px;
     margin-bottom: 16px;
     min-width: 356px;
+    box-sizing: border-box;
 
     &:nth-child(3n+3) {
       margin-right: 0;
     }
-    ::v-deep .el-upload{
-      justify-content: flex-end;
+  }
+  &:not(.card) {
+    .upload-title {
+      position: absolute;
     }
   }
   .upload-title{
@@ -633,6 +676,31 @@ div:has(> .business-upload.card) {
       color: var(--leap-color-danger);
     }
   }
+  .card-header {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    box-sizing: border-box;
+    .upload-title {
+      position: static !important;
+      flex: 1;
+      min-width: 0;
+      max-width: 100%;
+      word-break: break-word;
+      line-height: 20px;
+    }
+    ::v-deep .el-upload {
+      flex-shrink: 0;
+    }
+    ::v-deep .el-button--primary.is-plain {
+      background-color: transparent;
+      &:hover,
+      &:focus {
+        background-color: var(--leap-color-primary);
+        color: #fff;
+      }
+    }
+  }
 }
 
 .business-upload-area {
@@ -644,6 +712,6 @@ div:has(> .business-upload.card) {
   }
 }
 .card-upload {
-  width: 100%;
+  // width: 100%;
 }
 </style>
