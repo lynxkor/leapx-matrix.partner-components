@@ -21,9 +21,9 @@
       min-height="360px"
       max-height="700px"
     >
-      <vxe-column field="operationTime" title="更改日期"></vxe-column>
-      <vxe-column field="operatorName" title="更改者"></vxe-column>
-      <vxe-column field="operationTypeLabel" title="事件"></vxe-column>
+      <vxe-column field="operationTime" title="更改日期" width="160px"></vxe-column>
+      <vxe-column field="operatorName" title="更改者" width="120px"></vxe-column>
+      <vxe-column field="operationTypeLabel" title="事件" width="120px"></vxe-column>
       <vxe-column field="changedFieldsLine" title="已更改字段"></vxe-column>
       <vxe-column field="oldValuesLine" title="旧值"></vxe-column>
       <vxe-column field="newValuesLine" title="新值"></vxe-column>

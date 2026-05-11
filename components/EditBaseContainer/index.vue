@@ -90,9 +90,9 @@
         <!-- headers -->
 
         <!-- 使用具名插槽传递 header -->
-        <template v-if="$slots.header" #header>
+        <!-- <template v-if="$slots.header" #header>
           <slot name="header"></slot>
-        </template>
+        </template> -->
       </edit-base-header>
       <!-- 使用作用域插槽 -->
       <slot></slot>

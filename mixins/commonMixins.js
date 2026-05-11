@@ -46,6 +46,17 @@ export default {
     };
   },
   watch: {
+    '$route.query.isEditing': {
+      handler (val) {
+        const newVal = val === 'true';
+        if (this.isEditing !== newVal) {
+          this.isEditing = newVal;
+          this.breadcrumbTitle = newVal ? '编辑' : '详情';
+          this.initBreadcrumb();
+        }
+      },
+      immediate: true,
+    },
     isEditing: {
       handler (newVal) {
         this.$nextTick(() => {
