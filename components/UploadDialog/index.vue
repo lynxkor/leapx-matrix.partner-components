@@ -124,12 +124,10 @@ export default {
       const isLt20M = this.currentFile.size / 1024 / 1024 < 20;
 
       if (!isExcel) {
-        this.$message.error('只能上传 Excel 文件!');
-        return;
+        return this.$message.error('只能上传 Excel 文件!');
       }
       if (!isLt20M) {
-        this.$message.error('文件大小不能超过 20MB!');
-        return;
+        return this.$message.error('文件大小不能超过 20MB!');
       }
 
       this.isUploading = true;
@@ -179,6 +177,10 @@ export default {
         this.handleClose();
       } catch (error) {
         this.$message.error('文件上传失败');
+        this.fileList = [];
+        this.currentFile = null;
+        this.$refs.upload && this.$refs.upload.clearFiles();
+        this.handleClose();
       } finally {
         this.isUploading = false;
       }
