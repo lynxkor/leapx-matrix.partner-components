@@ -514,7 +514,8 @@ export function handleCommonAction ({
   apiFn,
   config,
   id,
-  onSuccess
+  onSuccess,
+  onComplete
 }) {
   const message = `<div class="ais-leave-tips-main"><i class="iconfont icon-lxppc-prompt"></i>${config.title}</div>`;
 
@@ -537,6 +538,9 @@ export function handleCommonAction ({
     if (err !== 'cancel') {
       console.error('操作失败:', err);
     }
+  }).finally(() => {
+    // 无论成功还是失败都执行
+    if (onComplete) onComplete();
   });
 }
 
@@ -558,7 +562,8 @@ export function handleCommonPrompt ({
   config,
   id,
   maxLength = 100, // 🔥 关键点：设置默认值为 100
-  onSuccess
+  onSuccess,
+  onComplete
 }) {
   return $prompt(config.placeholder, config.title, {
     confirmButtonText: '确定',
@@ -580,6 +585,9 @@ export function handleCommonPrompt ({
     if (onSuccess) onSuccess();
   }).catch(() => {
     // 用户取消或校验失败，静默处理
+  }).finally(() => {
+    // 无论成功还是失败都执行
+    if (onComplete) onComplete();
   });
 }
 

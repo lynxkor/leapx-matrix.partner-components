@@ -301,7 +301,6 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  overflow: hidden;
   width: 100%;
   justify-content: flex-end; /* 默认从右往左排列 */
 }
@@ -317,7 +316,6 @@ export default {
   flex-wrap: nowrap;
   flex-shrink: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
 /* 从右往左折叠时的更多按钮(默认位置:左侧) */
@@ -340,6 +338,26 @@ export default {
 .ais-button-group ::v-deep .el-button {
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* 更多按钮 - 正方形 */
+.ais-button-group ::v-deep .more-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 确保iconfont图标居中 */
+.ais-button-group ::v-deep .more-button i.iconfont {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
 }
 
 /* 按钮组内的按钮 */

@@ -559,7 +559,7 @@ export default {
       // 验证所有编辑过的单元格
       return this.$refs.editTable.validate(true).then((errMap) => {
         if (errMap) {
-          // this.$message.error('请检查输入项是否正确');
+          this.$message.warning('请检查输入项是否正确');
           return Promise.reject(new Error('验证失败'));
         }
 
@@ -721,6 +721,7 @@ export default {
       }
       this.$refs.editTable.validate(row).then((errMap) => {
         if (errMap) {
+          this.$message.warning('请检查输入项是否正确');
           return Promise.reject(new Error('验证失败'));
         }
 

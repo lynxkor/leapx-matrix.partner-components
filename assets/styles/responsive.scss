@@ -18,11 +18,11 @@
 
 @media screen and (max-width: 1139px) {
   .page-common {
-    .el-form-item__label {
-      text-align: left !important;
-    }
     .ais-search-form .el-form-item {
       flex-direction: column;
+      .el-form-item__label {
+        text-align: left !important;
+      }
     }
   }
 }

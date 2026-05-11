@@ -40,6 +40,9 @@ export default {
   display: flex;
   position: relative;
   width: 345px;
+  ::v-deep .el-select__caret {
+    display: none !important;
+  }
   .icon-lxppc-search{
     position: absolute;
     z-index: 1;

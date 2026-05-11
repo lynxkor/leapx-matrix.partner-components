@@ -111,7 +111,7 @@
     padding-bottom: 6px;
     // border-bottom: 1px solid var(--leap-color-default-light-4);
     &-header{
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -204,7 +204,7 @@
     margin-bottom: 20px;
     padding-bottom: 6px;
     &-header{
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -225,6 +225,7 @@
   }
   .common-section-table{
     padding-bottom: 20px;
+    margin-top: 8px;
   }
 
   .el-form-item{
@@ -329,7 +330,7 @@
     margin: 16px 0;
     // border-bottom: 1px solid var(--leap-color-default-light-4);
     &-header{
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -372,6 +373,8 @@
   }
   .common-section-table{
     padding-bottom: 20px;
+    margin-top: 8px;
+
     .el-select .el-input .el-select__caret {
       position: relative;
       top: 3px;
@@ -506,12 +509,18 @@
     color: #6C6E6C;
     margin-top: 8px;
   }
-  // 分页器样式
-  .table-pagination {
-    margin-top: 15px;
-    display: flex;
-    justify-content: flex-end;
-  }
+}
+
+// 分页器样式
+.table-pagination {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-btn {
+  margin-left: 8px;
+  border-radius: 4px;
 }
 
 // 必填项样式

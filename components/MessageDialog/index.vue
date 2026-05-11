@@ -26,8 +26,8 @@
     </div>
     <!-- 底部按钮 -->
     <div v-if="showFooter" slot="footer" class="message-footer">
-      <el-button size="small" v-if="showCancel" @click="handleCancel">{{ cancelText }}</el-button>
-      <el-button size="small" type="primary" @click="handleConfirm">{{ confirmText }}</el-button>
+      <el-button size="small" v-if="localShowCancel" @click="handleCancel">{{ localCancelText }}</el-button>
+      <el-button size="small" type="primary" @click="handleConfirm">{{ localConfirmText }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -208,7 +208,7 @@ export default {
 
   // 类型颜色样式
   &.message-dialog--info ::v-deep .message-icon {
-    color: var(--leap-color-primary);
+    color: var(--leap-color-default);
   }
 
   &.message-dialog--warning ::v-deep .message-icon {
