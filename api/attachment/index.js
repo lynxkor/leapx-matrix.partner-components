@@ -5,9 +5,9 @@ import store from '@/store';
 import api from '@/axios';
 
 // 获取文件服务的baseURL，使用环境变量
-const fileServiceBaseURL = process.env.VUE_APP_FILE_SERVICE_URL || 'https://aisfile-sit.leapmotor.com';
+const fileServiceBaseURL = window.APP_AIS_WEB_CONFIG.VUE_APP_FILE_SERVICE_URL || 'https://aisfile-sit.leapmotor.com';
 
-console.log('process.env.VUE_APP_FILE_SERVICE_URL:', process.env.VUE_APP_FILE_SERVICE_URL);
+console.log('window.APP_AIS_WEB_CONFIG.VUE_APP_FILE_SERVICE_URL:', window.APP_AIS_WEB_CONFIG.VUE_APP_FILE_SERVICE_URL);
 
 // 创建专门用于文件服务的axios实例
 const fileServiceAxios = axios.create({
