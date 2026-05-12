@@ -72,8 +72,11 @@ export default {
       return;
     }
     // keep-alive 缓存过的页面，激活时重新设置面包屑
+    // 关键：只有列表页才重新设置面包屑，编辑页的面包屑由 initBreadcrumb 完整控制
     if (this.$route.meta.keepAlive && this.pageTitle) {
-      this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
+      if (this.pageType === 'list') {
+        this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
+      }
       this.getData?.();
     }
   },
@@ -120,11 +123,18 @@ export default {
      */
     initBreadcrumb () {
       const inEditPage = location.pathname.endsWith('/edit');
+      // 关键修复：如果当前页面是编辑页，但组件是列表页（keep-alive缓存），则不处理
+      if (this.pageType === 'list' && inEditPage) {
+        console.log('[DEBUG initBreadcrumb] 列表页被缓存激活，但当前在编辑页，跳过面包屑设置');
+        return;
+      }
+
       if (this.pageType === 'list') {
         this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
       } else if (this.pageType === 'edit' && inEditPage) {
         const id = this.$route.query.id;
-        this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle, `${id ? this.breadcrumbTitle : '新建'}`]);
+        const breadcrumbValue = [this.pageTitle, `${id ? this.breadcrumbTitle : '新建'}`];
+        this.$store.commit('SET_ACTIVE_BREADCRUMB', breadcrumbValue);
       }
     },
     addHeaderActions (e) {

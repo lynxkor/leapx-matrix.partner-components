@@ -14,7 +14,7 @@
 export default {
   computed: {
     list () {
-      return this.$store.state.menu.activeBreadcrumb || [];
+      return this.$store?.state?.menu?.activeBreadcrumb || [];
     }
   },
   methods: {
