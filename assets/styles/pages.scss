@@ -469,6 +469,9 @@
       line-height: 22px;
       padding-right: 0;
     }
+    .el-form-item__label {
+      text-align: left;
+    }
     .el-form-item__content {
       color: var(--leap-color-default-dark-1);
       font-weight: 500;
@@ -480,6 +483,7 @@
     .el-form-item__label {
       padding-right: 0;
       color: var(--leap-color-default);
+      text-align: right;
     }
     .el-form-item__content {
       color: var(--leap-color-default-dark-1);
