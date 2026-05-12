@@ -116,7 +116,7 @@ export default {
     },
     value: {
       // 输入的值
-      type: Array,
+      type: [Array, String],
       default: function () {
         return [];
       }
