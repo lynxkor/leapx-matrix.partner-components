@@ -300,8 +300,6 @@ export default {
   display: flex;
   align-items: flex-start;
   position: relative;
-  height: 42px;
-  overflow: hidden;
   &.normal::after{
     content: ' ';
     width: 100%;
@@ -331,8 +329,8 @@ export default {
     .base-tab-more, .base-tab-add{
       position: relative;
       right: 0px;
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       color: #3B3E3B;
       border-radius: 4px;
       padding: 6px;
@@ -368,6 +366,7 @@ export default {
     .name{
       vertical-align: middle;
       color: #3B3E3B;
+      font-size: 14px;
     }
     .iconfont {
       vertical-align: middle;
@@ -395,11 +394,11 @@ export default {
   }
   &.rect {
     height: 28px;
-    line-height: 24px;
+    line-height: 28px;
     margin-right: 8px;
     .base-tab-content{
       padding: 0 16px;
-      line-height: 24px;
+      line-height: 26px;
       border-radius: 4px;
       border: 1px solid #E6E6E5;
       .name{

@@ -185,6 +185,9 @@
   background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
   color: var(--leap-color-default);
 }
+.el-dropdown-menu__item {
+  color: var(--leap-color-default);
+}
 .el-select-dropdown.is-multiple .el-select-dropdown__item.selected.hover {
   background-color: rgba($color: $--leap-color-primary, $alpha: 0.1);
 }
