@@ -478,6 +478,34 @@
       word-break: break-all;
       padding-right: 16px;
     }
+    // 状态标签样式
+    .status-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      line-height: 20px;
+      font-size: 12px;
+      border-radius: 4px;
+      &.primary {
+        color: var(--leap-color-primary);
+        background: #E6F4E6;
+      }
+      &.success {
+        color: var(--leap-color-primary);
+        background: #E6F4E6;
+      }
+      &.warning {
+        color: var(--leap-color-warning);
+        background: #FAF6EA;
+      }
+      &.danger {
+        color: var(--leap-color-danger);
+        background: #F8E8E8;
+      }
+      &.link {
+        color: var(--leap-color-link);
+        background: #E9EEF9;
+      }
+    }
   }
   .form-edit {
     .el-form-item__label {
