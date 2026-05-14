@@ -62,7 +62,12 @@
  */
 </script>
 <template>
-  <div class="business-upload" :class="uploadClasses">
+  <div class="business-upload" :class="uploadClasses"
+    @dragenter="type === 'card' && !readonly ? handleDragEnter($event) : null"
+    @dragover="type === 'card' && !readonly ? handleDragOver($event) : null"
+    @dragleave="type === 'card' && !readonly ? handleDragLeave($event) : null"
+    @drop="type === 'card' && !readonly ? handleDrop($event) : null"
+  >
     <!-- 上传按钮区域 -->
     <div v-if="type==='card'" class="card-header">
       <span v-if="title" :class="uploadTitleCls" class="upload-title">{{ title }}</span>
@@ -299,6 +304,8 @@ export default {
       uploadingFiles: new Set(),
       // 防抖定时器
       updateTimer: null,
+      // 拖拽状态
+      isDragOver: false,
     };
   },
 
@@ -313,6 +320,7 @@ export default {
       return {
         [this.uploadClass]: true,
         'card': this.type === 'card',
+        'drag-over': this.isDragOver,
       }
     },
     uploadRef () {
@@ -401,6 +409,41 @@ export default {
       }).then((allowUpload) => {
         if (allowUpload) {
           openFileDialog();
+        }
+      });
+    },
+    // 拖拽事件处理
+    handleDragEnter (e) {
+      e.preventDefault();
+      this.isDragOver = true;
+    },
+    handleDragOver (e) {
+      e.preventDefault();
+    },
+    handleDragLeave (e) {
+      e.preventDefault();
+      // 只有当真正离开容器时才重置状态
+      if (!this.$el.contains(e.relatedTarget)) {
+        this.isDragOver = false;
+      }
+    },
+    handleDrop (e) {
+      e.preventDefault();
+      this.isDragOver = false;
+      const files = e.dataTransfer.files;
+      if (!files || files.length === 0) return;
+
+      Array.from(files).forEach(file => {
+        if (this.beforeUpload(file)) {
+          this.httpRequest({
+            file,
+            onSuccess: () => {
+              this.$message.success('上传成功');
+            },
+            onError: (err) => {
+              console.error('拖拽上传失败:', err);
+            }
+          });
         }
       });
     },
@@ -656,6 +699,10 @@ div:has(> .business-upload.card) {
 
     &:nth-child(3n+3) {
       margin-right: 0;
+    }
+    &.drag-over {
+      border: 2px dashed var(--leap-color-primary);
+      background-color: rgba(64, 158, 255, 0.05);
     }
   }
   &:not(.card) {
