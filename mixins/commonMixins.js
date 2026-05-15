@@ -43,6 +43,7 @@ export default {
         }]
       },
       formRefs: [], // 存储表单引用
+      collapsedSections: {}, // 折叠状态 { sectionKey: true/false }
     };
   },
   watch: {
@@ -102,6 +103,7 @@ export default {
       return {
         formRefs: this.formRefs,
         moduleKey: this.moduleKey || '',
+        collapsedSections: this.collapsedSections,
       };
     }
     return {
@@ -137,23 +139,14 @@ export default {
         this.$store.commit('SET_ACTIVE_BREADCRUMB', breadcrumbValue);
       }
     },
-    addHeaderActions (e) {
-      const parent = e.target.parentNode;
-      const el = parent.nextSibling;
-      if (!el) {
-        return;
-      }
-      if (parent.className.includes('fold')) {
-        parent.classList.remove('fold');
-        el.style.display = 'block';
-      } else {
-        parent.classList.add('fold');
-        el.style.display = 'none';
-      }
-    },
     _handleCollapseClick (e) {
-      if (e.target.closest('.common-section-header h2')) {
-        this.addHeaderActions(e);
+      const h2 = e.target.closest('.common-section-header h2');
+      if (h2) {
+        const header = h2.parentNode;
+        const key = header.dataset.sectionKey;
+        if (key) {
+          this.$set(this.collapsedSections, key, !this.collapsedSections[key]);
+        }
       }
     },
     /**
