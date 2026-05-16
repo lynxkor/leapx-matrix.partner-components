@@ -152,6 +152,11 @@
         </template>
       </vxe-column>
 
+      <!-- 行插槽 -->
+      <template v-if="$scopedSlots.row" #default="{ row, rowIndex }">
+        <slot name="row" :row="row" :rowIndex="rowIndex"></slot>
+      </template>
+
       <vxe-column v-if="defaultNewRow" title="操作" :width="actionWidth" align="center" fixed="right" :resizable="false">
         <template #default="{ row, rowIndex }">
           <template v-if="enableSingleRowSave && (isEditByRow(row, rowIndex) || isNeedSave(row, rowIndex))">
@@ -204,10 +209,6 @@
         <div class="m-vxe-table-empty-text" v-if="emptyText">
           {{ emptyText }}
         </div>
-        <!-- <div class="m-vxe-table-empty" v-else>
-          <img :src="require('../../assets/images/empty.png')" />
-          <p>暂无数据</p>
-        </div> -->
       </template>
     </vxe-table>
 
@@ -448,7 +449,6 @@ export default {
         }
       });
       this.editRules = rules;
-      console.log('校验规则初始化:', rules);
     },
 
     /**
@@ -638,7 +638,6 @@ export default {
      */
     onValueSelect (row, column, data) {
       // 更新行数据
-      // const editableCols = this.columns.filter(col => col.editable).map(col => { return col.field; });
       for (const key in row) {
         const keyLowercase = key.toLowerCase();
         row[key] = data[key] || data[keyLowercase];
@@ -847,91 +846,3 @@ export default {
   color: #009100;
 }
 </style>
-
-<!-- column -->
-<!-- [
-  "type",
-  "property",
-  "field",
-  "title",
-  "width",
-  "minWidth",
-  "maxWidth",
-  "resizable",
-  "fixed",
-  "align",
-  "headerAlign",
-  "footerAlign",
-  "showOverflow",
-  "showHeaderOverflow",
-  "showFooterOverflow",
-  "className",
-  "headerClassName",
-  "footerClassName",
-  "formatter",
-  "footerFormatter",
-  "padding",
-  "verticalAlign",
-  "sortable",
-  "sortBy",
-  "sortType",
-  "sortMethod",
-  "remoteSort",
-  "filters",
-  "filterMultiple",
-  "filterMethod",
-  "filterResetMethod",
-  "filterRecoverMethod",
-  "filterRender",
-  "rowGroupNode",
-  "treeNode",
-  "dragSort",
-  "rowResize",
-  "cellType",
-  "cellRender",
-  "editRender",
-  "contentRender",
-  "headerExportMethod",
-  "exportMethod",
-  "footerExportMethod",
-  "titleHelp",
-  "titlePrefix",
-  "titleSuffix",
-  "aggFunc",
-  "params",
-  "id",
-  "parentId",
-  "visible",
-  "defaultParentId",
-  "halfVisible",
-  "defaultVisible",
-  "defaultFixed",
-  "defaultAggGroup",
-  "defaultAggFunc",
-  "checked",
-  "halfChecked",
-  "disabled",
-  "level",
-  "rowSpan",
-  "colSpan",
-  "order",
-  "sortTime",
-  "sortNumber",
-  "renderSortNumber",
-  "renderAggFn",
-  "renderFixed",
-  "renderVisible",
-  "renderWidth",
-  "renderHeight",
-  "renderResizeWidth",
-  "renderAutoWidth",
-  "resizeWidth",
-  "renderLeft",
-  "renderArgs",
-  "model",
-  "renderHeader",
-  "renderCell",
-  "renderFooter",
-  "renderData",
-  "slots"
-] -->
