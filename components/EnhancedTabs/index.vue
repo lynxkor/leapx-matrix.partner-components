@@ -110,7 +110,7 @@
       <base-input
         v-else
         v-model="inputValue"
-        placeholder="请输入内容"
+        placeholder="请输入内容按回车添加"
         @keyup.enter.native="onInputEnter"
       />
     </template>
