@@ -80,8 +80,8 @@
       :edit-rules="editRules"
       :cell-config="{height: 40}"
       :header-cell-config="{height: 40}"
-      min-height="0"
-      max-height="500px"
+      :min-height="minHeight"
+      :max-height="maxHeight"
       @edit-closed="handleEditClosed"
       @edit-actived="handleEditActived"
       @checkbox-change="checkboxChange"
@@ -341,6 +341,16 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    // 表格最小高度
+    minHeight: {
+      type: [Number, String],
+      default: 0
+    },
+    // 表格最大高度
+    maxHeight: {
+      type: [Number, String],
+      default: 500
     }
   },
   data () {

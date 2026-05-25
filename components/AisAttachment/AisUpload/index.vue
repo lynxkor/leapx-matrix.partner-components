@@ -690,7 +690,7 @@ div:has(> .business-upload.card) {
   &.card {
     width: calc((100% - 32px) / 3);
     border-radius: 4px;
-    padding: 16px 16px 0 16px ;
+    padding: 16px 16px 16px 16px ;
     background-color: #F8F7F7;
     margin-right: 16px;
     margin-bottom: 16px;

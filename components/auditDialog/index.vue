@@ -3,7 +3,7 @@
     :visible.sync="auditShow"
     append-to-body
     :title="auditTitle"
-    width="600px"
+    width="560px"
     @close="close"
   >
     <el-form ref="auditForm" :model="auditForm" :rules="rules" label-width="80px" size="small" style="padding: 10px 0">

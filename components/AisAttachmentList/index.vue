@@ -50,11 +50,12 @@
     <vxe-table
       ref="tableRef"
       :data="tableData"
-      border
       stripe
+      border="inner"
+      resizable
       :header-cell-class-name="'attachment-table-header'"
       show-overflow
-      size="small"
+      size="medium"
     >
       <vxe-column field="fileName" title="附件名称" min-width="280">
         <template #default="{ row, rowIndex }">
@@ -464,7 +465,7 @@ export default {
 @import '@/libs/assets/styles/variables.scss';
 
 .ais-attachment-list {
-  padding: 20px;
+  padding: 20px 0;
   background: #fff;
   border-radius: 4px;
 
