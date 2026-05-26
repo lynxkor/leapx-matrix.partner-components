@@ -13,6 +13,7 @@
  * @property {number} uploadConfig.maxNum - 最大上传数量，0 表示无限制
  * @property {string} uploadConfig.required - 是否必填，'0': 非必填，'1': 必填
  * @property {boolean} noEcho - 是否不回显附件，默认为 false
+ * @property {string} hint - 非card模式下，附件区域下方的自定义提示文案
  *                      true: 每次打开都是新的，不显示历史附件
  *                      false: 显示历史上传的附件
  * @event upload-loading-change - 监听上传文件loading变化
@@ -95,6 +96,7 @@
     :show-upload="true"
     :readonly="readonly"
     :uploadConfig="internalUploadConfig"
+    :hint="hint"
     @update="update"
     @addParam="addParam"
     @removeParam="removeParam"
@@ -154,6 +156,11 @@ export default {
     },
     // readonly 且无附件时显示的空状态提示文案
     emptyText: {
+      type: String,
+      default: '',
+    },
+    // 非card模式下，附件区域下方的自定义提示文案
+    hint: {
       type: String,
       default: '',
     },

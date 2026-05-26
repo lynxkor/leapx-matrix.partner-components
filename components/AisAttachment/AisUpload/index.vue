@@ -148,6 +148,8 @@
       </slot>
     </el-upload>
 
+    <div v-if="hint && type !== 'card' && !readonly" class="business-upload-hint">{{ hint === 'default' ? `支持扩展名：${uploadConfig.acceptSuffix}` : hint }}</div>
+
     <!-- 文件展示区域 -->
     <file-display
       v-if="showFilelist"
@@ -292,6 +294,11 @@ export default {
     showFilelist: {
       type: Boolean,
       default: true
+    },
+    // 非card模式下，附件区域下方的自定义提示文案
+    hint: {
+      type: String,
+      default: '',
     },
   },
 
@@ -750,6 +757,11 @@ div:has(> .business-upload.card) {
   }
 }
 
+.business-upload-hint {
+  font-weight: 400;
+  color: var(--leap-color-default-light-1);
+  margin-top: -16px;
+}
 .business-upload-area {
   margin-bottom: 16px;
   height: 32px;
