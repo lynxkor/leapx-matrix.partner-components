@@ -383,6 +383,7 @@ export default {
         // 多选：返回匹配的选项对象数组
         selectedOption = val.map(v =>
           this.computedOptions.find(option => String(option[this.valueKey]) === String(v))
+            || this.defaultOptions.find(option => String(option[this.valueKey]) === String(v))
         ).filter(Boolean); // 过滤掉未找到的 null/undefined
       } else {
         // 单选：返回单个选项对象
