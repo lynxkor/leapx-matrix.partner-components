@@ -14,6 +14,9 @@
   .page-common-detail .el-form-item {
     width: 50%;
   }
+  .el-select__tags .el-tag.el-tag--info {
+    max-width: 130px;
+  }
 }
 
 @media screen and (max-width: 1139px) {

@@ -112,6 +112,9 @@
   background-color: var(--leap-color-danger-dark-1);
   border-color: var(--leap-color-danger-dark-1);
 }
+.el-button .iconfont:first-child{
+  margin-right: 4px;
+}
 
 .el-popconfirm {
   margin: 6px;

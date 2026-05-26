@@ -36,7 +36,7 @@
     ref="wrapper">
     <div class="base-tabs" ref="leapTabs">
       <div
-        v-for="(item, index) in items"
+        v-for="(item, index) in items.slice(0, moreStartIndex)"
         :key="item.value"
         class="base-tab"
         :class="{

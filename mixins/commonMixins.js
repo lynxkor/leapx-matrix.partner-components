@@ -139,6 +139,20 @@ export default {
         this.$store.commit('SET_ACTIVE_BREADCRUMB', breadcrumbValue);
       }
     },
+    addHeaderActions (e) {
+      const parent = e.target.parentNode;
+      const el = parent.nextSibling;
+      if (!el) {
+        return;
+      }
+      if (parent.className.includes('fold')) {
+        parent.classList.remove('fold');
+        el.style.display = 'block';
+      } else {
+        parent.classList.add('fold');
+        el.style.display = 'none';
+      }
+    },
     _handleCollapseClick (e) {
       const h2 = e.target.closest('.common-section-header h2');
       if (h2) {
@@ -146,6 +160,8 @@ export default {
         const key = header.dataset.sectionKey;
         if (key) {
           this.$set(this.collapsedSections, key, !this.collapsedSections[key]);
+        } else {
+          this.addHeaderActions(e);
         }
       }
     },
