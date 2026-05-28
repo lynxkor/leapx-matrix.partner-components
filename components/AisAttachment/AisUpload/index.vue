@@ -497,7 +497,11 @@ export default {
         }
         // 是否需要关联到单据
         if (this.isAttached) {
-          await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
+          const attachRes = await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
+          // 后端OCR识别失败时，data中带有ocrWarningMsg，但附件已保存成功
+          if (attachRes && attachRes.ocrWarningMsg) {
+            this.$message.warning(attachRes.ocrWarningMsg);
+          }
         } else {
           const param = {
             addOrUpdateParams,
