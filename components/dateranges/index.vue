@@ -237,6 +237,14 @@ export default {
               picker.$emit('pick', res);
             }
           },
+          {
+            text: '近一年',
+            onClick (picker) {
+              const oneYear = 3600 * 1000 * 24 * 365;
+              const res = that.unifiedHandlData(oneYear);
+              picker.$emit('pick', res);
+            }
+          },
 
           {
             text: '今天截止',
@@ -470,6 +478,10 @@ export default {
           break;
         case '最近半年':
           start.setTime(start.getTime() - 180 * oneDay);
+          end.setTime(new Date().setHours(23, 59, 59, 0));
+          break;
+        case '最近一年':
+          start.setTime(start.getTime() - 365 * oneDay);
           end.setTime(new Date().setHours(23, 59, 59, 0));
           break;
 
