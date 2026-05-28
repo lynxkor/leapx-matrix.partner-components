@@ -62,6 +62,7 @@ export default {
     handleClose () {
       this.dialogVisible = false;
       this.tableData = [];
+      this.mergeCells = [];
       this.currentId = null;
     },
 
@@ -72,24 +73,28 @@ export default {
         const res = await this.getAuditLogList({ recordId: this.currentId });
         const tableData = res || [];
         const target = [];
+        this.mergeCells = [];
         let rows = 0;
         // 数据拆分行
         for (let i = 0; i < tableData.length; i++) {
           const item = tableData[i];
-          const { changedFields = [], oldValues, newValues, ...rest } = item;
-          this.mergeCells.push({ row: rows, col: 0, rowspan: changedFields.length, colspan: 1 });
-          this.mergeCells.push({ row: rows, col: 1, rowspan: changedFields.length, colspan: 1 });
-          this.mergeCells.push({ row: rows, col: 2, rowspan: changedFields.length, colspan: 1 });
-          rows += changedFields.length;
-          for (let j = 0; j < changedFields.length; j++) {
-            const field = changedFields[j];
-            const row = {
-              ...rest,
-              changedFieldsLine: field,
-              oldValuesLine: oldValues[j],
-              newValuesLine: newValues[j]
-            };
-            target.push(row);
+          const { changedFields = [], oldValues = [], newValues = [], ...rest } = item;
+          const fieldCount = changedFields.length || 1;
+          this.mergeCells.push({ row: rows, col: 0, rowspan: fieldCount, colspan: 1 });
+          this.mergeCells.push({ row: rows, col: 1, rowspan: fieldCount, colspan: 1 });
+          this.mergeCells.push({ row: rows, col: 2, rowspan: fieldCount, colspan: 1 });
+          rows += fieldCount;
+          if (changedFields.length === 0) {
+            target.push({ ...rest, changedFieldsLine: '', oldValuesLine: '', newValuesLine: '' });
+          } else {
+            for (let j = 0; j < changedFields.length; j++) {
+              target.push({
+                ...rest,
+                changedFieldsLine: changedFields[j],
+                oldValuesLine: oldValues[j],
+                newValuesLine: newValues[j]
+              });
+            }
           }
         }
         this.tableData = target;
