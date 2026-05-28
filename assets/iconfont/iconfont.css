@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4983741 */
-  src: url('iconfont.woff2?t=1779954310328') format('woff2'),
-       url('iconfont.woff?t=1779954310328') format('woff'),
-       url('iconfont.ttf?t=1779954310328') format('truetype'),
-       url('iconfont.svg?t=1779954310328#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1779954484236') format('woff2'),
+       url('iconfont.woff?t=1779954484236') format('woff'),
+       url('iconfont.ttf?t=1779954484236') format('truetype'),
+       url('iconfont.svg?t=1779954484236#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-lxppc-channel:before {
+  content: "\e61c";
 }
 
 .icon-lxppc-mail:before {

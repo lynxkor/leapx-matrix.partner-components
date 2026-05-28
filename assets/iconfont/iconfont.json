@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "47703049",
+      "name": "channel",
+      "font_class": "channel",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
       "icon_id": "47445278",
       "name": "mail",
       "font_class": "mail",
