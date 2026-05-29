@@ -1,5 +1,5 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 4983741 */
+  font-family: "aisIconfont"; /* Project id 4983741 */
   src: url('iconfont.woff2?t=1779954484236') format('woff2'),
        url('iconfont.woff?t=1779954484236') format('woff'),
        url('iconfont.ttf?t=1779954484236') format('truetype'),
@@ -7,7 +7,7 @@
 }
 
 .iconfont {
-  font-family: "iconfont" !important;
+  font-family: "aisIconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
