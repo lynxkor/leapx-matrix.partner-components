@@ -75,6 +75,7 @@
         placement="bottom-end"
         title=""
         trigger="hover"
+        popper-class="base-tabs-popover"
         >
         <div class="base-tabs">
           <div
@@ -294,7 +295,31 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+.base-tabs-popover{
+  width: auto!important;
+  padding: 4px;
+}
+</style>
 <style lang="scss" scoped>
+.base-tabs-popover {
+  .base-tab.rect .base-tab-content {
+    border: 0;
+  }
+  .base-tab.rect.active .base-tab-content {
+    border: 0;
+    background: var(--leap-color-primary-light-9);
+  }
+  .base-tab {
+    border-radius: 4px;
+  }
+  .base-tab:hover {
+    background: var(--leap-color-primary-light-9);
+  }
+  .base-tab.rect {
+    margin: 4px 0 4px 0;
+  }
+}
 .base-tabs-wrapper{
   width: 100%;
   display: flex;
