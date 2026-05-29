@@ -51,7 +51,7 @@ export default {
           operate.buttons = operate.buttons.filter(item => item.name !== '删除');
         }
         // 没有查看审计日志权限
-        if (!this.canDelete) {
+        if (!this.canLog) {
           operate.buttons = operate.buttons.filter(item => item.name !== '日志');
         }
         // 如果没有操作列，全部删除
