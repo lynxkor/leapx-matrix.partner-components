@@ -200,7 +200,8 @@ export default {
   watch: {
     items: {
       deep: true,
-      handler (newItems, oldItems) {
+      handler () {
+        this.moreStartIndex = this.items.length;
         this.updateLayout();
       }
     },
@@ -249,6 +250,7 @@ export default {
 
         for (let i = 0; i < this.tabRefs.length; i++) {
           const ele = this.tabRefs[i];
+          if (!ele) continue;
           const tabStyle = window.getComputedStyle(ele);
           const width = parseFloat(tabStyle.width);
           const mr = parseFloat(tabStyle.marginRight);
@@ -279,6 +281,8 @@ export default {
     setTabRef (el, index) {
       if (el) {
         this.tabRefs[index] = el;
+      } else {
+        this.tabRefs[index] = null;
       }
     },
     // 更新布局
