@@ -41,6 +41,10 @@ export default {
     handleBack () {
       this.$router.back();
     }
+  },
+  beforeDestroy () {
+    this.$store.commit('SET_ACTIVE_BREADCRUMB', []);
+    document.title = '零小跑-零跑汽车';
   }
 };
 </script>
