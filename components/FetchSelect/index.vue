@@ -237,14 +237,14 @@ export default {
       deep: true
     },
     value: {
-      handler (val, old) {
+      handler (val) {
         // 枚举值只能是string，如果是number进行转换
         if (Object.prototype.toString.call(val) === '[object Number]') {
           this.showValue = String(val);
         } else {
           this.showValue = val;
         }
-        if ((this.remote && !this.initialLoaded && val) || (val && old && val != old)) {
+        if (this.remote && !this.initialLoaded && val) {
           this.loadRemoteMethod(this.params);
         }
       },
