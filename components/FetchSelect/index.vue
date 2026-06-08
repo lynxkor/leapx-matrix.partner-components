@@ -79,7 +79,7 @@
     :filterable="filterable"
     collapse-tags
     :remote="remote"
-    :remote-method="loadRemoteMethod"
+    :remote-method="remote ? loadRemoteMethod : undefined"
     popper-class="ais-el-select"
     :ref="selectRefCallback"
   >
