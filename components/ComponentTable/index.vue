@@ -30,6 +30,12 @@
             >
               <template v-slot:default="slotData">
                 <slot v-if="column.slots?.default" :name="column.slots.default" v-bind="slotData" />
+                <el-link
+                  v-else-if="column.link"
+                  type="primary"
+                  :href="getColumnLinkUrl(column, slotData.row)"
+                  :target="column.target || '_blank'"
+                >{{ slotData.row[column.field] }}</el-link>
                 <span v-else>{{ slotData.row[column.field] }}</span>
               </template>
             </vxe-column>
@@ -183,6 +189,22 @@ export default {
   },
   // mounted () {},
   methods: {
+    // 根据列配置与行数据拼接跳转 URL
+    // - 行为与 GenericDetailDisplay#getLinkUrl 保持一致：
+    //   paramKey 未配置时不追加参数；paramName 默认 'id'；
+    //   行数据中对应值缺失时也不追加参数（避免出现 ?id=undefined）
+    getColumnLinkUrl (column, row) {
+      if (!column || !column.link) return '';
+      let url = column.link;
+      if (column.paramKey) {
+        const paramName = column.paramName || 'id';
+        const paramValue = row && row[column.paramKey];
+        if (paramValue !== undefined && paramValue !== null && paramValue !== '') {
+          url += `?${paramName}=${paramValue}`;
+        }
+      }
+      return url;
+    },
     // 加载数据
     async loadData () {
       // 外部传入数据时，前端分页处理
