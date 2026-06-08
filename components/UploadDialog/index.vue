@@ -74,7 +74,7 @@ export default {
     businessParams: {
       type: String
     },
-    async: {
+    async: { // 是否异步导入
       type: Boolean
     }
     // templateUrl: {
@@ -166,6 +166,13 @@ export default {
           config.async = this.async;
         }
         const res = await importExcelConfirmFile(formData, config);
+        if (this.async) {
+          this.$message.warning('正在导入中，请去 系统管理-文件管理-导入任务 中查看');
+          this.fileList = [];
+          this.currentFile = null;
+          this.handleClose();
+          return;
+        }
         if (res.failExcelUrl || res.failNum > 0) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
           // 判断有文件 未上传成功时 在提示
           this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
