@@ -73,6 +73,9 @@ export default {
     },
     businessParams: {
       type: String
+    },
+    async: {
+      type: Boolean
     }
     // templateUrl: {
     //   type: String,
@@ -158,6 +161,9 @@ export default {
         // 如果存在 businessParams，则添加到 config 中；否则不包含该字段
         if (this.businessParams) {
           config.businessParams = this.businessParams;
+        }
+        if (this.async) {
+          config.async = this.async;
         }
         const res = await importExcelConfirmFile(formData, config);
         if (res.failExcelUrl || res.failNum > 0) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
