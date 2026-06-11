@@ -346,3 +346,8 @@ export function getLoginUser (data) {
 export function getFindDescendant (data) {
   return api.get('/accountService/orgInfo/findDescendant', data);
 }
+
+// 登出
+export function logout (params) {
+  return api.jsonPost('/passport/users/logout', params);
+}
