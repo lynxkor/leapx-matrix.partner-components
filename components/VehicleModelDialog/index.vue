@@ -155,7 +155,12 @@ export default {
     },
     async getModelList (seriesId) {
       const res = await listVehicleYearTypeFull({ seriesId: seriesId, status: 1, pageSize: 1000 });
-      this.applicableModelList = res || [];
+      const list = res || [];
+      this.applicableModelList = list.sort((a, b) => {
+        const numA = (a.modelName.match(/-(\d+)/) || [])[1] || '';
+        const numB = (b.modelName.match(/-(\d+)/) || [])[1] || '';
+        return numA.localeCompare(numB, undefined, { numeric: true });
+      });
       this.selectedModelIndex = null;
     },
     selectSeries (index, series) {
@@ -164,11 +169,16 @@ export default {
       this.getModelList(series?.id);
     },
     selectYear (index, year) {
-      this.selectedYearIndex = index;
-      this.yearDetail = {
-        vehicleYearTypeId: year?.id,
-        vehicleYearTypeName: year?.name
-      };
+      if (this.selectedYearIndex === index) {
+        this.selectedYearIndex = null;
+        this.yearDetail = {};
+      } else {
+        this.selectedYearIndex = index;
+        this.yearDetail = {
+          vehicleYearTypeId: year?.id,
+          vehicleYearTypeName: year?.name
+        };
+      }
       this.selectedModelIndex = null;
     },
     isModelDisabled (model) {
