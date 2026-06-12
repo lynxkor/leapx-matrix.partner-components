@@ -146,7 +146,7 @@ export default {
     },
     async getYearList () {
       const res = await listVehicleYearType({ status: 1, pageSize: 1000 });
-      this.yearList = [{ id: '', name: '无年款' }, ...(res || [])];
+      this.yearList = [{ id: null, name: '无年款' }, ...(res || [])];
       this.selectedYearIndex = 0;
       this.yearDetail = {
         vehicleYearTypeId: this.yearList[0].id,
