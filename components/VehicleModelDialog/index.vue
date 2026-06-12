@@ -62,9 +62,9 @@
         max-height="400"
       >
         <vxe-column type="seq" title="序号" width="80" align="center" />
-        <vxe-column field="vehicleSeriesName" title="车系" width="150" align="center" />
+        <vxe-column field="vehicleSeriesName" title="车系" width="200" align="center" />
         <vxe-column field="vehicleModelName" title="适用车型" align="center" />
-        <vxe-column field="vehicleYearTypeName" title="年款" width="150" align="center" />
+        <vxe-column field="vehicleYearTypeName" title="年款" width="200" align="center" />
         <vxe-column title="操作" width="120" align="center" fixed="right">
           <template #default="{ rowIndex }">
             <span class="action-delete" @click="handleDelete(rowIndex)">删除</span>
@@ -114,7 +114,7 @@ export default {
   computed: {
     existingKeys () {
       return new Set(
-        this.tableData.map(item => `${item.vehicleSeriesId}_${item.vehicleYearTypeId}_${item.vehicleModelId}`)
+        this.tableData.map(item => `${item.vehicleYearTypeId}_${item.vehicleModelId}`)
       );
     }
   },
@@ -171,7 +171,10 @@ export default {
     selectYear (index, year) {
       if (this.selectedYearIndex === index) {
         this.selectedYearIndex = null;
-        this.yearDetail = {};
+        this.yearDetail = {
+          vehicleYearTypeId: null,
+          vehicleYearTypeName: ''
+        };
       } else {
         this.selectedYearIndex = index;
         this.yearDetail = {
@@ -182,7 +185,7 @@ export default {
       this.selectedModelIndex = null;
     },
     isModelDisabled (model) {
-      const key = `${model.seriesId}_${this.yearDetail.vehicleYearTypeId}_${model.id}`;
+      const key = `${this.yearDetail.vehicleYearTypeId}_${model.id}`;
       return this.existingKeys.has(key);
     },
     handleModelClick (index, model) {
@@ -268,6 +271,14 @@ export default {
   border: 1px solid var(--leap-color-primary);
   color: #fff;
   border-radius: 4px;
+}
+
+.selection-item.disabled {
+  background-color: var(--leap-color-default-light-5);
+  border: 1px solid var(--leap-color-default-light-4);
+  color: var(--leap-color-default-light-3);
+  border-radius: 4px;
+  cursor: not-allowed;
 }
 
 .table-container {
