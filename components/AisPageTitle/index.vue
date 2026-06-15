@@ -1,17 +1,24 @@
 <template>
-  <div v-if="$store.state.menu">
+  <div v-if="$store.state.menu" class="page-title-wrapper">
     <el-breadcrumb separator="/"  class="pageTitle">
       <i v-if="list.length > 1" class="icon-back el-icon-arrow-left" @click="handleBack"></i>
       <el-breadcrumb-item v-for="(item,index) in list" :key="index">
         <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':'breadLink'">{{item}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
+    <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="warning" :closable="false">
+  </el-alert>
   </div>
 </template>
 
 <script>
 
 export default {
+  data () {
+    return {
+      isPre: window.APP_AIS_WEB_CONFIG?.ENV === 'pre'
+    };
+  },
   computed: {
     list () {
       return this.$store?.state?.menu?.activeBreadcrumb || [];
@@ -50,6 +57,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.page-title-wrapper{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .pageTips{
+    color: var(--leap-color-warning);
+    font-size: 14px;
+    margin-right: 20px;
+    width: 180px;
+  }
+}
 ::v-deep .el-breadcrumb__inner {
     color: #6C6E6C;
     font-weight: normal;
