@@ -94,6 +94,7 @@ export default {
     height: 100%;
     width: 100%;
     display: flex;
+    align-items: center;
     .iconfont {
       cursor: pointer;
       color: var(--themColor);
