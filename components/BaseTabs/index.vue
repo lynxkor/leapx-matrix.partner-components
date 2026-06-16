@@ -36,11 +36,12 @@
     ref="wrapper">
     <div class="base-tabs" ref="leapTabs">
       <div
-        v-for="(item, index) in items.slice(0, moreStartIndex)"
+        v-for="(item, index) in items"
         :key="item.value"
         class="base-tab"
         :class="{
           active: item.value === value,
+          'is-overflow': index >= moreStartIndex,
           line: isNormal || isMenu,
           rect: isRect,
         }"
@@ -48,7 +49,8 @@
         @click="handleClick(item, index)">
         <div class="base-tab-content">
           <span class="name">{{item.label}}</span>
-          <!-- 关闭按钮 -->
+          <!-- 关闭按钮 / 下拉菜单仅在可见 tab 渲染；溢出 tab 只保留 .name 用于测宽 -->
+          <template v-if="index < moreStartIndex">
           <span @click.stop v-if="showCloseBtn">
             <el-popconfirm
               v-show="!item.disableClose"
@@ -66,6 +68,7 @@
             :menus="menus"
             @command="(command) => $emit('command', command, item, index)"
             />
+          </template>
         </div>
       </div>
     </div>
@@ -202,6 +205,7 @@ export default {
       deep: true,
       handler () {
         this.moreStartIndex = this.items.length;
+        this._lastBoxWidth = null;
         this.updateLayout();
       }
     },
@@ -222,13 +226,16 @@ export default {
       // 创建 ResizeObserver 实例
       this.resizeObserver = new ResizeObserver((entries) => {
         for (let entry of entries) {
-          if (entry.target === this.$refs.wrapper) {
-            // 防抖处理，避免频繁触发
-            clearTimeout(this.resizeTimer);
-            this.resizeTimer = setTimeout(() => {
-              this.updateMoreStartIndex();
-            }, 100);
-          }
+          if (entry.target !== this.$refs.wrapper) continue;
+          const w = Math.round(entry.contentRect.width);
+          // 亚像素/同值变化不调度，避免与 updateMoreStartIndex 形成反馈循环
+          if (w === this._lastObservedWidth) continue;
+          this._lastObservedWidth = w;
+          // 防抖处理，避免频繁触发
+          clearTimeout(this.resizeTimer);
+          this.resizeTimer = setTimeout(() => {
+            this.updateMoreStartIndex();
+          }, 100);
         }
       });
 
@@ -246,7 +253,12 @@ export default {
         const actionsStyle = window.getComputedStyle(this.$refs.leapActions);
         const boxWidth = parseInt(boxStyle.width) - parseInt(actionsStyle.width);
 
+        // 短路 1：容器可用宽度未变，跳过测量
+        if (boxWidth === this._lastBoxWidth) return;
+        this._lastBoxWidth = boxWidth;
+
         let sum = 0;
+        let newIndex = this.items.length;
 
         for (let i = 0; i < this.tabRefs.length; i++) {
           const ele = this.tabRefs[i];
@@ -259,12 +271,27 @@ export default {
 
           sum += cur;
           if (sum > boxWidth) {
-            this.moreStartIndex = i;
-            return;
+            newIndex = i;
+            break;
           }
         }
 
-        this.moreStartIndex = this.items.length;
+        // 短路 2：算出来的索引没变，不触发响应式更新
+        if (newIndex !== this.moreStartIndex) {
+          const prevIndex = this.moreStartIndex;
+          const prevOverflow = prevIndex < this.items.length;
+          const nextOverflow = newIndex < this.items.length;
+          this.moreStartIndex = newIndex;
+          // 两种情况需要重测：
+          // 1) overflow 状态翻转 → 「更多」按钮显隐，actions 宽度变化
+          // 2) moreStartIndex 增加 → 新可见的 tab 渲染了关闭/下拉图标，
+          //    实际宽度大于测量的纯文字宽度，需要按真实宽度再算一次
+          // 收敛性：重测看到的真实宽度只会让 newIndex 不再增加，最多 2 次迭代收敛
+          if (prevOverflow !== nextOverflow || newIndex > prevIndex) {
+            this._lastBoxWidth = null;
+            this.$nextTick(() => this.updateMoreStartIndex());
+          }
+        }
       });
     },
     handleClick (item, index) {
@@ -291,7 +318,8 @@ export default {
     },
   },
   beforeDestroy () {
-    // 组件销毁时清理观察器
+    // 组件销毁时清理观察器和未触发的防抖定时器
+    clearTimeout(this.resizeTimer);
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
@@ -316,6 +344,8 @@ export default {
   }
   .base-tab {
     border-radius: 4px;
+    padding-left: 4px;
+    margin-right: 0px;
   }
   .base-tab:hover {
     background: var(--leap-color-primary-light-9);
@@ -329,6 +359,8 @@ export default {
   display: flex;
   align-items: flex-start;
   position: relative;
+  height: 40px;
+  overflow: hidden;
   &.normal::after{
     content: ' ';
     width: 100%;
@@ -340,21 +372,29 @@ export default {
   }
   &.rect{
     height: 30px;
+    .base-tabs{
+      height: 28px;
+    }
     .base-tabs-actions{
       height: 28px;
     }
   }
   .base-tabs{
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     position: relative;
+    overflow: hidden;
+    min-width: 0;
+    flex: 0 1 auto;
+    height: 40px;
   }
 
   .base-tabs-actions{
     display: flex;
     height: 40px;
     align-items: center;
+    flex: 0 0 auto;
     .base-tab-more, .base-tab-add{
       position: relative;
       right: 0px;
@@ -385,10 +425,15 @@ export default {
   height: 40px;
   line-height: 40px;
   margin-right: 20px;
-  margin-bottom: 10px;
   display: flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  &.is-overflow{
+    visibility: hidden;
+    pointer-events: none;
+  }
   .base-tab-content{
     line-height: 40px;
     border-bottom: 2px solid transparent;
@@ -415,6 +460,7 @@ export default {
     .base-tab-content{
       border-bottom-color: var(--leap-green);
       position: relative;
+      bottom: 2px;
       z-index: 1;
       .name{
         color: var(--leap-green);

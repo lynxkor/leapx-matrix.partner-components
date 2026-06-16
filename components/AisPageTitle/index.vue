@@ -6,7 +6,7 @@
         <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':'breadLink'">{{item}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
-    <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="warning" :closable="false">
+    <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="error" :closable="false">
   </el-alert>
   </div>
 </template>
@@ -62,10 +62,13 @@ export default {
   justify-content: space-between;
   align-items: center;
   .pageTips{
-    color: var(--leap-color-warning);
-    font-size: 14px;
+    color: var(--leap-color-danger);
     margin-right: 20px;
-    width: 180px;
+    width: 250px;
+    text-align: center;
+    ::v-deep .el-alert__title {
+      font-size: 18px;
+    }
   }
 }
 ::v-deep .el-breadcrumb__inner {
