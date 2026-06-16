@@ -66,6 +66,7 @@
 <template>
   <el-select
     v-bind="$attrs"
+    :disabled="disabled"
     :value="showValue"
     @input="handleInput"
     @change="handleChange"
@@ -179,6 +180,12 @@ export default {
     remoteMethod:{
       type: Function,
       default: () => ({})
+    },
+    // 是否禁用。显式声明为 prop 而非走 $attrs 透传，
+    // 避免 el-select 对 disabled 变化的响应式更新滞后
+    disabled: {
+      type: Boolean,
+      default: false
     },
     format:{
       type: Function,
