@@ -11,12 +11,17 @@
  * @property {string} uploadConfig.acceptSuffix - 允许上传的文件后缀，多个用逗号分隔
  * @property {number} uploadConfig.maxSize - 单个文件最大大小，单位：MB
  * @property {number} uploadConfig.maxNum - 最大上传数量，0 表示无限制
+ * @property {number} uploadConfig.minNum - 最少上传数量，0 或不传表示不限制
  * @property {string} uploadConfig.required - 是否必填，'0': 非必填，'1': 必填
  * @property {boolean} noEcho - 是否不回显附件，默认为 false
  * @property {string} hint - 非card模式下，附件区域下方的自定义提示文案
  *                      true: 每次打开都是新的，不显示历史附件
  *                      false: 显示历史上传的附件
  * @event upload-loading-change - 监听上传文件loading变化
+ * @method validate - 校验附件是否满足必填/最小数量/最大数量规则，返回 Promise<boolean>
+ *        readonly 模式不校验,直接返回 true
+ *        若 configCode 已传但 internalUploadConfig 尚未回写(异步加载),内部会先 await 一次配置
+ *        options.silent: true 时不弹错误提示,仅返回校验结果
  * @example
  * <!-- 基本用法 - 后端校验规则-->
     <AisAttachment
@@ -391,6 +396,67 @@ export default {
     // 获取所有附件
     getFileList () {
       return this.fileList;
+    },
+    /**
+     * 校验附件是否满足必填/最小数量/最大数量规则
+     * 只有 required='1'(必填)时,才会进行 必填 / 最小数量 / 最大数量 的校验
+     * required='0' 或未配置时,直接返回 true,跳过所有校验(不校验 minNum / maxNum)
+     * readonly 模式也不校验
+     * 业务页可配合 Promise.all 批量调用,首个失败即可阻断提交
+     * @param {Object} [options] - 校验选项
+     * @param {boolean} [options.silent=false] - 为 true 时不弹错误提示,仅返回 boolean
+     * @returns {Promise<boolean>} 校验通过返回 true,失败返回 false
+     */
+    async validate (options = {}) {
+      const { silent = false } = options;
+      // 只读模式不校验
+      if (this.readonly) {
+        return true;
+      }
+      // 配置异步加载时,先确保 internalUploadConfig 已回写
+      // 判断条件:有 configCode 且 internalUploadConfig 没有 attachType 字段(回写后会带)
+      if (this.configCode && !this.internalUploadConfig?.attachType) {
+        try {
+          await this.loadAttachmentConfig(this.configCode, this.attachType, true);
+        } catch (e) {
+          // 配置加载失败,按不阻塞提交处理(由业务页决定)
+          if (!silent) {
+            this.$message?.warning('附件配置加载失败,已跳过附件校验');
+          }
+          return true;
+        }
+      }
+      const config = this.internalUploadConfig || {};
+      // 非必填时直接放行,不做 minNum / maxNum 校验
+      if (String(config.required) !== '1') {
+        return true;
+      }
+      const count = (this.fileList || []).length;
+      const attachTypeLabel = this.attachType || '附件';
+      // 必填
+      if (count < 1) {
+        if (!silent) {
+          this.$message?.error(`请上传【${attachTypeLabel}】附件`);
+        }
+        return false;
+      }
+      // 最小数量
+      const minNum = Number(config.minNum);
+      if (minNum > 0 && count < minNum) {
+        if (!silent) {
+          this.$message?.error(`【${attachTypeLabel}】至少上传 ${minNum} 个附件`);
+        }
+        return false;
+      }
+      // 最大数量(0 表示不限制)
+      const maxNum = Number(config.maxNum);
+      if (maxNum > 0 && count > maxNum) {
+        if (!silent) {
+          this.$message?.error(`【${attachTypeLabel}】最多上传 ${maxNum} 个附件`);
+        }
+        return false;
+      }
+      return true;
     },
     // 刷新附件列表
     async refresh () {
