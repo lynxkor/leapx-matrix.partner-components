@@ -652,3 +652,40 @@ export function formatNumberInput (value, options = {}) {
   }
   return val;
 }
+
+/**
+ * 通用导出确认弹窗
+ * 封装 Element UI 的 $confirm，提供统一的「导出任务异步处理」确认交互。
+ * 推荐在调用时通过 prototype 注入的形式 this.$confirmExport 调用，函数内部通过 this.$confirm 访问弹窗。
+ *
+ * @param {Function} [callback] - 确认后执行的回调（可选，当前未在批量改造中使用，作为预留接口）
+ * @param {Object} [options] - 配置项
+ * @param {string} [options.message='是否确认导出？'] - 弹窗正文
+ * @param {string} [options.title='提示'] - 弹窗标题
+ * @param {string} [options.type='warning'] - 弹窗类型
+ * @param {string} [options.confirmButtonText='确定'] - 确认按钮文字
+ * @param {string} [options.cancelButtonText='取消'] - 取消按钮文字
+ * @param {boolean} [options.skipConfirm=false] - 是否跳过确认直接执行 callback
+ * @returns {Promise} Element UI $confirm 的 Promise
+ */
+export async function confirmExport (callback, options = {}) {
+  const {
+    message = '是否确认导出？',
+    title = '提示',
+    type = 'warning',
+    confirmButtonText = '确定',
+    cancelButtonText = '取消',
+    skipConfirm = false
+  } = options;
+
+  if (skipConfirm) {
+    return typeof callback === 'function' ? callback() : undefined;
+  }
+  return this.$confirm(message, title, {
+    confirmButtonText,
+    cancelButtonText,
+    type
+  }).then(() => {
+    return typeof callback === 'function' ? callback() : undefined;
+  }).catch(() => {});
+}
