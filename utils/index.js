@@ -654,7 +654,7 @@ export function formatNumberInput (value, options = {}) {
 }
 
 /**
- * 通用导出确认弹窗
+ * 通用导出确认弹窗1
  * 封装 Element UI 的 $confirm，提供统一的「导出任务异步处理」确认交互。
  * 推荐在调用时通过 prototype 注入的形式 this.$confirmExport 调用，函数内部通过 this.$confirm 访问弹窗。
  *
