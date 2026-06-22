@@ -12,6 +12,7 @@
  * @param {String} valueKey - 选项数据中作为值的键名，默认'code'
  * @param {String} labelKey - 选项数据中作为标签的键名，默认'message'
  * @param {Array} options - 直接传入的静态选项数据，优先级最高
+ * @param {String} fallbackLabel - 直传options模式下，值对应的选项被删除(不在options中)时反显的兜底标签，默认显示 '-'
  * @param {Boolean} filterable - 是否可搜索
  * @param {Boolean} remote - 是否可远程搜索
  * @param {Function} remoteMethod - 远程搜索方法
@@ -169,6 +170,11 @@ export default {
       type: Array,
       default: null
     },
+    // 直传options模式下，值对应的选项被删除(不在options中)时反显的兜底标签；不传则显示 '-'
+    fallbackLabel: {
+      type: String,
+      default: ''
+    },
     filterable: {
       type: Boolean,
       default: true
@@ -230,7 +236,21 @@ export default {
   computed: {
     computedOptions () {
       // 如果传入了options，则使用传入的options，否则使用远程获取的options
-      return this.options || this.remoteOptions;
+      const base = this.options || this.remoteOptions;
+      // 直传options模式下，值未匹配(数据被删除)时合成占位项，避免el-select显示原始id
+      if (this.options && this.missingOption) {
+        return [
+          { [this.valueKey]: this.showValue, [this.labelKey]: this.fallbackLabel || '-', disabled: true },
+          ...base
+        ];
+      }
+      return base;
+    },
+    missingOption () {
+      if (this.options == null) return false;
+      if (this.showValue == null || this.showValue === '') return false;
+      if (Array.isArray(this.showValue) || this.isTree) return false;
+      return !this.options.some(item => String(item[this.valueKey]) === String(this.showValue));
     }
   },
   watch: {
