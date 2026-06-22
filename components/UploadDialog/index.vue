@@ -167,12 +167,12 @@ export default {
         }
         const res = await importExcelConfirmFile(formData, config);
         if (this.async) {
-          this.$confirm('正在导入中，是否要跳转"系统管理-文件管理-导入任务"中查看？', '提示', {
+          this.$confirm('正在导出中，是否要跳转"系统管理-文件管理-导出任务"中查看？', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            window.open('/service/excelManagement/commonDataProcessExcelImportTask', '_blank');
+            window.open('/service/excelManagement/commonDataProcessExcelTask', '_blank');
           }).catch(() => {});
           this.fileList = [];
           this.currentFile = null;

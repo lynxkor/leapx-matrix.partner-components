@@ -263,6 +263,11 @@ export default {
               success(id);
             }
             this.showSuccessMessage();
+            // 业务页 submitRequest 可通过 Promise.reject() 主动阻断保存
+            // 这里 catch 吞掉 reject,阻断 then 的成功分支(loadDetail / showSuccessMessage 都不执行)
+            // 同时 reject 仍会进入 finally,使 loading 正常复位
+          }).catch(() => {
+            // 主动阻断:不弹成功提示、不 loadDetail,仅由 finally 复位 loading
           }).finally(() => {
             this.loading = false;
           })

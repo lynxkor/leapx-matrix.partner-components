@@ -79,6 +79,14 @@ export function getUserByNameOrNo (data) {
 }
 
 /**
+ * 根据 userId 查询用户详情（含基础信息 + 岗位列表）
+ * @param {*} id { userId }
+ */
+export function getUserDetailById (id) {
+  return api.get('/users/manager/info/' + id);
+}
+
+/**
  * 网发门店模糊搜索
  * @param {*} data
  */
