@@ -495,6 +495,11 @@ export default {
         if (this.id) {
           addOrUpdateParams.id = this.id;
         }
+        // 统一构造并对外抛出，供 getAttachment() 收集
+        const param = {
+          addOrUpdateParams,
+          file,
+        };
         // 是否需要关联到单据
         if (this.isAttached) {
           const attachRes = await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
@@ -502,13 +507,8 @@ export default {
           if (attachRes && attachRes.ocrWarningMsg) {
             this.$message.warning(attachRes.ocrWarningMsg);
           }
-        } else {
-          const param = {
-            addOrUpdateParams,
-            file,
-          };
-          this.$emit('addParam', param);
         }
+        this.$emit('addParam', param);
         onSuccess();
       } catch (error) {
         console.error('上传失败:', error);

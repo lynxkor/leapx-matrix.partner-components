@@ -96,7 +96,7 @@
     v-model="fileList"
     :business-id="businessId"
     :attach-type="attachType"
-    :isAttached="Boolean(configCode)"
+    :isAttached="effectiveIsAttached"
     :configCode="configCode"
     :show-upload="true"
     :readonly="readonly"
@@ -137,6 +137,16 @@ export default {
      */
     configCode: {
       type: String,
+    },
+    /**
+     * 是否在上传时自动关联到单据 businessId
+     * 不传（默认 null）：取 Boolean(configCode)，即传了 configCode 就自动绑定（向后兼容）
+     * 传 false：即使传了 configCode（使用后端校验配置），上传后也不自动绑定，
+     *           由业务调用 getAttachment() 收集附件自行提交
+     */
+    isAttached: {
+      type: Boolean,
+      default: null,
     },
     attachType: {
       type: String,
@@ -226,6 +236,9 @@ export default {
     }
   },
   computed: {
+    effectiveIsAttached () {
+      return this.isAttached === null ? Boolean(this.configCode) : this.isAttached;
+    },
   },
   methods: {
     /**
