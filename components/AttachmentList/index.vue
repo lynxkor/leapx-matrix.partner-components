@@ -14,21 +14,23 @@
 </script>
 <template>
   <div class="attachment-list">
-    <AisAttachment
-      v-for="(config) in attachmentConfigs"
-      :key="config.id"
-      :ref="el => setAttachmentRef(el, config.id)"
-      :businessId="businessId"
-      :configCode="configCode"
-      :attachType="config.attachType"
-      :title="config.attachType"
-      :uploadConfig="config"
-      :readonly="readonly"
-      :noEcho="noEcho"
-      :businessData="businessData"
-      v-bind="$attrs"
-      v-on="$listeners"
-    />
+    <template v-if="!onlyShowUnclassifiedTypes">
+      <AisAttachment
+        v-for="(config) in attachmentConfigs"
+        :key="config.id"
+        :ref="el => setAttachmentRef(el, config.id)"
+        :businessId="businessId"
+        :configCode="configCode"
+        :attachType="config.attachType"
+        :title="config.attachType"
+        :uploadConfig="config"
+        :readonly="readonly"
+        :noEcho="noEcho"
+        :businessData="businessData"
+        v-bind="$attrs"
+        v-on="$listeners"
+      />
+    </template>
     <!-- 未在配置中的附件 -->
     <AisAttachment
       v-for="type in unclassifiedTypes"
@@ -84,6 +86,11 @@ export default {
     businessData: {
       type: String,
       default: '',
+    },
+    // 只显示不在分类中的附件
+    onlyShowUnclassifiedTypes: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
