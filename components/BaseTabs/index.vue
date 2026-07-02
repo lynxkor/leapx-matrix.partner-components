@@ -373,7 +373,7 @@ export default {
   &.rect{
     height: 30px;
     .base-tabs{
-      height: 28px;
+      height: 30px;
     }
     .base-tabs-actions{
       height: 28px;
