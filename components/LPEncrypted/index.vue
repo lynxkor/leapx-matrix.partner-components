@@ -47,10 +47,14 @@ export default {
   },
   watch: {
     value (val) {
-      // 外部页面数据刷新时，重置状态
-      if (this.encryptedData === val) {
-        this.isEncryptedView = true;
+      // 命中已缓存的密文或明文，视为组件自身切换 emit 引起的变化，跳过
+      if (val === this.encryptedData || val === this.decryptedData) {
+        return;
       }
+      // 外部传入新值（如详情重新加载传入新的脱敏值），重置为初始加密态并刷新缓存
+      this.isEncryptedView = true;
+      this.encryptedData = val;
+      this.decryptedData = null;
     }
   },
   data () {
