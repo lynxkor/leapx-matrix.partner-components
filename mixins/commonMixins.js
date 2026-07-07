@@ -78,7 +78,9 @@ export default {
       if (this.pageType === 'list') {
         this.$store.commit('SET_ACTIVE_BREADCRUMB', [this.pageTitle]);
       }
-      this.getData?.();
+      if (!this.$route.meta.notRefresh) {
+        this.getData?.();
+      }
     }
   },
   created () {
