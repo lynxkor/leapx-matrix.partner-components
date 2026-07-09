@@ -17,7 +17,7 @@
             <el-image
               v-if="file.isImage"
               :ref="`imageRef_${index}`"
-              :src="file.url"
+              :src="getDisplayUrl(file)"
               :alt="file.name"
               fit="contain"
               lazy
@@ -25,6 +25,9 @@
               :initial-index="getImageIndex(file)"
               style="width: 100%; height: 100%; cursor: pointer;"
             >
+              <div slot="placeholder" class="image-slot">
+                <i class="el-icon-loading"></i>
+              </div>
               <div slot="error" class="image-slot">
                 <i class="el-icon-picture-outline"></i>
               </div>
@@ -144,20 +147,38 @@ export default {
   data () {
     return {
       editable: true,
+      // HEIC 转换后的可预览 URL 缓存：key = file.id || file.url，value = 转换后的 blob URL
+      heicDisplayUrlCache: {},
     };
   },
 
   computed: {
-    // 获取所有图片的预览列表
+    // 获取所有图片的预览列表（HEIC 用转换后的 URL，未转换完成的不进入列表，避免空 URL）
     imagePreviewList () {
       const urls = [];
       this.fileList.forEach(file => {
         if (file.isImage && file.url) {
-          urls.push(file.url);
+          const displayUrl = this.getDisplayUrl(file);
+          if (displayUrl) urls.push(displayUrl);
         }
       });
       return urls;
     }
+  },
+  watch: {
+    fileList: {
+      handler () {
+        this.convertHeicImages();
+      },
+      immediate: true,
+    },
+  },
+
+  beforeDestroy () {
+    // 释放 HEIC 转码产生的 blob URL，避免内存泄漏
+    Object.values(this.heicDisplayUrlCache).forEach(url => {
+      if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+    });
   },
 
   methods: {
@@ -174,10 +195,70 @@ export default {
     getImageIndex (file) {
       if (!file.isImage) return 0;
 
-      const imageUrl = file.url || file.thumbUrl;
+      const imageUrl = this.getDisplayUrl(file);
       if (!imageUrl) return 0;
 
       return this.imagePreviewList.findIndex(url => url === imageUrl);
+    },
+
+    // 是否为 HEIC/HEIF（浏览器原生无法解码，需运行时转码）
+    isHeic (file) {
+      if (!file) return false;
+      const type = (file.fileType || '').toLowerCase().replace(/^\./, '');
+      const name = (file.name || '').toLowerCase();
+      return type === 'heic' || type === 'heif' || name.endsWith('.heic') || name.endsWith('.heif');
+    },
+
+    // 取图片展示 URL：HEIC 优先用转换后的 URL，未转换前回退占位避免提前触发碎图
+    getDisplayUrl (file) {
+      if (!file) return '';
+      if (this.isHeic(file)) {
+        const cacheKey = file.id || file.url;
+        const cached = this.heicDisplayUrlCache[cacheKey];
+        // 未转换完成时返回一个空白占位，避免 el-image 直接加载原始 HEIC 显示碎图
+        return cached || '';
+      }
+      return file.url;
+    },
+
+    // 遍历列表，对 HEIC 项异步转码并缓存
+    convertHeicImages () {
+      (this.fileList || []).forEach(file => {
+        if (file.isImage && this.isHeic(file)) {
+          this.convertHeic(file);
+        }
+      });
+    },
+
+    // 将单个 HEIC 文件转码为 JPEG blob URL 并缓存
+    async convertHeic (file) {
+      const cacheKey = file.id || file.url;
+      if (!cacheKey || this.heicDisplayUrlCache[cacheKey]) return;
+      try {
+        const response = await fetch(file.url);
+        const rawBlob = await response.blob();
+        // 部分文件服务对 HEIC 文件实际存的是 JPEG 内容，返回 image/jpeg 等类型。
+        // 此时浏览器本身就能解码，直接用原 URL 即可，无需 heic2any，避免 "already browser readable" 报错。
+        const browserReadableTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+        if (browserReadableTypes.includes(rawBlob.type)) {
+          this.$set(this.heicDisplayUrlCache, cacheKey, file.url);
+          return;
+        }
+        // 动态 import，避免 WASM 打进主 bundle、影响非 HEIC 用户首屏
+        const heic2any = (await import('heic2any')).default;
+        const converted = await heic2any({ blob: rawBlob, toType: 'image/jpeg', quality: 0.9 });
+        const convertedBlob = Array.isArray(converted) ? converted[0] : converted;
+        const displayUrl = URL.createObjectURL(convertedBlob);
+        // $set 触发响应式更新，让 el-image / imagePreviewList 重新取值
+        this.$set(this.heicDisplayUrlCache, cacheKey, displayUrl);
+      } catch (error) {
+        // heic2any 检测到文件实际内容已是 JPEG 等浏览器可解码格式（code=1）时，
+        // 直接用 file.url 渲染即可，属正常分支无需报错；其他错误才打印。
+        if (error?.code !== 1) {
+          console.error('HEIC 转码失败:', error);
+        }
+        this.$set(this.heicDisplayUrlCache, cacheKey, file.url);
+      }
     },
 
     // 通过"查看"按钮触发图片预览
@@ -199,17 +280,28 @@ export default {
 
     // 下载文件
     handleDownload (file) {
-      const { url, name } = file;
+      const url = file?.url || file?.response?.fileUrl;
+      // fileName 可能为 null，从 URL 末段提取兜底
+      const name = file?.name ||
+        file?.response?.fileName ||
+        (url ? url.split('/').pop()?.split('?')[0] : '') ||
+        (file.fileType ? `未命名文件.${file.fileType.toLowerCase()}` : '未命名文件');
+      // 缺少下载地址或文件名时直接拦截，避免下载出名为 null 的空文件
+      if (!url) {
+        this.$message?.error('文件下载地址缺失，无法下载');
+        return;
+      }
+
       // 本地文件直接下载
       if (file.raw) {
-        const url = URL.createObjectURL(file.raw);
+        const objectUrl = URL.createObjectURL(file.raw);
         const link = document.createElement('a');
-        link.href = url;
-        link.download = file.name;
+        link.href = objectUrl;
+        link.download = name || file.name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(objectUrl);
         return;
       }
 

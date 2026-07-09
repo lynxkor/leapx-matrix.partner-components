@@ -348,9 +348,11 @@ export default {
           attachType: attachType
         });
         this.fileList = (response || []).map(file => {
+          // fileName 可能为 null（如 HEIC 文件），从 fileUrl 末段提取兜底名
+          const fallbackName = file.fileUrl ? file.fileUrl.split('/').pop()?.split('?')[0] : '';
           return {
             id: file.id,
-            name: file.fileName,
+            name: file.fileName || fallbackName || (file.fileType ? `未命名文件.${file.fileType.toLowerCase()}` : '未命名文件'),
             url: file.fileUrl,
             size: file.fileSize,
             fileType: file.fileType,

@@ -12,8 +12,8 @@ export function isFileType (file, type) {
 
   const config = {
     image: {
-      types: ['image', 'img', 'picture', 'photo', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'],
-      extensions: ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg']
+      types: ['image', 'img', 'picture', 'photo', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'heic', 'heif'],
+      extensions: ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg', '.heic', '.heif']
     },
     video: {
       types: ['video', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'mpeg', 'mpg'],
