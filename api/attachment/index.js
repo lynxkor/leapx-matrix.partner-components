@@ -12,7 +12,7 @@ console.log('window.APP_AIS_WEB_CONFIG.VUE_APP_FILE_SERVICE_URL:', window.APP_AI
 // 创建专门用于文件服务的axios实例
 const fileServiceAxios = axios.create({
   baseURL: fileServiceBaseURL,
-  timeout: 30000,
+  timeout: 180000,
   headers: {
     Accepte: 'application/vnd.leapx.v2+json'
   }
