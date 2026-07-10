@@ -689,3 +689,76 @@ export async function confirmExport (callback, options = {}) {
     return typeof callback === 'function' ? callback() : undefined;
   }).catch(() => {});
 }
+
+/**
+ * 通用附件必填与数量上下限校验
+ * 规则：required 优先 —— required=false 的附件跳过 minNum/maxNum 校验；
+ *       只有 required=true 时才按 minNum/maxNum 做上下限判断。
+ *
+ * 设计：仅收集并返回错误信息，**不主动弹 toast**。是否提示、如何展示由调用方决定，
+ *       这样既支持业务页面渲染错误列表（点击跳转定位），也支持按需弹 message。
+ *
+ * @param {Object} options
+ * @param {Array}  options.attachmentList  附件配置列表，元素需含 { label, required, minNum, maxNum, attachType }
+ * @param {Object} options.refs            Vue 实例的 this.$refs（用于读取每个附件子组件实例）
+ * @param {string} [options.refNamePrefix] 组件 ref 名模板，默认 'attachment'，实际读取 ${prefix}${index}
+ * @param {Object} [options.messages]      自定义提示文案，覆盖默认文案
+ * @returns {{
+ *   valid: boolean,
+ *   errors: string[],            // 给用户看的文案列表
+ *   details: Array<{             // 结构化错误，方便业务页面渲染/跳转
+ *     index: number,             // 附件在 attachmentList 中的下标
+ *     refName: string,           // 组件 ref 名
+ *     attachType: string,
+ *     label: string,
+ *     type: 'requiredEmpty' | 'minNum' | 'maxNum',
+ *     fileLength: number,
+ *     required: boolean,
+ *     minNum: number,
+ *     maxNum: number,
+ *     message: string
+ *   }>
+ * }}
+ */
+export function validateAttachments ({
+  attachmentList,
+  refs,
+  refNamePrefix = 'attachment',
+  messages = {}
+}) {
+  const textTemplates = {
+    requiredEmpty: label => `【${label}】为必填附件，请上传`,
+    minNum: (label, n) => `【${label}】至少上传 ${n} 个附件`,
+    maxNum: (label, n) => `【${label}】最多上传 ${n} 个附件`
+  };
+  const msgs = { ...textTemplates, ...messages };
+
+  const errors = [];
+  const details = [];
+
+  (attachmentList || []).forEach((item, index) => {
+    const refName = `${refNamePrefix}${index}`;
+    const fileLength = refs?.[refName]?.[0]?.getFileList?.()?.length || 0;
+    const { label, required, minNum = 0, maxNum = 0, attachType } = item;
+    if (!required) return; // 非必填附件不参与数量上下限校验
+
+    let type = null;
+    let message = '';
+    if (fileLength < 1) {
+      type = 'requiredEmpty';
+      message = msgs.requiredEmpty(label);
+    } else if (minNum > 0 && fileLength < minNum) {
+      type = 'minNum';
+      message = msgs.minNum(label, minNum);
+    } else if (maxNum > 0 && fileLength > maxNum) {
+      type = 'maxNum';
+      message = msgs.maxNum(label, maxNum);
+    }
+    if (type) {
+      errors.push(message);
+      details.push({ index, refName, attachType, label, type, fileLength, required, minNum, maxNum, message });
+    }
+  });
+
+  return { valid: errors.length === 0, errors, details };
+}
