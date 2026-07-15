@@ -48,6 +48,9 @@ export default {
 
 <style lang="scss" scoped>
 .simple-table-dialog {
+  ::v-deep .vxe-table--render-default .vxe-cell {
+    white-space: normal!important;
+  }
   ::v-deep .el-dialog{
     margin-top: 80px !important;
     height: calc(100% - 160px) !important;
