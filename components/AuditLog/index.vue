@@ -70,7 +70,7 @@ export default {
       this.loading = true;
       try {
         // const res = await this.getAuditLogList({ recordId: '00076D98-6575-EF11-B197-FA9152FF2813' });
-        const res = await this.getAuditLogList({ recordId: this.currentId });
+        const res = await this.getAuditLogList({ recordId: this.currentId, pageSize: 100 }); // 临时调整到100，分页功能待后端完善后再调整
         const tableData = res || [];
         const target = [];
         this.mergeCells = [];
