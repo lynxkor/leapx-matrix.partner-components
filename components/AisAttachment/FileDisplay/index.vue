@@ -85,7 +85,7 @@
               trigger="click">
               <el-form label-width="" class="form-edit">
                 <el-form-item>
-                  <el-input @keydown.enter.native.prevent.stop v-model="file.copyName"/>
+                  <el-input @keydown.enter.native.prevent.stop="onNameSave(file, index)" v-model="file.copyName"/>
                 </el-form-item>
                 <el-form-item style="margin:0;text-align: right;">
                   <el-button size="small" @click.stop="onNameClose(index)">取消</el-button>
