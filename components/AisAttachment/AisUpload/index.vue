@@ -440,7 +440,22 @@ export default {
       const files = e.dataTransfer.files;
       if (!files || files.length === 0) return;
 
-      Array.from(files).forEach(file => {
+      // 数量校验：拖拽绕过了 el-upload，需手动按 limit 校验（0 不限制）
+      const limit = this.limit;
+      let dropFiles = Array.from(files);
+      if (limit > 0) {
+        const remaining = limit - this.internalFileList.length;
+        if (remaining <= 0) {
+          this.handleExceed();
+          return;
+        }
+        if (dropFiles.length > remaining) {
+          dropFiles = dropFiles.slice(0, remaining);
+          this.handleExceed();
+        }
+      }
+
+      dropFiles.forEach(file => {
         if (this.beforeUpload(file)) {
           this.httpRequest({
             file,
