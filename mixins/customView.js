@@ -1,17 +1,19 @@
 import { executeQuery } from '@/api/datareport/customQueryView';
 
 /**
- * 自定义视图(customView)列表页接入 mixin —— hook-only 模式。
+ * 自定义视图(customView)列表页接入 mixin —— store 桥接模式。
+ *
+ * CustomView 触发器已提升到全局 AisPageTitle，选中态存于
+ * @/libs/store/customView。本 mixin 只读取 store 的 activePresetId
+ * 来驱动业务页取数与表单锁定。
  *
  * 业务页用法:
  *   1. mixins 数组追加 customViewMixin;
- *   2. 模板用 <CustomView v-model="appliedCustomConditions"
- *        :sort-columns.sync="sortColumns" :active-preset-id.sync="activePresetId"
- *        :biz-key="xxx" @change="onViewChange" />;
- *   3. 业务页的统一取数方法 getData() 顶部加一行:
+ *   2. 业务页的统一取数方法 getData() 顶部加一行:
  *        if (this.fetchByCustomView()) return;
- *   4. onReset 里调 this.resetCustomView() 清视图状态;
- *   5. (可选)覆盖 customViewListAdapter(records) 给表格行加业务标志(如 deleteLoading)。
+ *   3. onReset 里调 this.resetCustomView() 清视图状态;
+ *   4. (可选)覆盖 customViewListAdapter(records) 给表格行加业务标志(如 deleteLoading)。
+ *   5. 路由 meta.customViewBizKey 配置 bizKey,AisPageTitle 据此渲染 CustomView。
  *
  * 契约(务必遵守):
  *   - 业务页取数入口必须继续叫 getData 且不可改名:commonMixins 的 activated()
@@ -21,20 +23,26 @@ import { executeQuery } from '@/api/datareport/customQueryView';
  *       tableForm: { page, size }、tableDataList、tableTotal、loading
  *
  * 设计要点:mixin 不覆盖业务页 getData,只提供布尔钩子 fetchByCustomView()。
- * 视图锁定(有 activePresetId)时由 mixin 走 executeQuery;否则返回 false,
+ * 视图锁定(store 中有 activePresetId)时由 mixin 走 executeQuery;否则返回 false,
  * 交回业务页 getData 走原有列表接口,可断点、可读、零魔法。
+ * store.activePresetId 变化由 watch 接管,触发 onViewChange 完成选中/清空分流。
  */
 export default {
-  data () {
-    return {
-      activePresetId: null,
-      appliedCustomConditions: null,
-      sortColumns: []
-    };
-  },
   computed: {
+    activePresetId () {
+      return this.$store.state.customView.activePresetId;
+    },
     formDisabled () {
       return !!this.activePresetId;
+    }
+  },
+  watch: {
+    /**
+     * CustomView 现位于 AisPageTitle,选中/清空通过 store 反映到此。
+     * onViewChange 内部已按 activePresetId 有无分流,无需区分原因。
+     */
+    activePresetId () {
+      this.onViewChange();
     }
   },
   methods: {
@@ -64,7 +72,7 @@ export default {
       });
     },
     onViewChange () {
-      // CustomView 触发 change:选中视图走 executeQuery,清空则回业务列表查询
+      // store 中 activePresetId 有值走 executeQuery,清空则回业务列表查询
       if (this.activePresetId) {
         this.loading = true;
         this.getCustomViewData();
@@ -82,9 +90,7 @@ export default {
       return records || [];
     },
     resetCustomView () {
-      this.appliedCustomConditions = null;
-      this.activePresetId = null;
-      this.sortColumns = [];
+      this.$store.commit('customView/RESET_CUSTOM_VIEW');
     }
   }
 };

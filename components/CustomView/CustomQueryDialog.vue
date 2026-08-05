@@ -346,9 +346,13 @@ export default {
     margin: 0!important;
     border-radius: 0;
   }
+  ::v-deep .el-dialog .el-dialog__body {
+    height: calc(100% - 110px);
+    max-height: calc(100% - 110px);
+    padding: 20px;
+  }
 }
 .c-cqd {
-  max-height: 60vh;
   overflow-y: auto;
   padding: 4px;
   &__tree {
