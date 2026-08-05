@@ -37,7 +37,7 @@ export default {
   },
   computed: {
     cv () {
-      return this.$store.state.customView;
+      return this.$store.getters['customView/activeView'];
     },
     conditions () {
       return this.cv.conditions;
@@ -59,19 +59,14 @@ export default {
     bizKey: {
       immediate: true,
       handler (val) {
-        // 路由切换时同步 bizKey 并重置锁定态，避免上一页视图选中串到下一页
-        this.$store.commit('customView/SET_CUSTOM_VIEW_STATE', {
-          bizKey: val || '',
-          activePresetId: null,
-          conditions: null,
-          sortColumns: []
-        });
+        // 路由切换时同步当前 bizKey;选中态按 bizKey 分桶保留,不清空(回到同 bizKey 页面时自动恢复)
+        this.$store.commit('customView/SET_BIZ_KEY', val || '');
       }
     }
   },
   methods: {
     patch (payload) {
-      this.$store.commit('customView/SET_CUSTOM_VIEW_STATE', payload);
+      this.$store.commit('customView/PATCH_VIEW', payload);
     },
     handleClick (index) {
       if (index === this.list.length - 1) {
