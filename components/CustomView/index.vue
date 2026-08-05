@@ -2,7 +2,7 @@
   <div class="m-custom-view">
     <el-dropdown
       trigger="click"
-      placement="bottom-end"
+      placement="bottom-start"
       class="m-custom-view__dropdown"
       :append-to-body="false"
       @command="onDropdownCommand"
@@ -19,15 +19,17 @@
         </div>
       </template>
       <template v-else>
-        <el-button size="small" class="m-custom-view__trigger">
-          {{ activePresetName || triggerText }}
+        <div size="small" class="m-custom-view__trigger">
+          <span class="m-custom-view__trigger_text">
+            {{ activePresetName || triggerText }}
+          </span>
           <i class="el-icon-arrow-down el-icon--right" />
           <i
             v-if="activePresetId"
             class="el-icon-close m-custom-view__clear"
             @click.stop="handleClearPreset"
           />
-        </el-button>
+        </div>
       </template>
 
       <el-dropdown-menu slot="dropdown">
@@ -280,6 +282,14 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    &_text {
+      color: var(--leap-color-default);
+      max-width: 155px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      display: inline-block;
+    }
   }
   &__clear {
     margin-left: 6px;
