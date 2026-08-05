@@ -123,7 +123,7 @@ export default {
     align-items: center;
   }
   .el-divider--vertical {
-    height: 24px;
+    height: 20px;
   }
 }
 ::v-deep .el-breadcrumb__inner {

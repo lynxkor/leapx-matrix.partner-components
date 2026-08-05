@@ -20,7 +20,7 @@
       </template>
       <template v-else>
         <div size="small" class="m-custom-view__trigger">
-          <span class="m-custom-view__trigger_text">
+          <span class="m-custom-view__trigger_text" :title="(activePresetName || triggerText).length > 10 ? (activePresetName || triggerText) : ''">
             {{ activePresetName || triggerText }}
           </span>
           <i class="el-icon-arrow-down el-icon--right" />
@@ -55,7 +55,7 @@
           :command="p.id"
           :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
         >
-          <span class="m-custom-view__label">{{ p.name }}</span>
+          <span class="m-custom-view__label" :title="p.name?.length > 10 ? p.name : ''">{{ p.name }}</span>
           <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
             {{ perfStatusLabel(p) }}
           </el-tag>
@@ -282,6 +282,7 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
     &_text {
       color: var(--leap-color-default);
       max-width: 155px;
@@ -297,7 +298,6 @@ export default {
     font-size: 14px;
     border-radius: 50%;
     &:hover {
-      background: rgba(0, 0, 0, 0.1);
       color: var(--leap-color-primary);
     }
   }

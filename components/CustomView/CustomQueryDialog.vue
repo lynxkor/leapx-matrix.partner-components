@@ -17,9 +17,9 @@
         </span>
         <el-input
           v-model="viewName"
-          placeholder="请输入视图名称(必填)"
+          placeholder="请输入"
           size="small"
-          maxlength="50"
+          maxlength="20"
           show-word-limit
           class="c-cqd__presets-input"
         />
