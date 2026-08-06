@@ -8,7 +8,7 @@
  * 运算符与类型×运算符矩阵仍在前端静态维护,因为它是控件渲染规则,跟字段无关。
  */
 
-import * as customViewFieldApi from '@/api/datareport/customViewField';
+import * as customViewFieldApi from '@/libs/api/customView/customViewField';
 
 // 当前生效的字段定义(key/label/type/enumCode,可选 options)
 //   初始为空,调用 setFields([]) 后再渲染界面;否则所有字段下拉为空。

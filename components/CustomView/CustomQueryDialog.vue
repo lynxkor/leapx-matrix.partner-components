@@ -101,7 +101,7 @@ import {
   cloneTree,
   operatorNeedsValue
 } from './fieldMeta';
-import * as customQueryViewApi from '@/api/datareport/customQueryView';
+import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 
 export default {
   name: 'CustomQueryDialog',

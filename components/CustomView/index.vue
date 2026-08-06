@@ -89,7 +89,7 @@
 <script>
 import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
-import * as customQueryViewApi from '@/api/datareport/customQueryView';
+import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 
 export default {
   name: 'CustomView',
@@ -262,13 +262,10 @@ export default {
         this.editingPresetId = id;
         this.loadPresets();
         // 弹窗保存成功(id 由 null 变为新增/更新后的视图 id),
-        // 触发 change 让父页按新 viewId 重新 executeQuery 取数,
-        // 使 appliedCustomConditions / sortColumns 与新保存树一致。
-        this.$emit('change', {
-          conditions: this.value,
-          sortColumns: this.sortColumns,
-          activePresetId: id
-        });
+        // 补发 update:activePresetId 让 AisPageTitle 写入 store → mixin watcher 触发,
+        // 自动按新 viewId 走 executeQuery 取数;
+        // (AisPageTitle 未监听 @change,故仅靠 change 无法驱动取数)
+        this.$emit('update:activePresetId', id);
       }
     }
   }

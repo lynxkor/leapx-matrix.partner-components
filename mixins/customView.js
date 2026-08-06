@@ -1,4 +1,4 @@
-import { executeQuery } from '@/api/datareport/customQueryView';
+import { executeQuery } from '@/libs/api/customView/customQueryView';
 
 /**
  * 自定义视图(customView)列表页接入 mixin —— store 桥接模式。
