@@ -49,7 +49,7 @@
 <script>
 import { getTemplateCode, importExcelConfirmFile } from '@/api/common';
 import { downloadExcel } from '../../utils';
-// import api from '@/axios';
+import api from '@/axios';
 
 export default {
   name: 'UploadModal',
@@ -76,15 +76,12 @@ export default {
     },
     async: { // 是否异步导入
       type: Boolean
+    },
+    // 定制导入接口地址，传入后上传走该接口而非通用导入接口
+    uploadUrl: {
+      type: String,
+      default: ''
     }
-    // templateUrl: {
-    //   type: String,
-    //   default: ''
-    // },
-    // uploadUrl: {
-    //   type: String,
-    //   default: ''
-    // }
   },
   data () {
     return {
@@ -138,34 +135,7 @@ export default {
       try {
         const formData = new FormData();
         formData.append('file', this.currentFile);
-        //  1  2种方法都可 暂时使用第二种 第一种需要手动拼接参数
-        // const params = new URLSearchParams({
-        //   id: this.id,
-        //   token: localStorage.getItem('token') || ''
-        // }).toString();
-        // const url = `/data/ExcelManage/importExcelConfirm?${params}`;
-        // const response = await api.postExport(url, formData, 'post', '', '', {
-        //   headers: {
-        //     'Content-Type': 'multipart/form-data',
-        //     Authorization: `Bearer ${localStorage.getItem('token')}`
-        //   }
-        // });
-        // 构建 config 对象并根据条件添加 businessParams
-        const config = {
-          id: this.id,
-          token: localStorage.getItem('token'),
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        };
-        // 如果存在 businessParams，则添加到 config 中；否则不包含该字段
-        if (this.businessParams) {
-          config.businessParams = this.businessParams;
-        }
-        if (this.async) {
-          config.async = this.async;
-        }
-        const res = await importExcelConfirmFile(formData, config);
+        const res = await this.importFile(formData);
         if (this.async) {
           this.$confirm('正在导入中，是否要跳转"系统管理-文件管理-导入任务"中查看？', '提示', {
             confirmButtonText: '确定',
@@ -203,6 +173,27 @@ export default {
       } finally {
         this.isUploading = false;
       }
+    },
+    // 执行导入请求：定制接口优先，否则走通用导入
+    async importFile (formData) {
+      const token = localStorage.getItem('token');
+      // 顶层字段供通用接口 importExcelConfirmFile 解构，params 供定制接口直接透传
+      const queryParams = {
+        id: this.id,
+        token,
+        ...(this.businessParams && { businessParams: this.businessParams }),
+        ...(this.async && { async: this.async })
+      };
+      const config = {
+        ...queryParams,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      };
+      return this.uploadUrl
+        ? await api.postExport(this.uploadUrl, formData, { params: queryParams, ...config })
+        : await importExcelConfirmFile(formData, config);
     },
     // 获取接口方法下载模板
     async downloadTemplate () {
