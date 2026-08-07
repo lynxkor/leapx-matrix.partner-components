@@ -7,14 +7,13 @@
           <span @click="handleClick(index)" :class="index===list.length-1?'breadTail':'breadLink'">{{item}}</span>
         </el-breadcrumb-item>
       </el-breadcrumb>
-      <el-divider v-if="bizKey" direction="vertical"></el-divider>
       <CustomView
         v-if="bizKey"
         :value="conditions"
         :sort-columns="sortColumns"
         :active-preset-id="activePresetId"
         :biz-key="bizKey"
-        class="ais-page-title__custom-view"
+        class="page-title-wrapper__cv"
         @input="val => patch({ conditions: val })"
         @update:sortColumns="val => patch({ sortColumns: val })"
         @update:activePresetId="val => patch({ activePresetId: val })"
@@ -119,6 +118,9 @@ export default {
   }
   .el-divider--vertical {
     height: 20px;
+  }
+  &__cv {
+    margin-left: 16px;
   }
 }
 ::v-deep .el-breadcrumb__inner {

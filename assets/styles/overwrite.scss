@@ -266,6 +266,15 @@
     }
   }
 }
+.el-tag.el-tag--success {
+  color: var(--leap-color-primary);
+}
+.el-tag.el-tag--danger {
+  color: var(--leap-color-danger);
+}
+.el-tag.el-tag--warning {
+  color: var(--leap-color-warning);
+}
 .el-form-item__content .el-input-group{
   vertical-align: middle;
   .el-input__suffix{

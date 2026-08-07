@@ -19,9 +19,9 @@
         </div>
       </template>
       <template v-else>
-        <div size="small" class="m-custom-view__trigger">
-          <span class="m-custom-view__trigger_text" :title="(activePresetName || triggerText).length > 10 ? (activePresetName || triggerText) : ''">
-            {{ activePresetName || triggerText }}
+        <el-button size="small" class="m-custom-view__trigger">
+          <span class="m-custom-view__trigger_text">
+            <TextEllipsis>{{ activePresetName || triggerText }}</TextEllipsis>
           </span>
           <i class="el-icon-arrow-down el-icon--right" />
           <i
@@ -29,7 +29,7 @@
             class="el-icon-close m-custom-view__clear"
             @click.stop="handleClearPreset"
           />
-        </div>
+        </el-button>
       </template>
 
       <el-dropdown-menu slot="dropdown">
@@ -55,7 +55,9 @@
           :command="p.id"
           :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
         >
-          <span class="m-custom-view__label" :title="p.name?.length > 10 ? p.name : ''">{{ p.name }}</span>
+          <span class="m-custom-view__label">
+            <TextEllipsis>{{ p.name }}</TextEllipsis>
+          </span>
           <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
             {{ perfStatusLabel(p) }}
           </el-tag>
@@ -90,10 +92,11 @@
 import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
+import TextEllipsis from '@/libs/components/TextEllipsis';
 
 export default {
   name: 'CustomView',
-  components: { CustomQueryDialog },
+  components: { CustomQueryDialog, TextEllipsis },
   props: {
     value: { type: [Object, null], default: null },
     sortColumns: { type: Array, default: () => [] },
@@ -276,16 +279,12 @@ export default {
 .m-custom-view {
   display: inline-block;
   &__trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
+    ::v-deep &>span {
+      display: flex;
+      align-items: center;
+    }
     &_text {
-      color: var(--leap-color-default);
       max-width: 155px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
       display: inline-block;
     }
   }
@@ -357,8 +356,14 @@ export default {
   &__divided {
     display: flex;
     align-items: center;
+    justify-content: center;
+    color: var(--leap-color-primary);
     &::before {
       margin: 0;
+    }
+    &:hover {
+      background: #fff;
+      color: var(--leap-color-primary);
     }
   }
   ::v-deep .el-dropdown-menu__item &__perf.el-tag {
