@@ -243,7 +243,6 @@ export default {
       const newId = await this.buildAndSave(this.currentPresetId, name);
       if (!newId) return;
       this.currentPresetId = newId;
-      this.$emit('update:active-preset-id', newId);
       this.$message.success('已保存视图');
       this.$emit('update:visible', false);
     },

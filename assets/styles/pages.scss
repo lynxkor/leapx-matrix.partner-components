@@ -58,6 +58,14 @@
       margin-bottom: 12px;
     }
   }
+  /* 自定义视图锁定态:选中视图时禁用查询表单交互(customViewMixin 自动 toggle is-preset-locked) */
+  &.is-preset-locked {
+    .ais-search-form {
+      opacity: 0.6;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+  }
   .el-button--small{
     font-size: 14px;
   }

@@ -15,6 +15,12 @@ import { executeQuery } from '@/libs/api/customView/customQueryView';
  *   4. (可选)覆盖 customViewListAdapter(records) 给表格行加业务标志(如 deleteLoading)。
  *   5. 路由 meta.customViewBizKey 配置 bizKey,AisPageTitle 据此渲染 CustomView。
  *
+ * 表单锁定(自动,业务页无需处理):
+ *   选中视图时,mixin 在业务页根节点($el)自动 toggle is-preset-locked class,
+ *   锁定样式由 pages.scss 的 .page-common.is-preset-locked 全局提供
+ *   (pointer-events:none + opacity:0.6 禁用整个查询表单)。
+ *   业务页无需给每个表单字段加 :disabled,也无需自带锁定样式。
+ *
  * 契约(务必遵守):
  *   - 业务页取数入口必须继续叫 getData 且不可改名:commonMixins 的 activated()
  *     在 keep-alive 激活时会调 this.getData?.(),改名会导致从详情页返回列表时
@@ -39,6 +45,9 @@ export default {
     // 全局当前路由,无法再用 $route.meta 区分,故必须创建时记下。
     this._customViewBizKey = this.$route?.meta?.customViewBizKey || '';
   },
+  mounted () {
+    this._syncLockClass();
+  },
   computed: {
     activePresetId () {
       // 始终读「自己的桶」cache[bizKey],与全局 store.bizKey 解耦:
@@ -58,9 +67,24 @@ export default {
      */
     activePresetId () {
       this.onViewChange();
+    },
+    formDisabled () {
+      this._syncLockClass();
     }
   },
   methods: {
+    /**
+     * 在业务页根节点($el)上 toggle is-preset-locked class。
+     * 锁定样式由 pages.scss 全局提供(.page-common.is-preset-locked),
+     * 业务页无需写 :class 绑定或 :disabled,也无需自带的锁定样式。
+     */
+    _syncLockClass () {
+      this.$nextTick(() => {
+        if (this.$el && this.$el.classList) {
+          this.$el.classList.toggle('is-preset-locked', this.formDisabled);
+        }
+      });
+    },
     // ---- 字段适配钩子(默认适配常见命名,业务页按需覆盖) ----
     /** 分页对象引用(读写同一份,保持单一来源) */
     _cvPager () {

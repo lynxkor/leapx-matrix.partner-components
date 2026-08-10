@@ -264,11 +264,6 @@ export default {
       if (id !== this.editingPresetId) {
         this.editingPresetId = id;
         this.loadPresets();
-        // 弹窗保存成功(id 由 null 变为新增/更新后的视图 id),
-        // 补发 update:activePresetId 让 AisPageTitle 写入 store → mixin watcher 触发,
-        // 自动按新 viewId 走 executeQuery 取数;
-        // (AisPageTitle 未监听 @change,故仅靠 change 无法驱动取数)
-        this.$emit('update:activePresetId', id);
       }
     }
   }
