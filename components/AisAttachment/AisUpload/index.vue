@@ -373,10 +373,6 @@ export default {
   methods: {
     // 触发按钮点击处理
     handleTriggerClick (e) {
-      // 阻止原生事件的传播，防止 el-upload 的原生监听器打开对话框
-      e.stopPropagation();
-      e.preventDefault();
-
       // 打开文件对话框的方法
       const openFileDialog = () => {
         if (this.uploadRef) {
@@ -398,10 +394,21 @@ export default {
         }
       };
 
+      // 只有当业务层监听了 before-upload-click 时才需要拦截默认行为
+      // 否则让 el-upload 自己处理 click（它能正确触发自身的 input.click()）
+      // 这避免了手动 click 到的 input 与 el-upload 内部监听的 input 不是同一个 DOM 元素的问题
+      const hasListener = this.$listeners['before-upload-click'];
+      if (!hasListener) {
+        // 不阻止默认事件，让 el-upload 自己打开文件对话框
+        return;
+      }
+
+      // 业务层有监听时才拦截，让业务层异步判断
+      e.stopPropagation();
+      e.preventDefault();
+
       // 抛出事件，业务页判断完调用 allow(true) 继续，否则调用 allow(false)
       // 使用 Promise 等待业务层的异步判断结果
-      // 如果外部没有监听事件，则默认放行
-      const hasListener = this.$listeners['before-upload-click'];
       new Promise((resolve) => {
         this.$emit('before-upload-click', {
           allow: (val = true) => {
@@ -409,10 +416,6 @@ export default {
           },
           openFileDialog,
         });
-        // 如果外部没有监听器，则立即默认放行
-        if (!hasListener) {
-          resolve(true);
-        }
       }).then((allowUpload) => {
         if (allowUpload) {
           openFileDialog();
