@@ -273,12 +273,12 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   &__field { width: 180px; }
   &__op { width: 130px; }
   &__value { flex: 1; min-width: 200px; }
   &__value--number { width: 100%; }
-  &__remove { padding: 4px; color: var(--leap-color-danger); }
+  &__remove { padding: 4px; color: var(--leap-color-default-light-2); }
   ::v-deep .is-error .el-input__inner,
   ::v-deep .is-error .el-input__wrapper,
   ::v-deep .is-error .el-select .el-input__inner {

@@ -11,7 +11,6 @@
       <!-- 视图名称(必填) -->
       <div class="c-cqd__presets">
         <span class="c-cqd__presets-label">
-          <i class="el-icon-document-checked" />
           视图名称
           <span class="c-cqd__presets-required">*</span>
         </span>
@@ -32,6 +31,7 @@
         >性能测试</el-button>
       </div>
 
+      <el-divider></el-divider>
       <!-- 错误汇总 -->
       <el-alert
         v-if="errorSummary.length > 0"
@@ -54,29 +54,32 @@
         <div v-else class="c-cqd__tree-placeholder">字段元数据加载中...</div>
       </div>
 
+      <el-divider></el-divider>
       <!-- 排序(单字段 + 升/降) -->
       <div class="c-cqd__sort">
-        <div class="c-cqd__sort-title">排序</div>
-        <div class="c-cqd__sort-row">
-          <el-select
-            v-model="workingSort.field"
-            placeholder="选择排序字段"
-            size="small"
-            filterable
-            clearable
-            class="c-cqd__sort-field"
-          >
-            <el-option
-              v-for="f in fields"
-              :key="f.key"
-              :value="f.key"
-              :label="f.label"
-            />
-          </el-select>
-          <el-radio-group v-model="workingSort.order" size="small" :disabled="!workingSort.field">
-            <el-radio-button label="asc">升序</el-radio-button>
-            <el-radio-button label="desc">降序</el-radio-button>
-          </el-radio-group>
+        <div class="c-cqd__sort-content">
+          <div class="c-cqd__sort-title">排序</div>
+          <div class="c-cqd__sort-row">
+            <el-select
+              v-model="workingSort.field"
+              placeholder="选择排序字段"
+              size="small"
+              filterable
+              clearable
+              class="c-cqd__sort-field"
+            >
+              <el-option
+                v-for="f in fields"
+                :key="f.key"
+                :value="f.key"
+                :label="f.label"
+              />
+            </el-select>
+            <el-radio-group v-model="workingSort.order" size="small" :disabled="!workingSort.field">
+              <el-radio-button label="asc">升序</el-radio-button>
+              <el-radio-button label="desc">降序</el-radio-button>
+            </el-radio-group>
+          </div>
         </div>
         <div class="c-cqd__sort-hint">不选字段则按后端默认排序</div>
       </div>
@@ -354,23 +357,25 @@ export default {
 .c-cqd {
   overflow-y: auto;
   padding: 4px;
+  ::v-deep .el-divider--horizontal{
+    margin: 0;
+  }
   &__tree {
     min-height: 60px;
   }
   &__tree-placeholder {
     padding: 16px 0;
     text-align: center;
-    color: #909399;
+    color: var(--leap-color-default-light-2);
     font-size: 13px;
   }
   &__presets {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
-    margin-bottom: 12px;
-    background: #f5f7fa;
+    padding: 0px 10px;
     border-radius: 4px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
   }
   &__presets-label {
@@ -391,10 +396,14 @@ export default {
     margin-bottom: 12px;
   }
   &__sort {
-    margin-top: 12px;
-    padding: 8px 10px;
-    background: #f5f7fa;
+    margin-top: 24px;
+    padding: 0px 10px;
     border-radius: 4px;
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
   }
   &__sort-title {
     color: #606266;
@@ -411,8 +420,9 @@ export default {
     width: 240px;
   }
   &__sort-hint {
-    color: #909399;
+    color: var(--leap-color-default-light-2);
     font-size: 12px;
+    padding-left: 36px;
   }
 }
 .dialog-footer {

@@ -1,22 +1,31 @@
 <template>
-  <div :class="['c-cg', { 'c-cg--nested': depth > 0, 'c-cg--collapsed': collapsed }]">
+  <div :class="['c-cg', { 'c-cg--nested': depth > 0, 'bg-grey': depth%2 === 1, 'c-cg--collapsed': collapsed }]">
     <!-- 组头部:折叠开关 + AND/OR 切换 + 行数提示 + 删除按钮(子组才显示) -->
+    <div class="label-logic">{{ localGroup.logic === 'AND' ? '且' : '或' }}</div>
     <div class="c-cg__head">
       <i
-        :class="['c-cg__caret', collapsed ? 'el-icon-arrow-right' : 'el-icon-arrow-down']"
+        :class="['c-cg__caret', collapsed ? 'el-icon-plus' : 'el-icon-minus']"
         @click="toggleCollapsed"
       />
-      <el-radio-group v-model="localGroup.logic" size="mini" :disabled="disabled" @change="emitChange">
-        <el-radio-button label="AND">且</el-radio-button>
-        <el-radio-button label="OR">或</el-radio-button>
-      </el-radio-group>
-      <span class="c-cg__hint">满足以下 {{ localGroup.conditions.length }} 条</span>
+      <el-dropdown
+        trigger="click"
+        :disabled="disabled"
+        @command="onLogicChange"
+      >
+        <el-button size="mini" class="c-cg__logic-trigger">
+          {{ localGroup.logic === 'AND' ? '且' : '或' }}
+          <i class="el-icon-arrow-down" />
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="AND">且</el-dropdown-item>
+          <el-dropdown-item command="OR">或</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <!-- <span class="c-cg__hint">满足以下 {{ localGroup.conditions.length }} 条</span> -->
       <el-button
         v-if="removable && !disabled"
-        type="text"
         icon="el-icon-delete"
         size="mini"
-        class="c-cg__remove"
         @click.stop="$emit('remove')"
       >删除分组</el-button>
     </div>
@@ -29,7 +38,7 @@
         class="c-cg__item"
       >
       <span class="c-cg__sep">
-        {{ idx === 0 ? '·' : (localGroup.logic === 'AND' ? '且' : '或') }}
+        <!-- {{ idx === 0 ? '·' : (localGroup.logic === 'AND' ? '且' : '或') }} -->
       </span>
       <custom-condition-row
         v-if="item.type !== 'group'"
@@ -127,6 +136,9 @@ export default {
     toggleCollapsed () {
       this.collapsed = !this.collapsed;
     },
+    onLogicChange (val) {
+      this.localGroup.logic = val;
+    },
     addRow () {
       this.localGroup.conditions.push(createEmptyRow());
       this.emitChange();
@@ -156,30 +168,64 @@ export default {
 
 <style lang="scss" scoped>
 .c-cg {
-  background: #fafafa;
   border-radius: 4px;
-  padding: 8px 12px;
-  margin-bottom: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+  .label-logic {
+    width: 20px;
+    height: 20px;
+    background-color: var(--leap-color-primary-light-9);
+    color: var(--leap-color-primary);
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    transform: translate(-2px, -5px);
+  }
+
+  &::before{
+    content: ' ';
+    width: 2px;
+    position: absolute;
+    left: 23px;
+    top: 38px;
+    bottom: 16px;
+    background-color: var(--leap-color-default-light-2);
+  }
   &--nested {
-    border: 1px dashed #dcdfe6;
+    padding: 16px;
+    border: 1px solid #dcdfe6;
     background: #fff;
     margin-left: 16px;
     position: relative;
+    &.bg-grey {
+      background-color: var(--leap-color-default-light-6);
+    }
   }
   &__head {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   &__caret {
     cursor: pointer;
-    color: #909399;
-    font-size: 12px;
-    padding: 4px;
+    color: var(--leap-color-default-light-1);
+    font-size: 10px;
+    border: 1px solid var(--leap-color-default-light-1);
+    border-radius: 2px;
+    padding: 2px;
     user-select: none;
+    font-weight: bold;
     &:hover {
       color: var(--leap-color-primary);
+    }
+  }
+  &__logic-trigger {
+    .el-icon-arrow-down {
+      font-size: 10px;
     }
   }
   &--collapsed &__head {
@@ -208,7 +254,7 @@ export default {
     padding-top: 6px;
   }
   &__ops {
-    margin-top: 6px;
+    margin-top: 12px;
     padding-left: 30px;
   }
 }
