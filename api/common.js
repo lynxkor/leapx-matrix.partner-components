@@ -255,6 +255,14 @@ export function vehicleRangePower (data) {
 }
 
 /**
+ * 整车主数据-物料列表查询
+ * @param {*} data
+ */
+export function vehicleMaterials (data) {
+  return api.jsonPost('/datacenter/web/materials/vehicleMaterials/list', data);
+}
+
+/**
  * 仓库名称查询
  * @param {*} data
  */
