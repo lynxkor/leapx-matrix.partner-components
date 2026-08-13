@@ -240,6 +240,13 @@ export default {
         this.$message.warning(`视图「${preset.name}」未通过性能测试,不能用于查询,请先在管理视图中完成测试`);
         return;
       }
+      // 重复选择当前已锁定视图:activePresetId 值不变,mixin watch 不触发,
+      // 且锁定态下页面刷新按钮被禁用,故这里走 refresh 通道强制刷新一次
+      if (cmd === this.activePresetId) {
+        this.$emit('refresh');
+        this.$message.success(`已刷新视图「${preset.name}」`);
+        return;
+      }
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
         if (!data) return;
@@ -353,6 +360,7 @@ export default {
     align-items: center;
     justify-content: center;
     color: var(--leap-color-primary);
+    transform: translateY(3px);
     &::before {
       margin: 0;
     }

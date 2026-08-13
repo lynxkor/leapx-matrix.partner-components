@@ -17,6 +17,7 @@
         @input="val => patch({ conditions: val })"
         @update:sortColumns="val => patch({ sortColumns: val })"
         @update:activePresetId="val => patch({ activePresetId: val })"
+        @refresh="onRefresh"
       />
     </div>
     <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="error" :closable="false">
@@ -66,6 +67,9 @@ export default {
   methods: {
     patch (payload) {
       this.$store.commit('customView/PATCH_VIEW', payload);
+    },
+    onRefresh () {
+      this.$store.commit('customView/REFRESH_VIEW');
     },
     handleClick (index) {
       if (index === this.list.length - 1) {

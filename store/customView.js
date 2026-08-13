@@ -22,7 +22,7 @@ const customViewModule = {
   getters: {
     // 当前 bizKey 对应的分桶;无则返回空选中态
     activeView (state) {
-      return state.cache[state.bizKey] || { activePresetId: null, conditions: null, sortColumns: [] };
+      return state.cache[state.bizKey] || { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 };
     }
   },
   mutations: {
@@ -33,7 +33,7 @@ const customViewModule = {
     // 仅更新当前 bizKey 分桶里的选中字段;首次为该 bizKey 建桶用 Vue.set 保证响应式
     PATCH_VIEW (state, payload) {
       if (!state.cache[state.bizKey]) {
-        Vue.set(state.cache, state.bizKey, { activePresetId: null, conditions: null, sortColumns: [] });
+        Vue.set(state.cache, state.bizKey, { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 });
       }
       Object.assign(state.cache[state.bizKey], payload);
     },
@@ -44,6 +44,15 @@ const customViewModule = {
         state.cache[state.bizKey].conditions = null;
         state.cache[state.bizKey].sortColumns = [];
       }
+    },
+    // 自增当前 bizKey 分桶的 refreshTick:重复选择同一视图时,
+    // activePresetId 值不变无法触发 mixin watch,改由 refreshTick 驱动刷新
+    REFRESH_VIEW (state) {
+      if (!state.cache[state.bizKey]) {
+        Vue.set(state.cache, state.bizKey, { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 1 });
+        return;
+      }
+      state.cache[state.bizKey].refreshTick += 1;
     }
   }
 };

@@ -56,6 +56,11 @@ export default {
       const bucket = this.$store.state.customView.cache[this._customViewBizKey];
       return bucket ? bucket.activePresetId : null;
     },
+    refreshTick () {
+      // 重复选择同一视图时 activePresetId 不变,改由 refreshTick 自增驱动刷新
+      const bucket = this.$store.state.customView.cache[this._customViewBizKey];
+      return bucket ? bucket.refreshTick : 0;
+    },
     formDisabled () {
       return !!this.activePresetId;
     }
@@ -66,6 +71,9 @@ export default {
      * onViewChange 内部已按 activePresetId 有无分流,无需区分原因。
      */
     activePresetId () {
+      this.onViewChange();
+    },
+    refreshTick () {
       this.onViewChange();
     },
     formDisabled () {
