@@ -379,3 +379,11 @@ export function getFindDescendant (data) {
 export function logout (params) {
   return api.jsonPost('/passport/users/logout', params);
 }
+
+/**
+ * 网发 门店关联关系查询（单项）
+ * @param {*} data
+ */
+export function queryStoreRelation (data) {
+  return api.jsonPost('/network/portal/store/queryStoreRelation', data);
+}
