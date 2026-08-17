@@ -4,9 +4,20 @@ import { paramsFilter, decrypt } from '../utils/crypto';
 import { Message } from 'element-ui';
 import store from '@/store';
 
-const root = window.APP_AIS_WEB_CONFIG.VUE_APP_WORK_ORDER_URL;
-const leapx = window.APP_AIS_WEB_CONFIG.VUE_APP_LEAPX_URL;
-const ais = window.APP_AIS_WEB_CONFIG.VUE_APP_AIS_URL;
+// 运行时网关配置，每次请求时惰性解析：宿主入口 setWebConfig 注入 > APP_AIS_WEB_CONFIG > process.env
+// 其他应用的配置全局名不同，在其入口设置，如：
+//   import api, { setWebConfig } from '@/libs/axios';
+//   setWebConfig(window.APP_XX_WEB_CONFIG);
+let webConfig = null;
+
+export function setWebConfig (cfg) {
+  webConfig = cfg;
+}
+
+function getConfigURL (key) {
+  const cfg = webConfig || window.APP_AIS_WEB_CONFIG || window.APP_LXP_CONFIG || {};
+  return cfg[key] || process.env[key] || '';
+}
 
 // 路由到 ais 后端的 URL 前缀列表，新增前缀只需在此添加一行
 // 注意：/desensitize/ 与 /dbMetadata/ 已脱离 ais 后端，走 VUE_APP_WORK_ORDER_URL（零小跑 app-portal）
@@ -16,9 +27,9 @@ const AIS_PREFIXES = [
 ];
 
 function resolveBaseURL (url, sign) {
-  if (sign) return leapx;
+  if (sign) return getConfigURL('VUE_APP_LEAPX_URL');
   const target = url.startsWith('/') ? url : '/' + url;
-  return AIS_PREFIXES.some(p => target.startsWith(p)) ? ais : root;
+  return AIS_PREFIXES.some(p => target.startsWith(p)) ? getConfigURL('VUE_APP_AIS_URL') : getConfigURL('VUE_APP_WORK_ORDER_URL');
 }
 
 // 私有实例：宿主可能保留自己的 axios 封装（拦截器注册在全局默认实例上），
