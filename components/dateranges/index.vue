@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { formatDateTime } from '@/utils';
+import { formatDateTime } from '../../utils';
 
 export default {
   name: 'DatePicker',

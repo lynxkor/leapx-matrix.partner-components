@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { getLogistics } from '@/api/common';
+import { getLogistics } from '../../api/common';
 
 export default {
   props: {

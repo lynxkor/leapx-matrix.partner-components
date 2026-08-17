@@ -167,7 +167,7 @@ import {
 } from './fieldMeta';
 import ValueTagInput from './ValueTagInput.vue';
 import FetchSelect from '@/libs/components/FetchSelect';
-import { getEnum } from '@/api/common';
+import { getEnum } from '../../../api/common';
 
 export default {
   name: 'CustomConditionRow',

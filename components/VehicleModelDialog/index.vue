@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { listVehicleSeries, listVehicleYearTypeFull, listVehicleYearType } from '@/api/common';
+import { vehicleSeriesListFull, listVehicleYearTypeFull, listVehicleYearType } from '../../api/common';
 
 export default {
   name: 'VehicleModelDialog',
@@ -137,7 +137,7 @@ export default {
       await this.getYearList();
     },
     async getVehicleList () {
-      const res = await listVehicleSeries({ status: 1, pageSize: 1000 });
+      const res = await vehicleSeriesListFull({ status: 1, pageSize: 1000 });
       this.seriesList = res || [];
       if (this.seriesList.length > 0) {
         this.selectedSeriesIndex = 0;

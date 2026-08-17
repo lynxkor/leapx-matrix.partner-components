@@ -116,7 +116,7 @@
 </template>
 <script>
 import xeUtils from 'xe-utils';
-import api from '@/axios';
+import api from '../../axios';
 /**
  * 判断值是否存在且不为空
  */
