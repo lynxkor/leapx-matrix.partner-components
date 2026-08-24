@@ -62,14 +62,42 @@ export const OPERATORS = {
   le: { value: 'le', label: '小于等于', valueKind: 'single' },
   between: { value: 'between', label: '介于', valueKind: 'daterange' },
   inList: { value: 'inList', label: '在...中', valueKind: 'multi' },
-  notInList: { value: 'notInList', label: '不在...中', valueKind: 'multi' }
+  notInList: { value: 'notInList', label: '不在...中', valueKind: 'multi' },
+  // 日期专用(valueKind 'date' 渲染单日选择框)
+  dateEquals: { value: 'dateEquals', label: '等于', valueKind: 'date' },
+  dateBefore: { value: 'dateBefore', label: '早于（包含当天）', valueKind: 'date' },
+  dateAfter: { value: 'dateAfter', label: '晚于（包含当天）', valueKind: 'date' },
+  // 日期相对区间(无需值,后端按当前日期计算区间;周为周一到周日)
+  yesterday: { value: 'yesterday', label: '昨天', valueKind: 'empty' },
+  today: { value: 'today', label: '今天', valueKind: 'empty' },
+  tomorrow: { value: 'tomorrow', label: '明天', valueKind: 'empty' },
+  lastWeek: { value: 'lastWeek', label: '上周', valueKind: 'empty' },
+  thisWeek: { value: 'thisWeek', label: '本周', valueKind: 'empty' },
+  nextWeek: { value: 'nextWeek', label: '下周', valueKind: 'empty' },
+  lastMonth: { value: 'lastMonth', label: '上月', valueKind: 'empty' },
+  thisMonth: { value: 'thisMonth', label: '本月', valueKind: 'empty' },
+  nextMonth: { value: 'nextMonth', label: '下月', valueKind: 'empty' },
+  lastQuarter: { value: 'lastQuarter', label: '上季度', valueKind: 'empty' },
+  thisQuarter: { value: 'thisQuarter', label: '本季度', valueKind: 'empty' },
+  nextQuarter: { value: 'nextQuarter', label: '下季度', valueKind: 'empty' },
+  lastYear: { value: 'lastYear', label: '去年', valueKind: 'empty' },
+  thisYear: { value: 'thisYear', label: '今年', valueKind: 'empty' },
+  nextYear: { value: 'nextYear', label: '明年', valueKind: 'empty' }
 };
 
 // 运算符 × 字段类型 矩阵(允许的运算符 value 列表)
 const OPERATOR_MATRIX = {
   text: ['equals', 'notEquals', 'contains', 'notContains', 'isEmpty', 'isNotEmpty', 'startsWith', 'endsWith'],
   number: ['equals', 'notEquals', 'isEmpty', 'isNotEmpty', 'gt', 'lt', 'ge', 'le'],
-  date: ['isEmpty', 'isNotEmpty', 'between', 'gt', 'lt'],
+  date: [
+    'isEmpty', 'isNotEmpty',
+    'dateEquals', 'dateBefore', 'dateAfter', 'between',
+    'yesterday', 'today', 'tomorrow',
+    'lastWeek', 'thisWeek', 'nextWeek',
+    'lastMonth', 'thisMonth', 'nextMonth',
+    'lastQuarter', 'thisQuarter', 'nextQuarter',
+    'lastYear', 'thisYear', 'nextYear'
+  ],
   enum: ['equals', 'notEquals', 'isEmpty', 'isNotEmpty', 'inList', 'notInList']
 };
 
