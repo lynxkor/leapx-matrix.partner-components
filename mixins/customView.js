@@ -38,15 +38,38 @@ import { executeQuery } from '@/libs/api/customView/customQueryView';
  * 视图锁定(store 中有 activePresetId)时由 mixin 走 executeQuery;否则返回 false,
  * 交回业务页 getData 走原有列表接口,可断点、可读、零魔法。
  * store.activePresetId 变化由 watch 接管,触发 onViewChange 完成选中/清空分流。
+ * 微前端子应用销毁重建时路由恢复可能晚于组件创建:若 created 期桶键捕获落空,
+ * 会在 mounted/activated/路由就绪时自愈补齐(见 _resolveCustomViewBizKey),业务页无需处理。
  */
 export default {
+  data () {
+    return {
+      // 创建时锁定自己的 bizKey。置为响应式:微前端子应用销毁重建时路由恢复可能
+      // 晚于组件创建(见 store/customView.js 注释中的"路由恢复时序"),桶键捕获
+      // 一旦落空可通过 _resolveCustomViewBizKey 自愈,并重新驱动视图取数与表单锁定。
+      _customViewBizKey: '',
+      // 当前页面是否可见。keep-alive 缓存页隐藏期间禁止被其他路由的 meta"污染"桶键
+      _cvActive: true
+    };
+  },
   created () {
     // 组件创建时锁定自己的 bizKey。被 keep-alive 缓存后 this.$route 会变成
     // 全局当前路由,无法再用 $route.meta 区分,故必须创建时记下。
     this._customViewBizKey = this.$route?.meta?.customViewBizKey || '';
   },
   mounted () {
+    this._cvActive = true;
     this._syncLockClass();
+    // 子应用销毁重建时,路由恢复可能晚于组件创建,创建期桶键捕获可能落空,
+    // 这里在路由就绪后补齐,恢复视图取数与表单锁定。
+    this._resolveCustomViewBizKey();
+  },
+  activated () {
+    this._cvActive = true;
+    this._resolveCustomViewBizKey();
+  },
+  deactivated () {
+    this._cvActive = false;
   },
   computed: {
     activePresetId () {
@@ -78,9 +101,27 @@ export default {
     },
     formDisabled () {
       this._syncLockClass();
+    },
+    // 兜底:路由最终就绪时补齐桶键。仅当前页面可见且桶键仍为空时生效,
+    // 避免隐藏的 keep-alive 缓存页被其他路由的 meta"污染"桶键。
+    $route: {
+      handler () {
+        if (this._cvActive) this._resolveCustomViewBizKey();
+      }
     }
   },
   methods: {
+    /**
+     * 自愈:创建时 $route.meta 未就绪导致桶键捕获落空(子应用销毁重建的路由恢复时序),
+     * 在路由就绪后补齐 bizKey。只补空、绝不覆盖——保持 keep-alive 下"锁定自己桶"的语义。
+     * 补齐后 _customViewBizKey(响应式)变化会触发 activePresetId/refreshTick 的 watch,
+     * 自动走 onViewChange 恢复视图取数与表单锁定,无需额外处理。
+     */
+    _resolveCustomViewBizKey () {
+      if (this._customViewBizKey) return;
+      const bizKey = this.$route?.meta?.customViewBizKey || '';
+      if (bizKey) this._customViewBizKey = bizKey;
+    },
     /**
      * 在业务页根节点($el)上 toggle is-preset-locked class。
      * 锁定样式由 pages.scss 全局提供(.page-common.is-preset-locked),
