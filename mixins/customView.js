@@ -44,21 +44,22 @@ import { executeQuery } from '@/libs/api/customView/customQueryView';
 export default {
   data () {
     return {
-      // 创建时锁定自己的 bizKey。置为响应式:微前端子应用销毁重建时路由恢复可能
-      // 晚于组件创建(见 store/customView.js 注释中的"路由恢复时序"),桶键捕获
-      // 一旦落空可通过 _resolveCustomViewBizKey 自愈,并重新驱动视图取数与表单锁定。
-      _customViewBizKey: '',
-      // 当前页面是否可见。keep-alive 缓存页隐藏期间禁止被其他路由的 meta"污染"桶键
-      _cvActive: true
+      // 创建时锁定自己的 bizKey。不可用 _ 前缀:Vue 不代理 _/$ 前缀的 data 属性,
+      // 会退化为普通实例属性失去响应式,自愈补齐将无法触发 watch。
+      // 微前端子应用销毁重建时路由恢复可能晚于组件创建,桶键捕获落空后
+      // 由 _resolveCustomViewBizKey 在路由就绪时补齐,重新驱动视图取数与表单锁定。
+      cvBizKey: ''
     };
   },
   created () {
     // 组件创建时锁定自己的 bizKey。被 keep-alive 缓存后 this.$route 会变成
     // 全局当前路由,无法再用 $route.meta 区分,故必须创建时记下。
-    this._customViewBizKey = this.$route?.meta?.customViewBizKey || '';
+    this.cvBizKey = this.$route?.meta?.customViewBizKey || '';
+    // 当前页面是否可见(实例属性即可,仅在各钩子同步读取)。
+    // keep-alive 缓存页隐藏期间禁止被其他路由的 meta"污染"桶键
+    this._cvActive = true;
   },
   mounted () {
-    this._cvActive = true;
     this._syncLockClass();
     // 子应用销毁重建时,路由恢复可能晚于组件创建,创建期桶键捕获可能落空,
     // 这里在路由就绪后补齐,恢复视图取数与表单锁定。
@@ -76,12 +77,12 @@ export default {
       // 始终读「自己的桶」cache[bizKey],与全局 store.bizKey 解耦:
       // 切到别的路由时本页 activePresetId 不变,watcher 不会对不可见页触发,
       // 从而避免幽灵请求,无需 _isInactive 守卫。
-      const bucket = this.$store.state.customView.cache[this._customViewBizKey];
+      const bucket = this.$store.state.customView.cache[this.cvBizKey];
       return bucket ? bucket.activePresetId : null;
     },
     refreshTick () {
       // 重复选择同一视图时 activePresetId 不变,改由 refreshTick 自增驱动刷新
-      const bucket = this.$store.state.customView.cache[this._customViewBizKey];
+      const bucket = this.$store.state.customView.cache[this.cvBizKey];
       return bucket ? bucket.refreshTick : 0;
     },
     formDisabled () {
@@ -114,13 +115,13 @@ export default {
     /**
      * 自愈:创建时 $route.meta 未就绪导致桶键捕获落空(子应用销毁重建的路由恢复时序),
      * 在路由就绪后补齐 bizKey。只补空、绝不覆盖——保持 keep-alive 下"锁定自己桶"的语义。
-     * 补齐后 _customViewBizKey(响应式)变化会触发 activePresetId/refreshTick 的 watch,
+     * 补齐后 cvBizKey(响应式)变化会触发 activePresetId/refreshTick 的 watch,
      * 自动走 onViewChange 恢复视图取数与表单锁定,无需额外处理。
      */
     _resolveCustomViewBizKey () {
-      if (this._customViewBizKey) return;
+      if (this.cvBizKey) return;
       const bizKey = this.$route?.meta?.customViewBizKey || '';
-      if (bizKey) this._customViewBizKey = bizKey;
+      if (bizKey) this.cvBizKey = bizKey;
     },
     /**
      * 在业务页根节点($el)上 toggle is-preset-locked class。
@@ -194,7 +195,7 @@ export default {
       return records || [];
     },
     resetCustomView () {
-      this.$store.commit('customView/RESET_VIEW', this._customViewBizKey);
+      this.$store.commit('customView/RESET_VIEW', this.cvBizKey);
     }
   }
 };
