@@ -8,7 +8,7 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
       <CustomView
-        v-if="bizKey"
+        v-if="canCustomView"
         :value="conditions"
         :sort-columns="sortColumns"
         :active-preset-id="activePresetId"
@@ -53,6 +53,14 @@ export default {
     },
     bizKey () {
       return this.$route?.meta?.customViewBizKey || '';
+    },
+    resourceTag () {
+      return this.$route?.meta?.customViewResourceTag || '';
+    },
+    canCustomView () {
+      // 默认隐藏:仅当路由配置了 customViewResourceTag 且用户拥有该权限时显示
+      if (!this.bizKey || !this.resourceTag) return false;
+      return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
     }
   },
   watch: {
