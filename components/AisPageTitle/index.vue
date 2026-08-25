@@ -37,7 +37,10 @@ export default {
   },
   computed: {
     cv () {
-      return this.$store.getters['customView/activeView'];
+      // 直读「当前路由 meta 的桶」:bizKey 依赖 $route,响应式天然成立,
+      // 不经过任何全局当前态,规避微前端销毁重建时的写读桶错位
+      return this.$store.state.customView.cache[this.bizKey] ||
+        { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 };
     },
     conditions () {
       return this.cv.conditions;
@@ -63,21 +66,12 @@ export default {
       return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
     }
   },
-  watch: {
-    bizKey: {
-      immediate: true,
-      handler (val) {
-        // 路由切换时同步当前 bizKey;选中态按 bizKey 分桶保留,不清空(回到同 bizKey 页面时自动恢复)
-        this.$store.commit('customView/SET_BIZ_KEY', val || '');
-      }
-    }
-  },
   methods: {
     patch (payload) {
-      this.$store.commit('customView/PATCH_VIEW', payload);
+      this.$store.commit('customView/PATCH_VIEW', { ...payload, bizKey: this.bizKey });
     },
     onRefresh () {
-      this.$store.commit('customView/REFRESH_VIEW');
+      this.$store.commit('customView/REFRESH_VIEW', this.bizKey);
     },
     handleClick (index) {
       if (index === this.list.length - 1) {

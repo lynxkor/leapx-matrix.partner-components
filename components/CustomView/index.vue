@@ -247,6 +247,10 @@ export default {
         this.$message.success(`已刷新视图「${preset.name}」`);
         return;
       }
+      await this.applyPreset(preset);
+    },
+    // 选中视图:同步条件/排序/选中态到外层,由 store 驱动业务页按视图查询
+    async applyPreset (preset) {
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
         if (!data) return;
@@ -267,11 +271,16 @@ export default {
         this.$message.error('加载视图详情失败');
       }
     },
-    onDialogUpdatePresetId (id) {
-      if (id !== this.editingPresetId) {
-        this.editingPresetId = id;
-        this.loadPresets();
+    // 保存弹窗测试通过后应用视图:刷新列表并选中;编辑的是当前已选中视图时走 refresh 通道
+    async onDialogUpdatePresetId (id) {
+      if (!id) return;
+      await this.loadPresets();
+      if (id === this.activePresetId) {
+        this.$emit('refresh');
+        return;
       }
+      const preset = this.presets.find(p => p.id === id);
+      if (preset) this.applyPreset(preset);
     }
   }
 };

@@ -153,7 +153,7 @@ export default {
       return records || [];
     },
     resetCustomView () {
-      this.$store.commit('customView/RESET_VIEW');
+      this.$store.commit('customView/RESET_VIEW', this._customViewBizKey);
     }
   }
 };
