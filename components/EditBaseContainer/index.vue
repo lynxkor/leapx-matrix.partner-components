@@ -236,8 +236,14 @@ export default {
     },
     // 保存操作
     async handleSubmit (success) {
-      for (let formRef of this.formRefs) {
-        await formRef?.validate();
+      try {
+        for (let formRef of this.formRefs) {
+          await formRef?.validate();
+        }
+      } catch (error) {
+        // 校验失败：抛出事件让父组件自定义处理
+        this.$emit('validate-fail', error);
+        return;
       }
       if (this.submitRequest) {
         this.loading = true;
