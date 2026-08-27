@@ -55,18 +55,22 @@
           :command="p.id"
           :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
         >
-          <span class="m-custom-view__label">
-            <TextEllipsis>{{ p.name }}</TextEllipsis>
+          <span class="m-custom-view__cnt">
+            <span class="m-custom-view__label">
+              <TextEllipsis>{{ p.name }}</TextEllipsis>
+            </span>
+            <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
+              {{ perfStatusLabel(p) }}
+            </el-tag>
           </span>
-          <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
-            {{ perfStatusLabel(p) }}
-          </el-tag>
-          <span class="m-custom-view__actions" @click.stop>
-            <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
-            <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
-            <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+          <span class="m-custom-view__cnt">
+            <span class="m-custom-view__actions" @click.stop>
+              <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
+              <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
+              <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+            </span>
+            <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
           </span>
-          <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
         </el-dropdown-item>
         <el-dropdown-item divided command="__new__" class="m-custom-view__divided">
           <i class="el-icon-plus" />
@@ -357,12 +361,18 @@ export default {
     }
   }
   &__item {
-    padding: 0 24px 0 12px;
+    padding: 0 0px 0 12px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     &.is-active {
       color: var(--leap-color-primary);
+      padding-right: 24px;
     }
+  }
+  &__cnt {
+    display: flex;
+    align-items: center;
   }
   &__divided {
     display: flex;

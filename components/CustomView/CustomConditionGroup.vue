@@ -198,7 +198,6 @@ export default {
     padding: 16px;
     border: 1px solid #dcdfe6;
     background: #fff;
-    margin-left: 16px;
     position: relative;
     &.bg-grey {
       background-color: var(--leap-color-default-light-6);
