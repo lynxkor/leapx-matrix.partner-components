@@ -50,8 +50,8 @@ export function getFields () {
 export const OPERATORS = {
   equals: { value: 'equals', label: '等于', valueKind: 'multi' },
   notEquals: { value: 'notEquals', label: '不等于', valueKind: 'multi' },
-  contains: { value: 'contains', label: '包含', valueKind: 'single' },
-  notContains: { value: 'notContains', label: '不包含', valueKind: 'single' },
+  contains: { value: 'contains', label: '包含', valueKind: 'multi' },
+  notContains: { value: 'notContains', label: '不包含', valueKind: 'multi' },
   isEmpty: { value: 'isEmpty', label: '为空', valueKind: 'empty' },
   isNotEmpty: { value: 'isNotEmpty', label: '不为空', valueKind: 'empty' },
   startsWith: { value: 'startsWith', label: '以...开头', valueKind: 'single' },
