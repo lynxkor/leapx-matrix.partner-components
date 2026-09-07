@@ -498,6 +498,10 @@
   .el-message-box__close {
     display: none;
   }
+  // 确认按钮文字可见性兜底：主题色背景下强制白字（修复确认弹窗按钮文字在部分宿主主题下不可见的问题，如 partner_vue_cli3）
+  .el-message-box__btns .el-button--primary {
+    color: #fff !important;
+  }
 }
 
 // 
