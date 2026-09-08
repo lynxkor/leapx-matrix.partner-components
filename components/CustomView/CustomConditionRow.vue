@@ -167,7 +167,7 @@ import {
 } from './fieldMeta';
 import ValueTagInput from './ValueTagInput.vue';
 import FetchSelect from '@/libs/components/FetchSelect';
-import { getEnum } from '@/api/common';
+import { getEnum } from '../../../api/common';
 
 export default {
   name: 'CustomConditionRow',
@@ -275,14 +275,16 @@ export default {
   gap: 8px;
   margin-bottom: 12px;
   &__field { width: 180px; }
-  &__op { width: 130px; }
-  &__value { flex: 1; min-width: 200px; }
-  &__value--number { width: 100%; }
+  &__op { width: 130px; height: 32px; }
+  &__value { flex: 1; width: 300px; }
   &__remove { padding: 4px; color: var(--leap-color-default-light-2); }
   ::v-deep .is-error .el-input__inner,
   ::v-deep .is-error .el-input__wrapper,
   ::v-deep .is-error .el-select .el-input__inner {
     border-color: var(--leap-color-danger);
+  }
+  ::v-deep .el-input--small .el-input__inner {
+    height: 32px!important;
   }
 }
 </style>

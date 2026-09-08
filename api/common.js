@@ -1,5 +1,5 @@
 // 通用查询接口
-import api from '@/axios';
+import api from '../axios';
 
 const prefix = '/datacenter/web/common/';
 
@@ -40,17 +40,21 @@ export function getTemplateCode (data) {
  * @param {*} data
  */
 export function importExcelConfirmFile (formData, config = {}) {
-  // 查询参数需要放在 config 或 URL 中
+  const { businessParams, async, id, token, headers, ...restConfig } = config;
+  // 动态构建 params 对象，使用解构和条件展开
+  const params = {
+    id,
+    token,
+    ...(async && { async }),
+    ...(businessParams && { businessParams }) // 如果 businessParams 存在，则添加到 params 中
+  };
   return api.postExport('/data/ExcelManage/importExcelConfirm', formData, {
-    params: { // 查询参数放在 config 中
-      id: config.id,
-      token: config.token
-    },
+    params, // 直接使用动态构建的 params
     headers: {
       'Content-Type': 'multipart/form-data',
-      ...config.headers
+      ...headers
     },
-    ...config
+    ...restConfig
   });
 }
 
@@ -132,6 +136,14 @@ export function getProvinceTree () {
  */
 export function cityPage (data) {
   return api.jsonPost('/area/findPage/city', data);
+}
+
+/**
+ * 物流信息查询
+ * @param {*} data
+ */
+export function getLogistics (data) {
+  return api.jsonPost('/sp/web/base/common/getLogistics', data);
 }
 
 /**
@@ -255,6 +267,14 @@ export function vehicleRangePower (data) {
 }
 
 /**
+ * 整车主数据-物料列表查询
+ * @param {*} data
+ */
+export function vehicleMaterials (data) {
+  return api.jsonPost('/datacenter/web/materials/vehicleMaterials/list', data);
+}
+
+/**
  * 仓库名称查询
  * @param {*} data
  */
@@ -358,4 +378,12 @@ export function getFindDescendant (data) {
 // 登出
 export function logout (params) {
   return api.jsonPost('/passport/users/logout', params);
+}
+
+/**
+ * 网发 门店关联关系查询（单项）
+ * @param {*} data
+ */
+export function queryStoreRelation (data) {
+  return api.jsonPost('/network/portal/store/queryStoreRelation', data);
 }

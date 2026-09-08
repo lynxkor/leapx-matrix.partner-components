@@ -1,4 +1,4 @@
-import api from '@/axios';
+import api from '../../../axios';
 
 // 后端 CustomViewFieldController(ControllerMapping = /web/customView/customViewField)
 // 上下文路径 /datareport 由 ais 网关转发到 app-ais-datareport 服务

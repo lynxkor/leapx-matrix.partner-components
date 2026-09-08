@@ -1,4 +1,4 @@
-import api from '@/axios';
+import api from '../../../axios';
 
 // 后端 CustomViewMainController(ControllerMapping = /web/customView/customViewMain)
 // 上下文路径 /datareport 由 ais 网关转发到 app-ais-datareport 服务

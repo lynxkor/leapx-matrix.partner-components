@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Message } from 'element-ui';
 import store from '@/store';
-import api from '@/axios';
+import api from '../../axios';
 
 // 获取文件服务的baseURL，使用环境变量
 const fileServiceBaseURL = window.APP_AIS_WEB_CONFIG.VUE_APP_FILE_SERVICE_URL || 'https://aisfile-sit.leapmotor.com';

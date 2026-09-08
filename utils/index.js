@@ -654,6 +654,44 @@ export function formatNumberInput (value, options = {}) {
 }
 
 /**
+ * 将数字格式化为财务千分位字符串（默认 1,234,567.89）
+ * @param {string|number|null|undefined} value - 待格式化的数值
+ * @param {Object} [options] - 配置项
+ * @param {number} [options.decimalDigits=2] - 保留的小数位数
+ * @param {boolean} [options.padZero=true] - 小数位数不足时是否补 0；false 时去掉末尾的 0
+ * @returns {string} 格式化后的字符串，空值/非数字返回 ''
+ */
+export function formatAmount (value, options = {}) {
+  const {
+    decimalDigits = 2,
+    padZero = true
+  } = options;
+
+  // 空值与非数字直接返回空字符串
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const num = Number(value);
+  if (isNaN(num)) {
+    return '';
+  }
+
+  const sign = num < 0 ? '-' : '';
+  const absStr = Math.abs(num).toFixed(decimalDigits); // 保证统一的小数位数
+  const [intPart, decPart] = absStr.split('.');
+  const intWithComma = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  if (!padZero) {
+    // 去掉小数部分末尾的 0，若全为 0 则省略小数部分
+    const trimmedDec = decPart.replace(/0+$/, '');
+    return trimmedDec ? `${sign}${intWithComma}.${trimmedDec}` : `${sign}${intWithComma}`;
+  }
+
+  return `${sign}${intWithComma}.${decPart}`;
+}
+
+/**
  * 通用导出确认弹窗1
  * 封装 Element UI 的 $confirm，提供统一的「导出任务异步处理」确认交互。
  * 推荐在调用时通过 prototype 注入的形式 this.$confirmExport 调用，函数内部通过 this.$confirm 访问弹窗。

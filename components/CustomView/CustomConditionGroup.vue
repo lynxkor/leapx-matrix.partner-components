@@ -182,7 +182,7 @@ export default {
     font-size: 12px;
     position: absolute;
     top: 50%;
-    transform: translate(-2px, -5px);
+    transform: translate(-2px, 0px);
   }
 
   &::before{
@@ -198,7 +198,6 @@ export default {
     padding: 16px;
     border: 1px solid #dcdfe6;
     background: #fff;
-    margin-left: 16px;
     position: relative;
     &.bg-grey {
       background-color: var(--leap-color-default-light-6);
@@ -228,9 +227,6 @@ export default {
       font-size: 10px;
     }
   }
-  &--collapsed &__head {
-    margin-bottom: 0;
-  }
   &__hint {
     color: #909399;
     font-size: 12px;
@@ -254,7 +250,6 @@ export default {
     padding-top: 6px;
   }
   &__ops {
-    margin-top: 12px;
     padding-left: 30px;
   }
 }

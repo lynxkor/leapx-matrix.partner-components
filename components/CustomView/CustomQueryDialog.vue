@@ -25,7 +25,7 @@
         <el-button
           size="small"
           icon="el-icon-cpu"
-          :disabled="!currentPresetId"
+          :disabled="!currentPresetId || applying"
           :loading="perfTesting"
           @click="onRunPerfTest"
         >性能测试</el-button>
@@ -87,9 +87,9 @@
 
     <template v-slot:footer>
       <div class="dialog-footer">
-        <el-button size="small" @click="onClear">清空</el-button>
-        <el-button size="small" @click="onClose">取消</el-button>
-        <el-button size="small" type="primary" @click="onApply">保存</el-button>
+        <el-button size="small" :disabled="applying" @click="onClear">清空</el-button>
+        <el-button size="small" :disabled="applying" @click="onClose">取消</el-button>
+        <el-button size="small" type="primary" :loading="applying || perfTesting" @click="onApply">保存</el-button>
       </div>
     </template>
   </el-dialog>
@@ -140,6 +140,7 @@ export default {
       viewName: '',
       currentPresetId: null,
       perfTesting: false,
+      applying: false,
       fieldsMeta: getFields(),
       fieldsLoading: false
     };
@@ -232,6 +233,7 @@ export default {
     },
 
     async onApply () {
+      if (this.applying || this.perfTesting) return;
       const name = (this.viewName || '').trim();
       const treeResult = this.validateTree(this.workingTree);
       const sortResult = this.validateSort();
@@ -243,20 +245,36 @@ export default {
         return;
       }
       this.errorSummary = [];
-      const newId = await this.buildAndSave(this.currentPresetId, name);
-      if (!newId) return;
-      this.currentPresetId = newId;
-      this.$message.success('已保存视图');
-      this.$emit('update:visible', false);
+      this.applying = true;
+      try {
+        const newId = await this.buildAndSave(this.currentPresetId, name);
+        if (!newId) {
+          this.$message.error('保存视图失败');
+          return;
+        }
+        this.currentPresetId = newId;
+        this.$message.success('保存成功,正在测试接口...');
+        const passed = await this.onRunPerfTest();
+        // 测试未通过:弹窗保持打开便于修改条件,不触发页面刷新
+        if (!passed) return;
+        this.$emit('update:visible', false);
+        this.$emit('update:active-preset-id', this.currentPresetId);
+      } finally {
+        this.applying = false;
+      }
     },
 
+    /**
+     * 执行性能测试并返回是否通过
+     * @returns {Boolean}
+     */
     async onRunPerfTest () {
-      if (!this.currentPresetId || this.perfTesting) return;
+      if (!this.currentPresetId || this.perfTesting) return false;
       const result = this.validateTree(this.workingTree);
       if (!result.valid) {
         this.errorSummary = result.summary;
         this.$message.warning('请先完善条件再测试');
-        return;
+        return false;
       }
       this.errorSummary = [];
       this.perfTesting = true;
@@ -267,8 +285,10 @@ export default {
         this.$message[status === 'passed' ? 'success' : 'error'](
           `性能测试${status === 'passed' ? '通过' : '未通过'}:耗时 ${dur}ms`
         );
+        return status === 'passed';
       } catch (e) {
         this.$message.error('性能测试失败');
+        return false;
       } finally {
         this.perfTesting = false;
       }

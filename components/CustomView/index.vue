@@ -55,18 +55,22 @@
           :command="p.id"
           :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
         >
-          <span class="m-custom-view__label">
-            <TextEllipsis>{{ p.name }}</TextEllipsis>
+          <span class="m-custom-view__cnt">
+            <span class="m-custom-view__label">
+              <TextEllipsis>{{ p.name }}</TextEllipsis>
+            </span>
+            <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
+              {{ perfStatusLabel(p) }}
+            </el-tag>
           </span>
-          <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
-            {{ perfStatusLabel(p) }}
-          </el-tag>
-          <span class="m-custom-view__actions" @click.stop>
-            <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
-            <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
-            <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+          <span class="m-custom-view__cnt">
+            <span class="m-custom-view__actions" @click.stop>
+              <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
+              <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
+              <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+            </span>
+            <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
           </span>
-          <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
         </el-dropdown-item>
         <el-dropdown-item divided command="__new__" class="m-custom-view__divided">
           <i class="el-icon-plus" />
@@ -240,6 +244,17 @@ export default {
         this.$message.warning(`视图「${preset.name}」未通过性能测试,不能用于查询,请先在管理视图中完成测试`);
         return;
       }
+      // 重复选择当前已锁定视图:activePresetId 值不变,mixin watch 不触发,
+      // 且锁定态下页面刷新按钮被禁用,故这里走 refresh 通道强制刷新一次
+      if (cmd === this.activePresetId) {
+        this.$emit('refresh');
+        this.$message.success(`已刷新视图「${preset.name}」`);
+        return;
+      }
+      await this.applyPreset(preset);
+    },
+    // 选中视图:同步条件/排序/选中态到外层,由 store 驱动业务页按视图查询
+    async applyPreset (preset) {
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
         if (!data) return;
@@ -260,11 +275,16 @@ export default {
         this.$message.error('加载视图详情失败');
       }
     },
-    onDialogUpdatePresetId (id) {
-      if (id !== this.editingPresetId) {
-        this.editingPresetId = id;
-        this.loadPresets();
+    // 保存弹窗测试通过后应用视图:刷新列表并选中;编辑的是当前已选中视图时走 refresh 通道
+    async onDialogUpdatePresetId (id) {
+      if (!id) return;
+      await this.loadPresets();
+      if (id === this.activePresetId) {
+        this.$emit('refresh');
+        return;
       }
+      const preset = this.presets.find(p => p.id === id);
+      if (preset) this.applyPreset(preset);
     }
   }
 };
@@ -341,18 +361,25 @@ export default {
     }
   }
   &__item {
-    padding: 0 24px 0 12px;
+    padding: 0 0px 0 12px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     &.is-active {
       color: var(--leap-color-primary);
+      padding-right: 24px;
     }
+  }
+  &__cnt {
+    display: flex;
+    align-items: center;
   }
   &__divided {
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--leap-color-primary);
+    transform: translateY(3px);
     &::before {
       margin: 0;
     }
