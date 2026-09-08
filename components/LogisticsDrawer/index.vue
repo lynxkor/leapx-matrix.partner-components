@@ -57,18 +57,28 @@
         >
           <div class="epod-list-panel">
             <div class="epod-list-header">
-              <span class="epod-list-title">回单凭证</span>
+              <span class="epod-list-title">回单凭证（{{ previewIndex + 1 }} / {{ epodList.length }}）</span>
               <span class="epod-list-close" @click="closeEpodList">×</span>
             </div>
             <div class="epod-list-body">
-              <img
-                v-for="(url, idx) in epodList"
-                :key="idx"
-                :src="url"
-                class="epod-image"
-                alt="回单凭证"
-                @click="openPreview(idx)"
-              />
+              <div class="epod-list-main">
+                <img
+                   :src="epodList[previewIndex]"
+                   class="epod-list-main-img"
+                   alt="回单凭证"
+                   @click="openPreview(previewIndex)"
+                 />
+              </div>
+              <div class="epod-list-thumbs">
+                <div
+                  v-for="(url, idx) in epodList"
+                  :key="idx"
+                  :class="['epod-thumb', { active: idx === previewIndex }]"
+                  @click="setPreviewIndex(idx)"
+                >
+                  <img :src="url" alt="回单凭证" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -145,6 +155,10 @@ export default {
     // 关闭回单列表弹框
     closeEpodList () {
       this.epodListVisible = false;
+    },
+    // 切换当前大图
+    setPreviewIndex (idx) {
+      this.previewIndex = idx;
     },
     // 打开全屏预览
     openPreview (idx) {
@@ -283,23 +297,66 @@ export default {
 }
 
 .epod-list-body {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
   max-height: 70vh;
-  overflow-y: auto;
 }
 
-.epod-image {
-  display: block;
-  width: 100%;
-  height: auto;
+.epod-list-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #f5f7fa;
-  border: 1px solid #ebeef5;
   border-radius: 4px;
+  overflow: hidden;
+  min-height: 300px;
+  max-height: 55vh;
+  margin-bottom: 12px;
+  cursor: zoom-in;
+}
+
+.epod-list-main-img {
+  display: block;
+  max-width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+}
+
+.epod-list-thumbs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px;
+}
+
+.epod-thumb {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
   cursor: pointer;
+  background-color: #f5f7fa;
+  transition: border-color 0.2s;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.active {
+    border-color: #67c23a;
+  }
+
+  &:hover {
+    border-color: #b3e19d;
+  }
 }
 
 .epod-preview-mask {
