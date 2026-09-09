@@ -114,9 +114,7 @@ export default {
   },
   watch: {
     visible (val) {
-      if (val) {
-        this.drawer = val;
-      }
+      this.drawer = val;
     },
     drawerData (val) {
       if (val) {
@@ -146,6 +144,8 @@ export default {
   methods: {
     // 关闭抽屉
     handleClose () {
+      this.epodListVisible = false;
+      this.previewVisible = false;
       this.$emit('update:visible', false);
     },
     // 打开回单列表弹框
