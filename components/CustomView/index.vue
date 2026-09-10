@@ -49,29 +49,31 @@
         >
           <span class="m-custom-view__label">默认视图</span>
         </el-dropdown-item>
-        <el-dropdown-item
-          v-for="p in filteredPresets"
-          :key="p.id"
-          :command="p.id"
-          :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
-        >
-          <span class="m-custom-view__cnt">
-            <span class="m-custom-view__label">
-              <TextEllipsis>{{ p.name }}</TextEllipsis>
+        <div class="m-custom-view__list">
+          <el-dropdown-item
+            v-for="p in filteredPresets"
+            :key="p.id"
+            :command="p.id"
+            :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
+          >
+            <span class="m-custom-view__cnt">
+              <span class="m-custom-view__label">
+                <TextEllipsis>{{ p.name }}</TextEllipsis>
+              </span>
+              <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
+                {{ perfStatusLabel(p) }}
+              </el-tag>
             </span>
-            <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
-              {{ perfStatusLabel(p) }}
-            </el-tag>
-          </span>
-          <span class="m-custom-view__cnt">
-            <span class="m-custom-view__actions" @click.stop>
-              <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
-              <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
-              <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+            <span class="m-custom-view__cnt">
+              <span class="m-custom-view__actions" @click.stop>
+                <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
+                <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
+                <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+              </span>
+              <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
             </span>
-            <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
-          </span>
-        </el-dropdown-item>
+          </el-dropdown-item>
+        </div>
         <el-dropdown-item divided command="__new__" class="m-custom-view__divided">
           <i class="el-icon-plus" />
           <span class="m-custom-view__label">新增视图</span>
@@ -317,6 +319,18 @@ export default {
     border-bottom: 1px solid #ebeef5;
     margin-bottom: 6px;
   }
+  &__list {
+    max-height: 250px;
+    overflow-y: auto;
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+  }
   &__empty {
     padding: 12px;
     text-align: center;
@@ -365,6 +379,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
     &.is-active {
       color: var(--leap-color-primary);
       padding-right: 24px;
