@@ -375,7 +375,7 @@ export function getDomStyle (dom) {
     paddingRight,
     paddingTop,
     paddingBottom,
-    minWidth,
+    minWidth
   };
 }
 
@@ -569,7 +569,7 @@ export function handleCommonPrompt ({
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     inputPattern: /.+/, // 校验非空
-    inputErrorMessage: '请输入备注',
+    inputErrorMessage: '请输入备注'
   }).then(({ value }) => {
     // 2. 二次校验：防止通过特殊手段绕过前端限制或处理粘贴超长文本的情况
     if (!value || value.length > maxLength) {
