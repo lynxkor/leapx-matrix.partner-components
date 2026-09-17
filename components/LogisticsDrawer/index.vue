@@ -62,12 +62,14 @@
             </div>
             <div class="epod-list-body">
               <div class="epod-list-main">
-                <img
-                   :src="epodList[previewIndex]"
-                   class="epod-list-main-img"
-                   alt="回单凭证"
-                   @click="openPreview(previewIndex)"
-                 />
+                <el-image
+                  :src="epodList[previewIndex]"
+                  :preview-src-list="epodList"
+                  :initial-index="previewIndex"
+                  fit="contain"
+                  class="epod-list-main-img"
+                  alt="回单凭证"
+                />
               </div>
               <div class="epod-list-thumbs">
                 <div
@@ -81,19 +83,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div
-          v-if="previewVisible"
-          class="epod-preview-mask"
-          @click.self="closePreview"
-        >
-          <span class="epod-preview-close" @click="closePreview">×</span>
-          <img
-            :src="epodList[previewIndex]"
-            class="epod-preview-img"
-            alt="回单凭证"
-          />
         </div>
     </div>
 </template>
@@ -128,8 +117,7 @@ export default {
       logisticsData: {},
       loadingLogistics: false, // 物流信息加载状态
       epodListVisible: false, // 回单凭证列表弹框
-      previewVisible: false, // 全屏预览
-      previewIndex: 0, // 全屏预览当前索引
+      previewIndex: 0, // 当前预览索引
     };
   },
   computed: {
@@ -142,10 +130,10 @@ export default {
     }
   },
   methods: {
+
     // 关闭抽屉
     handleClose () {
       this.epodListVisible = false;
-      this.previewVisible = false;
       this.$emit('update:visible', false);
     },
     // 打开回单列表弹框
@@ -160,15 +148,6 @@ export default {
     setPreviewIndex (idx) {
       this.previewIndex = idx;
     },
-    // 打开全屏预览
-    openPreview (idx) {
-      this.previewIndex = idx;
-      this.previewVisible = true;
-    },
-    // 关闭全屏预览
-    closePreview () {
-      this.previewVisible = false;
-    },
     // 物流信息接口
     async getLogisticsInfo (logisticsOrderNo, logisticsProvider) {
       this.loadingLogistics = true;
@@ -178,9 +157,10 @@ export default {
       };
       try {
         const res = await getLogistics(params);
-        this.logisticsData = res;
+        this.logisticsData = res || {};
       } catch (error) {
         console.error('获取物流信息失败:', error);
+        this.logisticsData = {};
       } finally {
         this.loadingLogistics = false;
       }
@@ -319,9 +299,24 @@ export default {
 
 .epod-list-main-img {
   display: block;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 55vh;
   object-fit: contain;
+
+  &::v-deep .el-image__inner {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: 55vh;
+    object-fit: contain;
+  }
+
+  &::v-deep .el-image__placeholder,
+  &::v-deep .el-image__error {
+    display: none;
+  }
 }
 
 .epod-list-thumbs {
@@ -359,35 +354,10 @@ export default {
   }
 }
 
-.epod-preview-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+</style>
 
-.epod-preview-img {
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-  display: block;
+<style>
+.el-image-viewer__wrapper {
+  z-index: 10001 !important;
 }
-
-.epod-preview-close {
-  position: fixed;
-  top: 20px;
-  right: 30px;
-  font-size: 36px;
-  color: #fff;
-  cursor: pointer;
-  line-height: 1;
-  user-select: none;
-}
-
 </style>
