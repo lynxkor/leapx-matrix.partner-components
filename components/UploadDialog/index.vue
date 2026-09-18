@@ -224,7 +224,8 @@ export default {
         return this.$message.error('只能上传 .xls / .xlsx 格式的 Excel 文件!');
       }
       if (this.currentFile.size / 1024 / 1024 >= sizeLimitMb) {
-        return this.$message.error(`文件大小不能超过 ${sizeLimitMb}MB!`);
+        // 超限文案与后端 fileLevelCheck 标准文案保持一致（ImportFileCheckMessages.SIZE_EXCEED）
+        return this.$message.error('文件大小超过限制，请拆分后重新上传');
       }
 
       this.isUploading = true;
