@@ -147,6 +147,12 @@ export default {
     templateImportBusiness () {
       const info = this.templateInfo || {};
       return info.importBusinessName || info.importBusiness || '';
+    },
+    // 实际生效的大小上限（MB）：模板配置优先，未配置回退兜底 20MB（与 uploadTip 兜底口径一致；
+    // 仅正数视为配置，口径对齐后端 fileLevelCheck 的 sizeLimitMb > 0 门控）
+    effectiveFileSizeLimitMb () {
+      const configured = Number((this.templateInfo || {}).fileSizeLimitMb);
+      return configured > 0 ? configured : 20;
     }
   },
   watch: {
@@ -211,13 +217,14 @@ export default {
       }
       // 文件校验
       const isExcel = this.currentFile.name.endsWith('.xls') || this.currentFile.name.endsWith('.xlsx');
-      const isLt20M = this.currentFile.size / 1024 / 1024 < 20;
+      // 大小上限按模板配置生效（未配置回退 20MB），与 tip 展示口径一致
+      const sizeLimitMb = this.effectiveFileSizeLimitMb;
 
       if (!isExcel) {
-        return this.$message.error('只能上传 Excel 文件!');
+        return this.$message.error('只能上传 .xls / .xlsx 格式的 Excel 文件!');
       }
-      if (!isLt20M) {
-        return this.$message.error('文件大小不能超过 20MB!');
+      if (this.currentFile.size / 1024 / 1024 >= sizeLimitMb) {
+        return this.$message.error(`文件大小不能超过 ${sizeLimitMb}MB!`);
       }
 
       this.isUploading = true;
