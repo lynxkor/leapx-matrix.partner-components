@@ -147,6 +147,12 @@ export default {
 };
 </script>
 <style lang="scss">
+// 打印样式优化
+@media print {
+  body {
+    zoom: 100%; /* 或者使用 transform: scale(1); */
+  }
+}
 .dialog-print.el-dialog {
   height: calc(100% - 160px);
   margin-top: 80px !important;
@@ -163,9 +169,8 @@ export default {
     page-break-after: always;
   }
   table.gridtable {
-    font-family: verdana, arial, sans-serif;
-    font-size: 11px;
-    color: #333333;
+    font-size: 14px;
+    color: #000;
     border-width: 1px;
     border-color: #666666;
     border-collapse: collapse;
@@ -208,8 +213,8 @@ export default {
     border-width: 1px;
     padding: 10px;
     border-bottom-width: 0px;
-    font-family: verdana, arial, sans-serif;
-    font-size: 11px;
+    font-size: 14px;
+    color: #000;
   }
 
   .detail {
@@ -231,9 +236,8 @@ export default {
   }
 
   table.gridtable120 {
-    font-family: verdana, arial, sans-serif;
-    font-size: 11px;
-    color: #333333;
+    font-size: 14px;
+    color: #000;
     border-width: 1px;
     border-color: #666666;
     border-collapse: collapse;
@@ -251,8 +255,7 @@ export default {
   }
 
   table.grid120 {
-    font-family: verdana, arial, sans-serif;
-    font-size: 11px;
+    font-size: 14px;
     border-collapse: collapse;
     width: 100%;
   }
