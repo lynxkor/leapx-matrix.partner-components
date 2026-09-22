@@ -63,8 +63,6 @@ import { getTemplateCode, importExcelConfirmFile } from '../../api/common';
 import { downloadExcel } from '../../utils';
 import api from '../../axios';
 
-// 模板未配置大小/行数限制时的兜底上传要求文案
-const DEFAULT_UPLOAD_TIP = '只能上传excel文件，且大小不超过20MB';
 // 导入任务页（沿用现状 window.open 目标）
 const IMPORT_TASK_PAGE_URL = '/service/excelManagement/commonDataProcessExcelImportTask';
 
@@ -125,20 +123,14 @@ export default {
     uploadAction () {
       return (window.APP_AIS_WEB_CONFIG?.VUE_APP_WORK_ORDER_URL || process.env.VUE_APP_WORK_ORDER_URL) + '/file/fileService/uploadMultipartFile';
     },
-    // 动态上传要求 tip：按模板配置拼装"支持 .xlsx、.xls ｜ 单文件不超过 XX MB ｜ 单次最多 N 行"，
-    // 配置片段为空不显示；大小/行数均未配置时回退兜底文案
+    // 动态上传要求 tip："支持 .xlsx、.xls ｜ 单文件不超过 XX MB ｜ 单次最多 N 行"。
+    // 大小限制后端有默认 20MB（模板未配置时后端也按 20MB 拦截），大小段恒展示；
+    // 行数为配置门控型（未配置不拦截也不展示）
     uploadTip () {
       const info = this.templateInfo || {};
-      const hasLimit = isConfigured(info.fileSizeLimitMb);
-      const hasRows = isConfigured(info.maxRows);
-      if (!hasLimit && !hasRows) {
-        return DEFAULT_UPLOAD_TIP;
-      }
       const parts = ['支持 .xlsx、.xls'];
-      if (hasLimit) {
-        parts.push(`单文件不超过 ${info.fileSizeLimitMb} MB`);
-      }
-      if (hasRows) {
+      parts.push(`单文件不超过 ${isConfigured(info.fileSizeLimitMb) ? info.fileSizeLimitMb : 20} MB`);
+      if (isConfigured(info.maxRows)) {
         parts.push(`单次最多 ${info.maxRows} 行`);
       }
       return parts.join(' ｜ ');
@@ -148,8 +140,7 @@ export default {
       const info = this.templateInfo || {};
       return info.importBusinessName || info.importBusiness || '';
     },
-    // 实际生效的大小上限（MB）：模板配置优先，未配置回退兜底 20MB（与 uploadTip 兜底口径一致；
-    // 仅正数视为配置，口径对齐后端 fileLevelCheck 的 sizeLimitMb > 0 门控）
+    // 实际生效的大小上限（MB）：模板配置优先，未配置回退 20MB（与后端 fileLevelCheck 默认上限一致）
     effectiveFileSizeLimitMb () {
       const configured = Number((this.templateInfo || {}).fileSizeLimitMb);
       return configured > 0 ? configured : 20;
@@ -323,7 +314,8 @@ export default {
       if (failNum > 0) {
         this.$message.warning(`成功 ${successNum} 行，失败 ${failNum} 行`);
         setTimeout(() => {
-          downloadExcel(res?.failExcelUrl, res?.fileName || res?.businessType || '模板.xlsx');
+          // 失败文件命名：业务标识 + yyyyMMddHHmmss（downloadExcel 内部追加下载时刻时间戳）
+          downloadExcel(res?.failExcelUrl, this.templateInfo?.businessType || '导入失败数据');
         }, 2000);
       } else {
         this.$message.success('导入成功');
