@@ -53,46 +53,57 @@ export function shallowEqual (obj1, obj2) {
 /**
  * 下载excel文件
  * @param {string} fileUrl - 文件地址
- * @param {string} fileName - 文件名
+ * @param {string} fileName - 文件名（可选）：
+ *   不传时使用服务端文件名——文件服务代理已在 Content-Disposition 返回上传时的原始文件名
+ *   （如 业务标识_yyyyMMddHHmm_随机数.xlsx，响应头经 Access-Control-Expose-Headers 暴露可读），
+ *   且不再追加时间戳；传入时保持现状语义（自定义名 + 下载时刻时间戳）
  */
 export function downloadExcel (fileUrl, fileName) {
   return new Promise((resolve, reject) => {
     fetch(fileUrl)
-      .then(response => response.blob())
-      .then(blob => {
+      .then(response => {
+        // 解析服务端文件名（Content-Disposition 的 filename，浏览器落盘同名；解析失败为空串）
+        let serverName = '';
+        const disposition = response.headers.get('Content-Disposition');
+        if (disposition) {
+          const match = disposition.match(/filename\*=(?:UTF-8'')?([^;]+)/i) || disposition.match(/filename="?([^";]+)"?/i);
+          if (match && match[1]) {
+            try {
+              serverName = decodeURIComponent(match[1].trim());
+            } catch (e) {
+              serverName = match[1].trim();
+            }
+          }
+        }
+        return response.blob().then(blob => ({ blob, serverName }));
+      })
+      .then(({ blob, serverName }) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        const now = new Date(); // 暂时注释未使用到这个方法
-        const timestamp = [
-          now.getFullYear(),
-          now.getMonth() + 1,
-          now.getDate(),
-          now.getHours(),
-          now.getMinutes(),
-          now.getSeconds()
-        ].map(num => String(num).padStart(2, '0')).join('');
-        // fileName = fileName + timestamp + '.xlsx' || fileName + timestamp + '.xls'; // 文件名添加时间戳
-        // 检查文件名是否以 .xlsx 或 .xls 结尾（不区分大小写）
-        const hasXlsxExtension = /\.xlsx$/i.test(fileName);
-
-        if (hasXlsxExtension) { // 使用这个方法只支持.xlsx 和后端统一
-          const nameWithoutExt = fileName.slice(0, -5);
-          fileName = nameWithoutExt + timestamp + '.xlsx';
+        if (!fileName && serverName) {
+          // 服务端文件名模式：名字已含时间戳，不再追加
+          fileName = serverName;
         } else {
-          fileName = fileName + timestamp + '.xlsx';
+          const now = new Date(); // 暂时注释未使用到这个方法
+          const timestamp = [
+            now.getFullYear(),
+            now.getMonth() + 1,
+            now.getDate(),
+            now.getHours(),
+            now.getMinutes(),
+            now.getSeconds()
+          ].map(num => String(num).padStart(2, '0')).join('');
+          // 检查文件名是否以 .xlsx 或 .xls 结尾（不区分大小写）
+          const hasXlsxExtension = /\.xlsx$/i.test(fileName);
+
+          if (hasXlsxExtension) { // 使用这个方法只支持.xlsx 和后端统一
+            const nameWithoutExt = fileName.slice(0, -5);
+            fileName = nameWithoutExt + timestamp + '.xlsx';
+          } else {
+            fileName = fileName + timestamp + '.xlsx';
+          }
         }
-        // if (!hasExcelExtension) { // 目前只支持.xlsx文件 暂注释 其他扩展名
-        //   // 如果没有Excel扩展名，添加 .xlsx
-        //   fileName = fileName + timestamp + '.xlsx';
-        // } else {
-        //   // 如果已有Excel扩展名，只添加时间戳
-        //   // 将时间戳插入到扩展名之前
-        //   const lastDotIndex = fileName.lastIndexOf('.');
-        //   const nameWithoutExt = fileName.substring(0, lastDotIndex);
-        //   const extension = fileName.substring(lastDotIndex);
-        //   fileName = nameWithoutExt + timestamp + extension;
-        // }
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
