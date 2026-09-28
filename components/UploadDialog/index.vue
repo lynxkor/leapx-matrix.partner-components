@@ -420,10 +420,12 @@ export default {
         padding: 0 4px;
       }
       .upload-file-card-delete {
-        color: #F56C6C;
+        // !important：部分前端全局 base.css 用 .el-button--text{color:主题色!important} 强制覆盖 text 按钮，
+        // 双方均带 !important 时按选择器权重比较，此处层级更深可稳定生效
+        color: #F56C6C !important;
         &:hover,
         &:focus {
-          color: #F78989;
+          color: #F78989 !important;
         }
       }
     }
