@@ -39,7 +39,7 @@
         <span v-if="isUploading" class="upload-file-card-uploading">导入中，请稍候...</span>
         <span v-else class="upload-file-card-actions">
           <el-button type="text" size="mini" @click.stop="handleReupload">重新上传</el-button>
-          <el-button type="text" size="mini" @click.stop="handleRemoveFile">删除</el-button>
+          <el-button type="text" size="mini" class="upload-file-card-delete" @click.stop="handleRemoveFile">删除</el-button>
         </span>
       </div>
       <div slot="tip" class="el-upload__tip">
@@ -418,6 +418,13 @@ export default {
       margin-top: 4px;
       .el-button {
         padding: 0 4px;
+      }
+      .upload-file-card-delete {
+        color: #F56C6C;
+        &:hover,
+        &:focus {
+          color: #F78989;
+        }
       }
     }
     .upload-file-card-uploading {
