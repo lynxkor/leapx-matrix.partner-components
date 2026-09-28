@@ -39,7 +39,7 @@
         <span v-if="isUploading" class="upload-file-card-uploading">导入中，请稍候...</span>
         <span v-else class="upload-file-card-actions">
           <el-button type="text" size="mini" @click.stop="handleReupload">重新上传</el-button>
-          <el-button type="text" size="mini" @click.stop="handleRemoveFile">删除</el-button>
+          <el-button type="text" size="mini" class="upload-file-card-delete" @click.stop="handleRemoveFile">删除</el-button>
         </span>
       </div>
       <div slot="tip" class="el-upload__tip">
@@ -139,11 +139,6 @@ export default {
     templateImportBusiness () {
       const info = this.templateInfo || {};
       return info.importBusinessName || info.importBusiness || '';
-    },
-    // 实际生效的大小上限（MB）：模板配置优先，未配置回退 20MB（与后端 fileLevelCheck 默认上限一致）
-    effectiveFileSizeLimitMb () {
-      const configured = Number((this.templateInfo || {}).fileSizeLimitMb);
-      return configured > 0 ? configured : 20;
     }
   },
   watch: {
@@ -208,16 +203,12 @@ export default {
       }
       // 文件校验
       const isExcel = this.currentFile.name.endsWith('.xls') || this.currentFile.name.endsWith('.xlsx');
-      // 大小上限按模板配置生效（未配置回退 20MB），与 tip 展示口径一致
-      const sizeLimitMb = this.effectiveFileSizeLimitMb;
 
       if (!isExcel) {
         return this.$message.error('只能上传 .xls / .xlsx 格式的 Excel 文件!');
       }
-      if (this.currentFile.size / 1024 / 1024 >= sizeLimitMb) {
-        // 超限文案与后端 fileLevelCheck 标准文案保持一致（ImportFileCheckMessages.SIZE_EXCEED）
-        return this.$message.error('文件大小超过限制，请拆分后重新上传');
-      }
+      // 大小超限不做前端拦截：交由后端 fileLevelCheck 拦截并落文件级失败留痕任务（状态 14 + 标准文案），
+      // 前端拦截会导致请求未发出、导入记录无痕可查
 
       this.isUploading = true;
 
@@ -427,6 +418,13 @@ export default {
       margin-top: 4px;
       .el-button {
         padding: 0 4px;
+      }
+      .upload-file-card-delete {
+        color: #F56C6C;
+        &:hover,
+        &:focus {
+          color: #F78989;
+        }
       }
     }
     .upload-file-card-uploading {
