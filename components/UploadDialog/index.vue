@@ -34,7 +34,14 @@
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       </div>
       <div v-else class="upload-file-card">
-        <i :class="isUploading ? 'el-icon-loading' : 'el-icon-document'" />
+        <i v-if="isUploading" class="el-icon-loading" />
+        <img
+          v-else
+          class="upload-file-card-icon"
+          :src="require('@/libs/assets/images/import-file-icon.svg')"
+          alt=""
+          draggable="false"
+        >
         <span class="upload-file-card-name" :title="currentFile.name">{{ currentFile.name }}</span>
         <span v-if="isUploading" class="upload-file-card-uploading">导入中，请稍候...</span>
         <span v-else class="upload-file-card-actions">
@@ -384,6 +391,17 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    // 外边框虚线恒为灰：Element 默认在悬停（:hover）、拖拽悬停（.is-dragover）时把 border-color
+    // 切成 $--color-primary（主题色），这里按状态逐条压回基础灰；层级高于 Element 默认规则，不依赖注入顺序
+    &:hover,
+    &.is-dragover {
+      border: 1px dashed #d9d9d9;
+    }
+  }
+  // 点选文件后 .el-upload（tabindex=0）会保持焦点，Element 的 :focus 规则会穿透改 dragger 边框色，
+  // 需单独压回（选择器层级 +1 高于 Element，保证生效）
+  .el-upload:focus .el-upload-dragger {
+    border: 1px dashed #d9d9d9;
   }
   .el-upload__tip{
     color: #9d9d9d;
@@ -402,9 +420,19 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    // 卡片基础文字色：不显式指定会从 .el-upload 继承——它带 tabindex=0，点选文件后 :focus 一直保持，
+    // Element 的 .el-upload:focus{color:主题色} 就把文件名染成主题色（各宿主主题不同，可能是蓝字）
+    // fallback #3B3E3B 即宿主 --aisDefaultTextColor 的取值（partner_vue_cli3 未定义该变量，靠 fallback 兜底）
+    color: var(--aisDefaultTextColor, #3B3E3B);
     i {
       color: var(--themColor);
       font-size: 48px;
+    }
+    // 已选文件图标（Excel 文件图标资源，assets/images/import-file-icon.svg）；
+    // 用 img 而非内联 svg：该图标依赖 SVG filter/mask，Vue2 isSVG 白名单不含 fe* 元素，内联会建到 HTML 命名空间导致滤镜失效
+    .upload-file-card-icon {
+      width: 48px;
+      height: 48px;
     }
     .upload-file-card-name {
       max-width: 100%;
