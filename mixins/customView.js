@@ -1,4 +1,5 @@
 import { executeQuery } from '@/libs/api/customView/customQueryView';
+import { isCustomViewTab } from '@/libs/store/customView';
 
 /**
  * 自定义视图(customView)列表页接入 mixin —— store 桥接模式。
@@ -64,6 +65,8 @@ export default {
     // 子应用销毁重建时,路由恢复可能晚于组件创建,创建期桶键捕获可能落空,
     // 这里在路由就绪后补齐,恢复视图取数与表单锁定。
     this._resolveCustomViewBizKey();
+    // 首屏回写一次当前页签:watcher 只在变化时触发,首屏不发会被 AisPageTitle 漏判
+    this._syncCurrentTab();
   },
   activated () {
     this._cvActive = true;
@@ -87,6 +90,32 @@ export default {
     },
     formDisabled () {
       return !!this.activePresetId;
+    },
+    /**
+     * 业务页当前页签标识。业务页若有 activeTab,覆盖本钩子返回它即可
+     * (如 return this.activeTab),mixin 负责回写 store 与携带 tabCode。
+     * 未覆盖时返回空串,等价于「无页签限制」。
+     */
+    currentCustomViewTab () {
+      return '';
+    },
+    /**
+     * 当前页签是否允许使用个人查询视图(需求 LP262042 7.1.2.2)。
+     * 业务页只需保证 data.activeTab 存在,其余判断集中在 store 的白名单里。
+     */
+    tabAllowsCustomView () {
+      return isCustomViewTab(this.currentCustomViewTab);
+    },
+    /**
+     * 视图查询要带的页签标识。只传 manager / gm 两个有固定条件的页签,
+     * 其余(含全部订单)传空 —— 后端按白名单映射,映射不到即无页签限制。
+     * 这里刻意只传标识而不是条件本身:条件由后端生成,前端不构造 SQL 文本。
+     */
+    customViewTabCode () {
+      if (!this.tabAllowsCustomView) return '';
+      if (this.currentCustomViewTab === 'manager') return 'manager';
+      if (this.currentCustomViewTab === 'gm') return 'gm';
+      return '';
     }
   },
   watch: {
@@ -99,6 +128,21 @@ export default {
     },
     refreshTick () {
       this.onViewChange();
+    },
+    /**
+     * 页签变化(需求 LP262042 7.1.2.2):
+     *   1. 回写 store,让全局 AisPageTitle 能判断当前页签是否允许用视图;
+     *   2. 切到不允许的页签时清掉已选视图 —— 否则 store 残留 activePresetId,
+     *      页面切回来时会带着一个已经不该生效的选中态,且表单仍被锁定。
+     */
+    currentCustomViewTab () {
+      this.$store.commit('customView/SET_CURRENT_TAB', {
+        bizKey: this.cvBizKey,
+        tab: this.currentCustomViewTab
+      });
+      if (!this.tabAllowsCustomView && this.activePresetId) {
+        this.resetCustomView();
+      }
     },
     formDisabled () {
       this._syncLockClass();
@@ -122,6 +166,17 @@ export default {
       if (this.cvBizKey) return;
       const bizKey = this.$route?.meta?.customViewBizKey || '';
       if (bizKey) this.cvBizKey = bizKey;
+    },
+    /**
+     * 回写当前页签到 store。AisPageTitle 在全局 layout 里、业务页之上,
+     * 只能通过 store 感知业务页的页签状态(需求 LP262042 7.1.2.2)。
+     */
+    _syncCurrentTab () {
+      if (!this.cvBizKey) return;
+      this.$store.commit('customView/SET_CURRENT_TAB', {
+        bizKey: this.cvBizKey,
+        tab: this.currentCustomViewTab
+      });
     },
     /**
      * 在业务页根节点($el)上 toggle is-preset-locked class。
@@ -156,6 +211,11 @@ export default {
      * @returns {Boolean}
      */
     fetchByCustomView () {
+      // 页签不在白名单时视为无视图:清掉残留选中态,交回业务页走自己的分页接口
+      if (!this.tabAllowsCustomView) {
+        if (this.activePresetId) this.resetCustomView();
+        return false;
+      }
       if (!this.activePresetId) return false;
       this._cvSetLoading(true);
       this.getCustomViewData();
@@ -166,7 +226,10 @@ export default {
       return executeQuery({
         viewId: this.activePresetId,
         pageNum: pager.page,
-        pageSize: pager.size
+        pageSize: pager.size,
+        // 页签固定条件由后端按白名单映射后与视图条件 AND 拼接
+        // (需求 LP262042 7.1.2.2:页签条件先符合,再叠加筛选条件)
+        tabCode: this.customViewTabCode
       }).then(res => {
         const records = (res && res.records) || [];
         this._cvSetResult(this.customViewListAdapter(records), res ? res.total : 0);
@@ -177,8 +240,8 @@ export default {
     onViewChange () {
       // 切换/清除视图都应回到第 1 页,避免停留在超出新结果集的页码
       this._cvPager().page = 1;
-      // store 中 activePresetId 有值走 executeQuery,清空则回业务列表查询
-      if (this.activePresetId) {
+      // store 中 activePresetId 有值且当前页签允许用视图时走 executeQuery,否则回业务列表查询
+      if (this.activePresetId && this.tabAllowsCustomView) {
         this._cvSetLoading(true);
         this.getCustomViewData();
       } else {

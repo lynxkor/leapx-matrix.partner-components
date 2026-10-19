@@ -6,7 +6,7 @@ const prefix = 'datareport/web/customView/customQueryView/';
 
 /**
  * 分页查询视图
- * @param {Object} data { bizKey, viewName, isTop, perfStatus, pageNum, pageSize }
+ * @param {Object} data { bizKey, viewName, perfStatus, pageNum, pageSize }
  */
 export function page (data) {
   return api.jsonPost(prefix + 'page', data);
@@ -37,11 +37,12 @@ export function deleteItems (ids) {
 }
 
 /**
- * 置顶指定视图(同一 bizKey 下唯一置顶)
- * @param {String} id
+ * 视图排序(需求 LP262042 7.1.2.2,整表覆盖)
+ * 置顶 = 把目标视图挪到数组首位后调本接口,不再有独立的置顶接口。
+ * @param {Array<String>} viewIds 按目标顺序排列的视图 id 列表,第 N 个即序号 N
  */
-export function pin (id) {
-  return api.jsonPost(prefix + 'pin', id);
+export function reorder (viewIds) {
+  return api.jsonPost(prefix + 'reorder', { viewIds });
 }
 
 /**

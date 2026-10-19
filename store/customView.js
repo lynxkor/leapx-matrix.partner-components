@@ -16,7 +16,23 @@ import Vue from 'vue';
  *     activePresetId 不变,watcher 不会对不可见页触发,
  *     从而避免幽灵请求,无需 _isInactive 守卫。
  */
-const EMPTY_VIEW = { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 };
+/**
+ * 视图允许使用的页签白名单(需求 LP262042 7.1.2.2)。
+ *
+ * 保修申请页共七个股接,只有前三个查询 warranty_apply 主表,与视图的
+ * condition_tree 字段配置一致;后四个(备件/工时/其他/审批记录)查的是明细数据,
+ * 把主表字段的视图条件拼上去会出现不存在的列名。
+ * 这里集中声明,AisPageTitle 与业务页共用同一份,避免两处各写一套。
+ */
+export const CUSTOM_VIEW_TABS = ['all', 'manager', 'gm'];
+
+/** 该页签是否允许使用个人查询视图 */
+export function isCustomViewTab (tab) {
+  if (!tab) return false;
+  return CUSTOM_VIEW_TABS.includes(tab);
+}
+
+const EMPTY_VIEW = { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0, currentTab: '' };
 
 function ensureBucket (state, bizKey, refreshTick) {
   if (!state.cache[bizKey]) {
@@ -49,6 +65,13 @@ const customViewModule = {
     REFRESH_VIEW (state, bizKey) {
       if (!bizKey) return;
       ensureBucket(state, bizKey, 1).refreshTick += 1;
+    },
+    // 业务页在 activeTab 变化时回写当前页签。
+    // AisPageTitle 挂在全局 layout 里、业务页之上,拿不到业务页内部的页签状态,
+    // 由业务页主动写入,canCustomView 才能判断当前页签是否允许用视图。
+    SET_CURRENT_TAB (state, { bizKey, tab }) {
+      if (!bizKey) return;
+      ensureBucket(state, bizKey, 0).currentTab = tab || '';
     }
   }
 };

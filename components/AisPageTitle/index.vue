@@ -27,6 +27,7 @@
 
 <script>
 import CustomView from '@/libs/components/CustomView/index.vue';
+import { isCustomViewTab } from '@/libs/store/customView';
 
 export default {
   components: { CustomView },
@@ -40,7 +41,7 @@ export default {
       // 直读「当前路由 meta 的桶」:bizKey 依赖 $route,响应式天然成立,
       // 不经过任何全局当前态,规避微前端销毁重建时的写读桶错位
       return this.$store.state.customView.cache[this.bizKey] ||
-        { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 };
+        { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0, currentTab: '' };
     },
     conditions () {
       return this.cv.conditions;
@@ -63,6 +64,11 @@ export default {
     canCustomView () {
       // 默认隐藏:仅当路由配置了 customViewResourceTag 且用户拥有该权限时显示
       if (!this.bizKey || !this.resourceTag) return false;
+      // 页签约束(需求 LP262042 7.1.2.2):本组件在全局 layout 里、业务页之上,
+      // 拿不到业务页内部的页签状态,只能读业务页回写到 store 的 currentTab。
+      // 业务页尚未回写时(首屏)先放行,避免视图入口闪烁或整段不显示。
+      const tab = this.cv.currentTab;
+      if (tab && !isCustomViewTab(tab)) return false;
       return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
     }
   },
