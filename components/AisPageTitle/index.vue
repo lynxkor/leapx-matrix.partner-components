@@ -37,6 +37,8 @@ import GenericView from '@/libs/components/GenericView/index.vue';
 import {
   state as personalQueryViewState,
   resolveTableCode,
+  scopeCode,
+  isEnabled,
   clearSelection
 } from '@/libs/store/personalQueryView';
 
@@ -78,9 +80,15 @@ export default {
       return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
     },
     pqvTableCode () {
-      return resolveTableCode(this.$route);
+      // 标题栏在业务页之上拿不到页面内部 tab 状态,读搜索栏回写的 activeScope
+      // 拼出完整桶键;scope 变化时此处响应式重算,GenericView 随 :key 重建换列表
+      const base = resolveTableCode(this.$route);
+      const bucket = personalQueryViewState.cache[base];
+      return scopeCode(base, bucket ? bucket.activeScope : '');
     },
     canGenericView () {
+      // 路由 meta.personalQueryView === false 时对该页面关闭
+      if (!isEnabled(this.$route)) return false;
       // 只有当前路由真正渲染了列表搜索栏(AisPageSearchAction 登记过)才显示
       const bucket = personalQueryViewState.cache[this.pqvTableCode];
       return !!(bucket && bucket.registered > 0);

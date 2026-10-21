@@ -47,10 +47,14 @@ import * as personalQueryViewApi from '@/libs/api/personalQueryView';
 import {
   state as personalQueryViewState,
   resolveTableCode,
+  scopeCode,
+  isEnabled,
   register,
   unregister,
   select,
-  clearSelection
+  setActiveScope,
+  clearSelection,
+  clearSelectionByBase
 } from '@/libs/store/personalQueryView';
 
 export default {
@@ -70,11 +74,16 @@ export default {
     },
     align: {
       type: String,
+    },
+    // 多 tab 页面的视图作用域(如 activeName):每个 tab 独立分桶,单 tab 页面不传
+    viewScope: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
-      pqvTableCode: '',
+      pqvBaseCode: '',
       isListPage: false,
       pqvDialogVisible: false,
       pqvUpdateType: 1,
@@ -83,6 +92,11 @@ export default {
     };
   },
   computed: {
+    // 完整桶键 = base + scope 后缀。base 是 created 时锁定的路由编码(keep-alive
+    // 缓存页不跟随全局 $route),scope 跟随页面当前 tab,变化时本组件自行换登记桶
+    pqvTableCode () {
+      return scopeCode(this.pqvBaseCode, this.viewScope);
+    },
     pqvBucket () {
       return personalQueryViewState.cache[this.pqvTableCode] || null;
     },
@@ -99,22 +113,44 @@ export default {
   watch: {
     pqvApplyTick (val) {
       if (!val || !this._pqvActive || this._isDestroyed) return;
-      this._lastAppliedTick = val;
-      this._applyView(this.pqvBucket && this.pqvBucket.apply);
+      // 只有「当前登记桶内真实自增的 tick」才重放。pqvTableCode 切桶也会让 computed
+      // 值变化(读到的是新桶的历史 tick),那种变化交给 viewScope watcher 恢复,
+      // 这里只消费,否则切 tab 会隐式重放旧视图并与页面自身查询产生请求竞态
+      if (this._pqvRegisteredScope === this.pqvTableCode && val > this._lastAppliedTick) {
+        this._lastAppliedTick = val;
+        this._applyView(this.pqvBucket && this.pqvBucket.apply);
+      } else {
+        this._lastAppliedTick = val;
+      }
+    },
+    // 切 tab:换登记桶、把标题栏切到新 scope,并恢复该 tab 的视图状态——
+    // 有选中视图则重放(回显表单并触发带条件的查询),默认视图则交给页面
+    // 自身的 tab 切换重置逻辑(其行为就是重置表单 + 无条件查询,语义一致)
+    viewScope () {
+      if (!this._pqvActive) return;
+      this._unregisterPqv();
+      this._initPqv();
+      const bucket = this.pqvBucket;
+      this._lastAppliedTick = bucket ? bucket.applyTick : 0;
+      if (bucket && bucket.apply &&
+        bucket.selectedId !== null && bucket.selectedId !== undefined) {
+        this._applyView(bucket.apply);
+      }
     },
     // 微前端子应用销毁重建时路由恢复可能晚于组件创建,这里补一次
     $route () {
-      if (this._pqvActive && !this.pqvTableCode) this._initPqv();
+      if (this._pqvActive && !this.pqvBaseCode) this._initPqv();
     }
   },
   created () {
     this._pqvActive = true;
     this._pqvRegistered = false;
+    this._pqvRegisteredScope = null;
     this._pqvInitialized = false;
     this._listFormVm = null;
     this._lastAppliedTick = 0;
     this._pqvCvBizKey = this.$route?.meta?.customViewBizKey || '';
-    this.pqvTableCode = resolveTableCode(this.$route);
+    this.pqvBaseCode = resolveTableCode(this.$route);
   },
   mounted () {
     this._initPqv();
@@ -135,9 +171,9 @@ export default {
     const count = remaining === null
       ? (personalQueryViewState.cache[this.pqvTableCode]?.registered || 0)
       : remaining;
-    // 真正销毁且没有其他同路由实例时,清掉选中态,
+    // 真正销毁且没有其他同路由实例时,按 base 清掉所有 scope 的选中态,
     // 避免下次进来出现"标题显示已选视图、表单却是默认值"的错位
-    if (count === 0) clearSelection(this.pqvTableCode);
+    if (count === 0) clearSelectionByBase(this.pqvBaseCode);
   },
   methods: {
     /**
@@ -157,14 +193,23 @@ export default {
       return null;
     },
     _initPqv () {
-      if (!this.pqvTableCode) this.pqvTableCode = resolveTableCode(this.$route);
+      if (!this.pqvBaseCode) this.pqvBaseCode = resolveTableCode(this.$route);
+      // 微前端路由恢复晚于组件创建时,created 期的 CustomView 桶键捕获会落空,
+      // 这里只补空:否则启用 CustomView 的页面选通用视图时清不掉其选中态,
+      // 业务页 getData 仍被 fetchByCustomView 拦截走旧视图取数
+      if (!this._pqvCvBizKey) this._pqvCvBizKey = this.$route?.meta?.customViewBizKey || '';
       if (this._pqvRegistered || !this.pqvTableCode) return;
+      // 路由 meta.personalQueryView === false 的页面关闭该功能:不登记、不显示按钮
+      if (!isEnabled(this.$route)) return;
       const formVm = this._findListForm();
       if (!formVm) return;
       this._listFormVm = formVm;
       this.isListPage = true;
       this._pqvRegistered = true;
+      this._pqvRegisteredScope = this.pqvTableCode;
       register(this.pqvTableCode);
+      // 回写当前激活 scope,标题栏的 GenericView 据此渲染对应 tab 的视图列表
+      setActiveScope(this.pqvBaseCode, this.viewScope);
       // 仅在首次登记时消费历史 tick(页面首次挂载不自动重放上一次的选中视图);
       // keep-alive 重新激活时不能消费,否则隐藏期间收到的 apply 会被吞掉
       if (!this._pqvInitialized) {
@@ -176,7 +221,8 @@ export default {
     _unregisterPqv () {
       if (!this._pqvRegistered) return null;
       this._pqvRegistered = false;
-      return unregister(this.pqvTableCode);
+      // 用登记时记录的完整桶键注销:切 tab 后 pqvTableCode 已是新 scope
+      return unregister(this._pqvRegisteredScope || this.pqvTableCode);
     },
     /** keep-alive 隐藏期间收到的 apply,在重新激活时补执行一次 */
     _drainApply () {
@@ -204,9 +250,9 @@ export default {
         }
       });
       Object.keys(condition).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(model, key)) {
-          this.$set(model, key, condition[key]);
-        }
+        // 不要求 model 已有该 key:tab 切换重置后 form 只剩 defaultForm 声明的字段,
+        // 快照里的 tab 专属字段(v-if 显示)必须补写回来,$set 保证新增 key 响应式
+        this.$set(model, key, condition[key]);
       });
       // 页面若同时启用了 CustomView,先清掉其选中态,否则业务页 getData 会被 mixin 拦截。
       // 清空动作会触发 mixin 的 onViewChange -> getData(此时表单已写好),无需再 submit。

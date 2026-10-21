@@ -14,6 +14,7 @@ import Vue from 'vue';
  */
 const EMPTY_BUCKET = () => ({
   registered: 0, // 当前登记了列表搜索栏的实例数,> 0 时标题栏显示视图入口
+  activeScope: '', // 多 tab 页面当前激活的视图作用域,由搜索栏回写,标题栏据此渲染对应下拉
   selectedId: null, // null = 默认查询视图
   selectedName: '',
   apply: null, // { id, name, queryCondition }
@@ -36,9 +37,31 @@ export function resolveTableCode (route) {
   return String(meta.personalQueryViewTableCode || route.name || route.path || '');
 }
 
+/**
+ * 功能开关:默认全局启用,路由 meta.personalQueryView === false 时对该页面关闭。
+ * @param {Object} route
+ * @returns {Boolean}
+ */
+export function isEnabled (route) {
+  if (!route) return false;
+  return (route.meta || {}).personalQueryView !== false;
+}
+
 export function getBucket (tableCode) {
   if (!tableCode) return null;
   return state.cache[tableCode] || null;
+}
+
+/** 拼接带作用域的完整桶键:多 tab 页面每个 tab 独立分桶,scope 为空时等于 base */
+export function scopeCode (baseCode, scope) {
+  if (!baseCode) return '';
+  return scope ? `${baseCode}:${scope}` : baseCode;
+}
+
+/** 回写当前激活的作用域(多 tab 页面),标题栏的 GenericView 据此切换视图列表 */
+export function setActiveScope (baseCode, scope) {
+  const bucket = ensureBucket(baseCode);
+  if (bucket) bucket.activeScope = scope || '';
 }
 
 function ensureBucket (tableCode) {
@@ -96,6 +119,20 @@ export function clearSelection (tableCode) {
   if (!bucket) return;
   bucket.selectedId = null;
   bucket.selectedName = '';
+}
+
+/**
+ * 按 base 清掉该页面所有作用域的选中态。
+ * 多 tab 页面的桶键是 base:scope,页面销毁时只清当前 scope 会留下
+ * "下次进其他 tab 显示已选视图、表单却是默认值"的错位。
+ */
+export function clearSelectionByBase (baseCode) {
+  if (!baseCode) return;
+  Object.keys(state.cache).forEach(key => {
+    if (key === baseCode || key.startsWith(baseCode + ':')) {
+      clearSelection(key);
+    }
+  });
 }
 
 /**
