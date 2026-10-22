@@ -6,14 +6,6 @@
         >
             <div class="logistics-title-wrap">
                 <h1 class="logistics-title">物流信息</h1>
-                <el-button
-                  v-if="hasEpod"
-                  type="success"
-                  plain
-                  size="mini"
-                  class="epod-btn"
-                  @click="openEpodList"
-                >回单凭证</el-button>
             </div>
             <div class="common-section-body">
               <div v-if="loadingLogistics" class="loading">
@@ -43,6 +35,18 @@
                   >
                     <div class="timeline-content">
                       <strong>{{ item.context }}</strong>
+
+                      <!-- 回单缩略图：展示在第一笔物流轨迹（时间最早的一笔）的明细与时间之间 -->
+                      <div v-if="index === 0 && hasEpod" class="logistics-epod-thumbs">
+                        <div
+                          v-for="(url, epodIdx) in epodList"
+                          :key="epodIdx"
+                          class="logistics-epod-thumb"
+                          @click="openEpodList(epodIdx)"
+                        >
+                          <img :src="url" alt="回单凭证" />
+                        </div>
+                      </div>
                     </div>
                   </el-timeline-item>
                 </el-timeline>
@@ -137,7 +141,8 @@ export default {
       this.$emit('update:visible', false);
     },
     // 打开回单列表弹框
-    openEpodList () {
+    openEpodList (idx = 0) {
+      this.previewIndex = idx;
       this.epodListVisible = true;
     },
     // 关闭回单列表弹框
@@ -186,20 +191,6 @@ export default {
     color: #333;
     margin: 0;
   }
-
-  .epod-btn {
-    margin-left: 12px;
-    border-color: #67c23a;
-    color: #67c23a;
-    background-color: #fff;
-
-    &:hover,
-    &:focus {
-      background-color: #fff;
-      border-color: #67c23a;
-      color: #67c23a;
-    }
-  }
 }
 
 .logistics-container {
@@ -227,6 +218,36 @@ export default {
   strong {
     display: block;
     margin-bottom: 4px;
+  }
+}
+
+.logistics-epod-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.logistics-epod-thumb {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #f5f7fa;
+  transition: border-color 0.2s;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover {
+    border-color: #67c23a;
   }
 }
 
