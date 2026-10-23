@@ -150,6 +150,13 @@ export default {
       this.loading = val;
     },
     /**
+     * 视图查询附加参数,业务页按需覆盖(如带页面上下文标识)。
+     * @returns {Object}
+     */
+    customViewQueryParams () {
+      return {};
+    },
+    /**
      * 视图取数钩子。在业务页 getData() 顶部调用:
      *   if (this.fetchByCustomView()) return;
      * 无选中视图返回 false(交回业务页);有则走 executeQuery 并返回 true。
@@ -166,7 +173,8 @@ export default {
       return executeQuery({
         viewId: this.activePresetId,
         pageNum: pager.page,
-        pageSize: pager.size
+        pageSize: pager.size,
+        ...this.customViewQueryParams()
       }).then(res => {
         const records = (res && res.records) || [];
         this._cvSetResult(this.customViewListAdapter(records), res ? res.total : 0);

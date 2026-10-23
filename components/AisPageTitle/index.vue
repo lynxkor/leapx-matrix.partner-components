@@ -19,6 +19,12 @@
         @update:activePresetId="val => patch({ activePresetId: val })"
         @refresh="onRefresh"
       />
+      <GenericView
+        v-if="canGenericView"
+        :key="pqvTableCode"
+        :table-code="pqvTableCode"
+        class="page-title-wrapper__gv"
+      />
     </div>
     <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="error" :closable="false">
   </el-alert>
@@ -27,9 +33,17 @@
 
 <script>
 import CustomView from '@/libs/components/CustomView/index.vue';
+import GenericView from '@/libs/components/GenericView/index.vue';
+import {
+  state as personalQueryViewState,
+  resolveTableCode,
+  scopeCode,
+  isEnabled,
+  clearSelection
+} from '@/libs/store/personalQueryView';
 
 export default {
-  components: { CustomView },
+  components: { CustomView, GenericView },
   data () {
     return {
       isPre: window.APP_AIS_WEB_CONFIG?.ENV === 'pre'
@@ -64,6 +78,26 @@ export default {
       // 默认隐藏:仅当路由配置了 customViewResourceTag 且用户拥有该权限时显示
       if (!this.bizKey || !this.resourceTag) return false;
       return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
+    },
+    pqvTableCode () {
+      // 标题栏在业务页之上拿不到页面内部 tab 状态,读搜索栏回写的 activeScope
+      // 拼出完整桶键;scope 变化时此处响应式重算,GenericView 随 :key 重建换列表
+      const base = resolveTableCode(this.$route);
+      const bucket = personalQueryViewState.cache[base];
+      return scopeCode(base, bucket ? bucket.activeScope : '');
+    },
+    canGenericView () {
+      // 路由 meta.personalQueryView === false 时对该页面关闭
+      if (!isEnabled(this.$route)) return false;
+      // 只有当前路由真正渲染了列表搜索栏(AisPageSearchAction 登记过)才显示
+      const bucket = personalQueryViewState.cache[this.pqvTableCode];
+      return !!(bucket && bucket.registered > 0);
+    }
+  },
+  watch: {
+    // 两个视图入口互斥:选中高级自定义视图时清掉通用视图选中态
+    activePresetId (val) {
+      if (val) clearSelection(this.pqvTableCode);
     }
   },
   methods: {
@@ -127,6 +161,9 @@ export default {
   }
   &__cv {
     margin-left: 16px;
+  }
+  &__gv {
+    margin-left: 8px;
   }
 }
 ::v-deep .el-breadcrumb__inner {

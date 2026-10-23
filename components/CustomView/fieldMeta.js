@@ -67,7 +67,11 @@ export const OPERATORS = {
   dateEquals: { value: 'dateEquals', label: '等于', valueKind: 'date' },
   dateBefore: { value: 'dateBefore', label: '早于（包含当天）', valueKind: 'date' },
   dateAfter: { value: 'dateAfter', label: '晚于（包含当天）', valueKind: 'date' },
-  // 日期相对区间(无需值,后端按当前日期计算区间;周为周一到周日)
+  // 早于今天(不包含今天) —— 需求 LP262042 7.1.2.2。
+  // 无需填值:边界由后端按查询当天零点实时计算,故 valueKind 为 empty。
+  // 注意与上面的 dateBefore 区分:那个含当天且需指定日期,这个不含当天且不需日期。
+  dateBeforeToday: { value: 'dateBeforeToday', label: '早于今天（不包含今天）', valueKind: 'empty' },
+  // 日期相对区间(无需值,后端按当前日期计算区间;周一为一周第一天)
   yesterday: { value: 'yesterday', label: '昨天', valueKind: 'empty' },
   today: { value: 'today', label: '今天', valueKind: 'empty' },
   tomorrow: { value: 'tomorrow', label: '明天', valueKind: 'empty' },
@@ -91,7 +95,7 @@ const OPERATOR_MATRIX = {
   number: ['equals', 'notEquals', 'isEmpty', 'isNotEmpty', 'gt', 'lt', 'ge', 'le'],
   date: [
     'isEmpty', 'isNotEmpty',
-    'dateEquals', 'dateBefore', 'dateAfter', 'between',
+    'dateEquals', 'dateBefore', 'dateAfter', 'between', 'dateBeforeToday',
     'yesterday', 'today', 'tomorrow',
     'lastWeek', 'thisWeek', 'nextWeek',
     'lastMonth', 'thisMonth', 'nextMonth',
