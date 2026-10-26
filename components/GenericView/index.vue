@@ -21,39 +21,72 @@
       </el-button>
 
       <el-dropdown-menu slot="dropdown">
-        <div class="m-generic-view__list">
+        <!-- 搜索：本地过滤；搜索态禁用拖拽，避免过滤子集被提交成整表顺序 -->
+        <div class="m-generic-view__search" @mousedown.stop @click.stop>
+          <el-input
+            v-model="filterKeyword"
+            size="mini"
+            placeholder="搜索查询视图"
+            clearable
+            prefix-icon="el-icon-search"
+          />
+        </div>
+        <!-- 默认查询视图：后端内存组装、不落库，恒定第一位，不可拖拽 -->
+        <el-dropdown-item
+          command="__default__"
+          :class="['m-generic-view__item', { 'is-active': !selectedId }]"
+        >
+          <span class="m-generic-view__label">
+            <TextEllipsis>{{ DEFAULT_VIEW_NAME }}</TextEllipsis>
+          </span>
+          <i v-if="!selectedId" class="el-icon-check m-generic-view__check" />
+        </el-dropdown-item>
+        <draggable
+          class="m-generic-view__list"
+          :list="rowsForList"
+          :disabled="searching"
+          handle=".m-generic-view__handle"
+          animation="150"
+          @end="onDragEnd"
+        >
           <div
-            v-for="item in rows"
-            :key="item.id || '__default__'"
+            v-for="item in rowsForList"
+            :key="item.id"
             class="m-generic-view__row"
           >
             <el-dropdown-item
-              :command="item.id || '__default__'"
-              :class="['m-generic-view__item', { 'is-active': isSelected(item) }]"
+              :command="item.id"
+              :class="['m-generic-view__item', { 'is-active': selectedId === item.id }]"
             >
+              <i
+                v-if="!searching"
+                class="el-icon-rank m-generic-view__handle"
+                title="拖动排序"
+              />
               <span class="m-generic-view__label">
                 <TextEllipsis>{{ item.viewName }}</TextEllipsis>
               </span>
-              <span class="m-generic-view__actions" @click.stop v-if="item.id">
+              <span class="m-generic-view__actions" @click.stop>
                 <i
-                  v-if="item.id != null"
                   class="el-icon-top m-generic-view__action"
                   title="置顶"
                   @click.stop="onMoveToTop(item)"
                 />
                 <i
-                  v-if="item.id != null"
                   class="el-icon-delete m-generic-view__action m-generic-view__action--danger"
                   title="删除"
                   @click.stop="onDelete(item)"
                 />
               </span>
-              <i v-if="isSelected(item) && item.id" class="el-icon-check m-generic-view__check" />
+              <i v-if="selectedId === item.id" class="el-icon-check m-generic-view__check" />
             </el-dropdown-item>
           </div>
-        </div>
+        </draggable>
         <div v-if="loading" class="m-generic-view__empty">加载中...</div>
-        <div v-else-if="!hasSavedViews" class="m-generic-view__empty">
+        <div v-else-if="searching && !rowsForList.length" class="m-generic-view__empty">
+          未找到匹配的查询视图
+        </div>
+        <div v-else-if="!searching && !savedRows.length" class="m-generic-view__empty">
           暂无查询视图
         </div>
       </el-dropdown-menu>
@@ -62,6 +95,7 @@
 </template>
 
 <script>
+import draggable from 'vuedraggable';
 import * as personalQueryViewApi from '@/libs/api/personalQueryView';
 import {
   state,
@@ -74,14 +108,16 @@ import TextEllipsis from '@/libs/components/TextEllipsis';
 
 export default {
   name: 'GenericView',
-  components: { TextEllipsis },
+  components: { TextEllipsis, draggable },
   props: {
     tableCode: { type: String, required: true }
   },
   data () {
     return {
       savedRows: [],
-      loading: false
+      loading: false,
+      filterKeyword: '',
+      DEFAULT_VIEW_NAME
     };
   },
   computed: {
@@ -94,22 +130,27 @@ export default {
     displayName () {
       return (this.bucket && this.bucket.selectedName) || DEFAULT_VIEW_NAME;
     },
-    rows () {
-      return [{ id: null, viewName: DEFAULT_VIEW_NAME }, ...this.savedRows];
+    searching () {
+      return !!(this.filterKeyword || '').trim();
     },
-    hasSavedViews () {
-      return this.savedRows.length > 0;
+    filteredRows () {
+      const kw = (this.filterKeyword || '').trim().toLowerCase();
+      return this.savedRows.filter(row => (row.viewName || '').toLowerCase().includes(kw));
+    },
+    /**
+     * 渲染与拖拽共用同一数组：搜索态渲染过滤子集但禁用拖拽；
+     * 拖拽只在全量列表进行，提交整表顺序即用户所见顺序。
+     */
+    rowsForList () {
+      return this.searching ? this.filteredRows : this.savedRows;
     }
   },
   methods: {
-    isSelected (item) {
-      if (item.id === null || item.id === undefined) {
-        return this.selectedId === null || this.selectedId === undefined;
-      }
-      return this.selectedId === item.id;
-    },
     onVisibleChange (visible) {
-      if (visible) this.load();
+      if (visible) {
+        this.filterKeyword = '';
+        this.load();
+      }
     },
     handleClear () {
       apply(this.tableCode, { id: null, name: '', queryCondition: null });
@@ -156,13 +197,33 @@ export default {
         queryCondition: condition
       });
     },
-    async onMoveToTop (item) {
+    /**
+     * 拖拽结束（需求 LP262042 7.1.2.2）：提交当前全部自建视图 id 的有序列表。
+     * 整表覆盖语义 —— 后端按数组下标重写 sort_no；vuedraggable 已就地更新 savedRows，
+     * 失败时回滚为服务端排序（拦截器已先弹错再 reject，这里不重复 $message.error）。
+     */
+    async onDragEnd () {
       try {
-        await personalQueryViewApi.moveToTop(item.id);
-        this.$message.success(`已将视图「${item.viewName}」置顶`);
-        await this.load();
+        await personalQueryViewApi.reorder(this.savedRows.map(row => row.id));
       } catch (e) {
-        // axios 拦截器已提示错误
+        await this.load();
+      }
+    },
+    /**
+     * 置顶：等价于「把该项拖到最顶」，复用 reorder 接口提交整表新顺序
+     * （与左侧高级视图 CustomView 的置顶实现一致，不再单独保留置顶接口）。
+     */
+    async onMoveToTop (item) {
+      const targetId = item.id;
+      const ids = this.savedRows.map(row => row.id).filter(id => id !== targetId);
+      ids.unshift(targetId);
+      try {
+        await personalQueryViewApi.reorder(ids);
+        await this.load();
+        this.$message.success(`已将视图「${item.viewName}」置顶`);
+      } catch (e) {
+        // axios 拦截器已提示错误，这里回滚为服务端当前顺序
+        await this.load();
       }
     },
     onDelete (item) {
@@ -209,6 +270,11 @@ export default {
       color: var(--leap-color-primary);
     }
   }
+  &__search {
+    padding: 2px 10px 10px 10px;
+    border-bottom: 1px solid #ebeef5;
+    margin-bottom: 6px;
+  }
   &__list {
     max-height: 250px;
     overflow-y: auto;
@@ -230,6 +296,21 @@ export default {
     overflow: hidden;
     white-space: nowrap;
     display: inline-block;
+    // 吃掉把手与操作区之间的剩余空间:配合父级 space-between,
+    // 否则视图名较短时(如 17 位 VIN)把手与文字之间会留出空洞。
+    // min-width:0 允许 flex 子项收缩,保证省略号生效。
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  &__handle {
+    padding: 4px;
+    cursor: move;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #909399;
+    &:hover {
+      color: var(--leap-color-primary);
+    }
   }
   &__empty {
     padding: 12px;
