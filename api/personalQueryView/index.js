@@ -29,9 +29,10 @@ export function remove (id) {
 }
 
 /**
- * 置顶查询视图
- * @param {String} id
+ * 拖拽排序（整表覆盖）：提交该 tableCode 分桶下全部视图 id 的目标顺序，
+ * 后端按数组下标重写 sort_no（默认查询视图不落库恒第一位，不参与提交）
+ * @param {String[]} viewIds 按目标顺序排列的视图 id 列表
  */
-export function moveToTop (id) {
-  return api.jsonPost(prefix + 'top', { id });
+export function reorder (viewIds) {
+  return api.jsonPost(prefix + 'reorder', { viewIds });
 }
