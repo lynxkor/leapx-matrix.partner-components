@@ -54,6 +54,15 @@ export function perf (id) {
 }
 
 /**
+ * 设置默认视图 / 取消默认(需求 LP262002 7.1.2.2)
+ * @param {Object} data { id, defaultIs }
+ *   id 必填;defaultIs 不传按「设为默认」处理,传 false 表示取消默认
+ */
+export function setDefault (data) {
+  return api.jsonPost(prefix + 'setDefault', data);
+}
+
+/**
  * 按视图统一执行查询(后端根据 viewId 解析 bizKey 与查询条件)
  * @param {Object} data { viewId, pageNum, pageSize }
  */
