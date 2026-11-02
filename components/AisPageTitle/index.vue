@@ -8,7 +8,7 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
       <CustomView
-        v-if="bizKey"
+        v-if="canCustomView"
         :value="conditions"
         :sort-columns="sortColumns"
         :active-preset-id="activePresetId"
@@ -19,6 +19,12 @@
         @update:activePresetId="val => patch({ activePresetId: val })"
         @refresh="onRefresh"
       />
+      <GenericView
+        v-if="canGenericView"
+        :key="pqvTableCode"
+        :table-code="pqvTableCode"
+        class="page-title-wrapper__gv"
+      />
     </div>
     <el-alert v-if="isPre" class="pageTips" title="本环境仅用于测试培训" type="error" :closable="false">
   </el-alert>
@@ -27,9 +33,17 @@
 
 <script>
 import CustomView from '@/libs/components/CustomView/index.vue';
+import GenericView from '@/libs/components/GenericView/index.vue';
+import {
+  state as personalQueryViewState,
+  resolveTableCode,
+  scopeCode,
+  isEnabled,
+  clearSelection
+} from '@/libs/store/personalQueryView';
 
 export default {
-  components: { CustomView },
+  components: { CustomView, GenericView },
   data () {
     return {
       isPre: window.APP_AIS_WEB_CONFIG?.ENV === 'pre'
@@ -37,7 +51,10 @@ export default {
   },
   computed: {
     cv () {
-      return this.$store.getters['customView/activeView'];
+      // 直读「当前路由 meta 的桶」:bizKey 依赖 $route,响应式天然成立,
+      // 不经过任何全局当前态,规避微前端销毁重建时的写读桶错位
+      return this.$store.state.customView.cache[this.bizKey] ||
+        { activePresetId: null, conditions: null, sortColumns: [], refreshTick: 0 };
     },
     conditions () {
       return this.cv.conditions;
@@ -53,23 +70,42 @@ export default {
     },
     bizKey () {
       return this.$route?.meta?.customViewBizKey || '';
+    },
+    resourceTag () {
+      return this.$route?.meta?.customViewResourceTag || '';
+    },
+    canCustomView () {
+      // 默认隐藏:仅当路由配置了 customViewResourceTag 且用户拥有该权限时显示
+      if (!this.bizKey || !this.resourceTag) return false;
+      return (this.$store.state.pageSource?.aisPageSource || []).includes(this.resourceTag);
+    },
+    pqvTableCode () {
+      // 标题栏在业务页之上拿不到页面内部 tab 状态,读搜索栏回写的 activeScope
+      // 拼出完整桶键;scope 变化时此处响应式重算,GenericView 随 :key 重建换列表
+      const base = resolveTableCode(this.$route);
+      const bucket = personalQueryViewState.cache[base];
+      return scopeCode(base, bucket ? bucket.activeScope : '');
+    },
+    canGenericView () {
+      // 路由 meta.personalQueryView === false 时对该页面关闭
+      if (!isEnabled(this.$route)) return false;
+      // 只有当前路由真正渲染了列表搜索栏(AisPageSearchAction 登记过)才显示
+      const bucket = personalQueryViewState.cache[this.pqvTableCode];
+      return !!(bucket && bucket.registered > 0);
     }
   },
   watch: {
-    bizKey: {
-      immediate: true,
-      handler (val) {
-        // 路由切换时同步当前 bizKey;选中态按 bizKey 分桶保留,不清空(回到同 bizKey 页面时自动恢复)
-        this.$store.commit('customView/SET_BIZ_KEY', val || '');
-      }
+    // 两个视图入口互斥:选中高级自定义视图时清掉通用视图选中态
+    activePresetId (val) {
+      if (val) clearSelection(this.pqvTableCode);
     }
   },
   methods: {
     patch (payload) {
-      this.$store.commit('customView/PATCH_VIEW', payload);
+      this.$store.commit('customView/PATCH_VIEW', { ...payload, bizKey: this.bizKey });
     },
     onRefresh () {
-      this.$store.commit('customView/REFRESH_VIEW');
+      this.$store.commit('customView/REFRESH_VIEW', this.bizKey);
     },
     handleClick (index) {
       if (index === this.list.length - 1) {
@@ -125,6 +161,9 @@ export default {
   }
   &__cv {
     margin-left: 16px;
+  }
+  &__gv {
+    margin-left: 8px;
   }
 }
 ::v-deep .el-breadcrumb__inner {

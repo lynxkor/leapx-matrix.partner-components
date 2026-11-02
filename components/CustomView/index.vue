@@ -49,25 +49,47 @@
         >
           <span class="m-custom-view__label">默认视图</span>
         </el-dropdown-item>
-        <el-dropdown-item
-          v-for="p in filteredPresets"
-          :key="p.id"
-          :command="p.id"
-          :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
+        <draggable
+          class="m-custom-view__list"
+          :list="presets"
+          :disabled="dragDisabled"
+          handle=".m-custom-view__handle"
+          animation="150"
+          @end="onDragEnd"
         >
-          <span class="m-custom-view__label">
-            <TextEllipsis>{{ p.name }}</TextEllipsis>
-          </span>
-          <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
-            {{ perfStatusLabel(p) }}
-          </el-tag>
-          <span class="m-custom-view__actions" @click.stop>
-            <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
-            <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
-            <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
-          </span>
-          <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
-        </el-dropdown-item>
+          <div
+            v-for="p in presets"
+            :key="p.id"
+            class="m-custom-view__row"
+          >
+            <el-dropdown-item
+              :command="p.id"
+              :class="['m-custom-view__item', { 'is-active': activePresetId === p.id }]"
+            >
+              <i
+                v-if="!presetFilterKeyword"
+                class="el-icon-rank m-custom-view__handle"
+                title="拖动排序"
+              />
+              <span class="m-custom-view__cnt m-custom-view__cnt--name">
+                <span class="m-custom-view__label">
+                  <TextEllipsis>{{ p.name }}</TextEllipsis>
+                </span>
+                <el-tag :type="perfStatusTagType(p)" size="mini" class="m-custom-view__perf">
+                  {{ perfStatusLabel(p) }}
+                </el-tag>
+              </span>
+              <span class="m-custom-view__cnt m-custom-view__cnt--action">
+                <span class="m-custom-view__actions" @click.stop>
+                  <i class="el-icon-top m-custom-view__action" title="置顶" @click.stop="onMoveToTop(p)" />
+                  <i class="el-icon-edit m-custom-view__action" title="编辑" @click.stop="onEditView(p)" />
+                  <i class="el-icon-delete m-custom-view__action m-custom-view__action--danger" title="删除" @click.stop="onDeleteView(p)" />
+                </span>
+                <i v-if="activePresetId === p.id" class="m-custom-view__action el-icon-check"></i>
+              </span>
+            </el-dropdown-item>
+          </div>
+        </draggable>
         <el-dropdown-item divided command="__new__" class="m-custom-view__divided">
           <i class="el-icon-plus" />
           <span class="m-custom-view__label">新增视图</span>
@@ -93,10 +115,11 @@ import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 import TextEllipsis from '@/libs/components/TextEllipsis';
+import draggable from 'vuedraggable';
 
 export default {
   name: 'CustomView',
-  components: { CustomQueryDialog, TextEllipsis },
+  components: { CustomQueryDialog, TextEllipsis, draggable },
   props: {
     value: { type: [Object, null], default: null },
     sortColumns: { type: Array, default: () => [] },
@@ -123,6 +146,14 @@ export default {
       const kw = (this.presetFilterKeyword || '').trim().toLowerCase();
       if (!kw) return this.presets;
       return this.presets.filter(p => (p.name || '').toLowerCase().includes(kw));
+    },
+    /**
+     * 搜索态下禁用拖拽(需求 LP262042 7.1.2.2)。
+     * 过滤后列表是 presets 的子集,拖拽子集会让「被过滤掉的视图」也参与重排,
+     * 提交整表顺序时无法还原用户真实意图,所以搜索时直接禁用。
+     */
+    dragDisabled () {
+      return !!(this.presetFilterKeyword || '').trim();
     },
     defaultViewVisible () {
       const kw = (this.presetFilterKeyword || '').trim().toLowerCase();
@@ -157,7 +188,9 @@ export default {
         const res = await customQueryViewApi.page({
           bizKey: this.bizKey,
           pageNum: 1,
-          pageSize: 50
+          // 下拉一次性取全量,不支持分页:视图数量按人均个位数,
+          // 取 100 足够覆盖,避免用户视图较多时被截断在后半段(排序也会跟着失真)
+          pageSize: 100
         });
         const records = (res && res.records) || [];
         this.presets = records.map(p => ({
@@ -165,8 +198,7 @@ export default {
           name: p.viewName,
           perfStatus: p.perfStatus || PERF_STATUS.PENDING,
           perfDurationMs: p.perfDurationMs,
-          perfTestedAt: p.perfTestedTime,
-          isTop: p.isTop
+          perfTestedAt: p.perfTestedTime
         }));
         if (this.activePresetId && !this.presets.some(p => p.id === this.activePresetId)) {
           this.handleClearPreset();
@@ -191,9 +223,36 @@ export default {
       this.$emit('update:sortColumns', []);
       this.$emit('change', { conditions: null, sortColumns: [], activePresetId: null });
     },
-    async onMoveToTop (preset) {
+    /**
+     * 拖拽结束:提交当前全部视图 id 的有序列表(需求 LP262042 7.1.2.2)。
+     *
+     * <p>整表覆盖语义,与后端 reorder 接口约定一致 —— 后端按数组下标重写 view_seq。
+     * 权限判定统一交给后端:管理员与持有 DEALER_DATA_VIEW_ALL 的人由后端抛异常拒绝,
+     * 前端不预判、不隐藏入口,统一按整表提交,失败时回滚为拖拽前的顺序。</p>
+     *
+     * <p>失败时回滚并交给 axios 拦截器弹错(拦截器已先弹错再 reject,
+     * 这里不重复 $message.error)。</p>
+     */
+    async onDragEnd () {
+      const ids = this.presets.map(p => p.id);
+      // 拖动后 vuedraggable 就地改了 this.presets,提交前先快照一份用于回滚
+      const snapshot = ids.slice();
       try {
-        await customQueryViewApi.pin(preset.id);
+        await customQueryViewApi.reorder(snapshot);
+      } catch (e) {
+        await this.loadPresets();
+      }
+    },
+    /**
+     * 置顶:等价于「把该项拖到最顶」,复用 reorder 接口提交整表新顺序。
+     * 不再有独立的置顶接口与 is_top 字段,置顶就是排序的一种。
+     */
+    async onMoveToTop (preset) {
+      const targetId = preset.id;
+      const ids = this.presets.map(p => p.id).filter(id => id !== targetId);
+      ids.unshift(targetId);
+      try {
+        await customQueryViewApi.reorder(ids);
         await this.loadPresets();
         this.$message.success(`已将视图「${preset.name}」置顶`);
       } catch (e) {
@@ -247,6 +306,10 @@ export default {
         this.$message.success(`已刷新视图「${preset.name}」`);
         return;
       }
+      await this.applyPreset(preset);
+    },
+    // 选中视图:同步条件/排序/选中态到外层,由 store 驱动业务页按视图查询
+    async applyPreset (preset) {
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
         if (!data) return;
@@ -267,11 +330,16 @@ export default {
         this.$message.error('加载视图详情失败');
       }
     },
-    onDialogUpdatePresetId (id) {
-      if (id !== this.editingPresetId) {
-        this.editingPresetId = id;
-        this.loadPresets();
+    // 保存弹窗测试通过后应用视图:刷新列表并选中;编辑的是当前已选中视图时走 refresh 通道
+    async onDialogUpdatePresetId (id) {
+      if (!id) return;
+      await this.loadPresets();
+      if (id === this.activePresetId) {
+        this.$emit('refresh');
+        return;
       }
+      const preset = this.presets.find(p => p.id === id);
+      if (preset) this.applyPreset(preset);
     }
   }
 };
@@ -303,6 +371,33 @@ export default {
     padding: 2px 10px 10px 10px;
     border-bottom: 1px solid #ebeef5;
     margin-bottom: 6px;
+  }
+  &__list {
+    max-height: 250px;
+    overflow-y: auto;
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+  }
+  // 拖拽行容器:vuedraggable 的 item 必须是真实元素,
+  // 原来直接 v-for 在 el-dropdown-item 上,现在多包一层 div 承载拖拽
+  &__row {
+    position: relative;
+  }
+  // 拖拽手柄:只有按住它才能拖,避免与点击选择视图/下拉项冲突
+  &__handle {
+    cursor: move;
+    color: #c0c4cc;
+    margin-right: 6px;
+    flex-shrink: 0;
+    &:hover {
+      color: var(--leap-color-primary);
+    }
   }
   &__empty {
     padding: 12px;
@@ -348,12 +443,32 @@ export default {
     }
   }
   &__item {
-    padding: 0 24px 0 12px;
+    padding: 0 0px 0 12px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    position: relative;
     &.is-active {
       color: var(--leap-color-primary);
+      padding-right: 24px;
     }
+  }
+  &__cnt {
+    display: flex;
+    align-items: center;
+  }
+  // 视图名称区:占据除操作区外的全部剩余空间。
+  // item 是 flex + space-between,若名称区按内容宽度自适应,
+  // 短名称的行会把这部分富余空间分配到名称左侧,导致各行文字起始位置不一致
+  // (表现为「视图名前面有空格」,实际数据里并没有空格)。
+  // 名称区改为 flex:1 后富余空间被它吸收,文字始终紧贴拖拽手柄。
+  &__cnt--name {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  // 操作区:靠右贴边(名称区已占满剩余空间,这里只做兜底)
+  &__cnt--action {
+    margin-left: auto;
   }
   &__divided {
     display: flex;

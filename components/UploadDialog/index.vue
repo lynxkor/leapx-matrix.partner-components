@@ -7,6 +7,7 @@
     append-to-body
     @close="handleClose"
   >
+    <div v-if="templateImportBusiness" class="upload-modal-step">导入业务：{{ templateImportBusiness }}</div>
     <div class="upload-modal-step">
       1.模板下载：<span
         class="upload-modal-link"
@@ -23,21 +24,39 @@
       :action="uploadAction"
       :auto-upload="false"
       :on-change="handleFileChange"
+      :on-exceed="handleExceed"
+      :show-file-list="false"
       :file-list="fileList"
       drag
     >
-      <div class="el-upload__inner">
+      <div v-if="!currentFile" class="el-upload__inner">
         <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
       </div>
+      <div v-else class="upload-file-card">
+        <i v-if="isUploading" class="el-icon-loading" />
+        <img
+          v-else
+          class="upload-file-card-icon"
+          :src="require('@/libs/assets/images/import-file-icon.svg')"
+          alt=""
+          draggable="false"
+        >
+        <span class="upload-file-card-name" :title="currentFile.name">{{ currentFile.name }}</span>
+        <span v-if="isUploading" class="upload-file-card-uploading">导入中，请稍候...</span>
+        <span v-else class="upload-file-card-actions">
+          <el-button type="text" size="mini" @click.stop="handleReupload">重新上传</el-button>
+          <el-button type="text" size="mini" class="upload-file-card-delete" @click.stop="handleRemoveFile">删除</el-button>
+        </span>
+      </div>
       <div slot="tip" class="el-upload__tip">
-        <span>只能上传excel文件，且大小不超过20MB</span>
+        <span>{{ uploadTip }}</span>
       </div>
     </el-upload>
     <div slot="footer" class="dialog-footer">
       <el-button @click="handleClose" size="small">取消</el-button>
       <el-button
-        type="primary"
+        :type="currentFile ? 'primary' : 'info'"
         :loading="isUploading"
         @click="submitFileForm"
         size="small"
@@ -50,6 +69,14 @@
 import { getTemplateCode, importExcelConfirmFile } from '../../api/common';
 import { downloadExcel } from '../../utils';
 import api from '../../axios';
+
+// 导入任务页（沿用现状 window.open 目标）
+const IMPORT_TASK_PAGE_URL = '/service/excelManagement/commonDataProcessExcelImportTask';
+
+// 配置项是否已配置（null/undefined/'' 视为未配置，对应 tip 片段不显示）
+function isConfigured (value) {
+  return value !== null && value !== undefined && value !== '';
+}
 
 export default {
   name: 'UploadModal',
@@ -94,17 +121,47 @@ export default {
       form: {},
       fileList: [],
       currentFile: null,
+      // 模板配置（getTemplateCode 响应扩展：importBusinessName/fileSizeLimitMb/maxRows），用于拼装动态上传要求 tip
+      templateInfo: {}
     };
   },
   computed: {
   // 使用计算属性动态获取上传地址
     uploadAction () {
       return (window.APP_AIS_WEB_CONFIG?.VUE_APP_WORK_ORDER_URL || process.env.VUE_APP_WORK_ORDER_URL) + '/file/fileService/uploadMultipartFile';
+    },
+    // 动态上传要求 tip："支持 .xlsx、.xls ｜ 单文件不超过 XX MB ｜ 单次最多 N 行"。
+    // 大小限制后端有默认 20MB（模板未配置时后端也按 20MB 拦截），大小段恒展示；
+    // 行数为配置门控型（未配置不拦截也不展示）
+    uploadTip () {
+      const info = this.templateInfo || {};
+      const parts = ['支持 .xlsx、.xls'];
+      parts.push(`单文件不超过 ${isConfigured(info.fileSizeLimitMb) ? info.fileSizeLimitMb : 20} MB`);
+      if (isConfigured(info.maxRows)) {
+        parts.push(`单次最多 ${info.maxRows} 行`);
+      }
+      return parts.join(' ｜ ');
+    },
+    // 导入业务名称（/code 响应扩展字段 importBusinessName，兼容 importBusiness）
+    templateImportBusiness () {
+      const info = this.templateInfo || {};
+      return info.importBusinessName || info.importBusiness || '';
+    }
+  },
+  watch: {
+    visible: {
+      immediate: true,
+      handler (val) {
+        if (val) {
+          this.fetchTemplateConfig();
+        }
+      }
     }
   },
   methods: {
     handleClose () {
-      this.$refs.upload.clearFiles();
+      // 关闭即清理上次选择的文件（卡片/内部列表），避免取消后重开弹窗残留旧文件卡片（t7-T7-L2）
+      this.resetFile();
       this.$emit('close');
     },
     // 文件选择变化
@@ -113,7 +170,39 @@ export default {
         this.currentFile = file.raw;
       }
     },
-
+    // limit=1：已选文件后再次选择/拖拽时自动替换旧文件
+    handleExceed (files) {
+      this.$refs.upload.clearFiles();
+      this.$refs.upload.handleStart(files[0]);
+    },
+    // 重新上传：再次打开系统文件选择器
+    handleReupload () {
+      const input = this.$refs.upload && this.$refs.upload.$el.querySelector('input[type=file]');
+      input && input.click();
+    },
+    // 删除已选文件
+    handleRemoveFile () {
+      this.resetFile();
+    },
+    // 清空已选文件
+    resetFile () {
+      this.fileList = [];
+      this.currentFile = null;
+      this.$refs.upload && this.$refs.upload.clearFiles();
+    },
+    // 打开弹窗时拉取模板配置（getTemplateCode 响应扩展字段）
+    // 模板不存在（600 无数据）或接口异常时静默回退兜底 tip，不影响既有上传流程
+    async fetchTemplateConfig () {
+      if (!this.id) {
+        return;
+      }
+      try {
+        const res = await getTemplateCode(this.id);
+        this.templateInfo = res || {};
+      } catch (error) {
+        this.templateInfo = {};
+      }
+    },
     // 手动上传
     async submitFileForm () {
       if (!this.currentFile) {
@@ -121,58 +210,117 @@ export default {
       }
       // 文件校验
       const isExcel = this.currentFile.name.endsWith('.xls') || this.currentFile.name.endsWith('.xlsx');
-      const isLt20M = this.currentFile.size / 1024 / 1024 < 20;
 
       if (!isExcel) {
-        return this.$message.error('只能上传 Excel 文件!');
+        return this.$message.error('只能上传 .xls / .xlsx 格式的 Excel 文件!');
       }
-      if (!isLt20M) {
-        return this.$message.error('文件大小不能超过 20MB!');
-      }
+      // 大小超限不做前端拦截：交由后端 fileLevelCheck 拦截并落文件级失败留痕任务（状态 14 + 标准文案），
+      // 前端拦截会导致请求未发出、导入记录无痕可查
 
       this.isUploading = true;
 
       try {
         const formData = new FormData();
         formData.append('file', this.currentFile);
-        const res = await this.importFile(formData);
+        // 最短 loading 展示 600ms：快速响应下保证转圈状态可见，避免一闪而过无反馈；慢请求（如竞速等待）不受影响
+        const [res] = await Promise.all([
+          this.importFile(formData),
+          new Promise(resolve => setTimeout(resolve, 600))
+        ]);
         if (this.async) {
+          // 显式 :async="true"（存量调用）：保持现状语义，立即提示跳转任务页，组件内不走同步等待竞速
           this.$confirm('正在导入中，是否要跳转"系统管理-文件管理-导入任务"中查看？', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            window.open('/service/excelManagement/commonDataProcessExcelImportTask', '_blank');
+            window.open(IMPORT_TASK_PAGE_URL, '_blank');
           }).catch(() => {});
-          this.fileList = [];
-          this.currentFile = null;
+          this.resetFile();
           this.handleClose();
           return;
         }
-        if (res.failExcelUrl || res.failNum > 0) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
-          // 判断有文件 未上传成功时 在提示
-          this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
-          setTimeout(() => {
-            downloadExcel(res?.failExcelUrl, res?.fileName || res?.businessType || '模板.xlsx');
-          }, 2000);
-          this.$emit('getData');
-        } else {
-          this.$message.success('文件上传成功');
-          this.$emit('getData');
+        if (this.uploadUrl) {
+          // uploadUrl 旁路（定制导入接口）：完全现状逻辑，不经通用引擎新契约消化
+          if (res.failExcelUrl || res.failNum > 0) { // 判断是否有未上传成功错误文件 有的话 直接走自动下载逻辑
+            // 判断有文件 未上传成功时 在提示
+            this.$message.error(`文件上传成功${res.successNum}条,失败${res.failNum}条,将自动下载失败文件!`);
+            setTimeout(() => {
+              downloadExcel(res?.failExcelUrl, res?.fileName || res?.businessType || '模板.xlsx');
+            }, 2000);
+            this.$emit('getData');
+          } else {
+            this.$message.success('文件上传成功');
+            this.$emit('getData');
+          }
+          // 公共清理逻辑
+          this.resetFile();
+          this.handleClose();
+          return;
         }
-        // 公共清理逻辑
-        this.fileList = [];
-        this.currentFile = null;
-        this.handleClose();
+        // 通用导入：按新契约消化响应（完成结果/文案型返回/任务化返回三形态），
+        // 与后端 legacyOnly 回退下的现状语义天然兼容
+        this.handleImportResult(res);
       } catch (error) {
-        this.$message.error('文件上传失败');
-        this.fileList = [];
-        this.currentFile = null;
-        this.$refs.upload && this.$refs.upload.clearFiles();
-        this.handleClose();
+        if (this.uploadUrl) {
+          // 现状行为：toast + 清理 + 关闭
+          this.$message.error('文件上传失败');
+          this.resetFile();
+          this.handleClose();
+        } else {
+          // HTTP 异常：报错文案已由 axios 拦截器统一 toast（透传后端 msg），
+          // 弹窗不关闭、保留已选文件便于重试
+        }
       } finally {
         this.isUploading = false;
       }
+    },
+    // 通用导入结果消化（技术方案 §4.3）：
+    // ① 完成结果：全成功 toast"导入成功"；有失败 toast"成功 X 行，失败 X 行"并 2 秒后自动下载失败文件；emit getData
+    // ② 文案型返回（文件级校验失败/MD5 防重留痕，successNum=0 && failNum=0 && failExcelUrl=标准文案）：
+    //    仅 toast 后端标准文案，弹窗不关闭、可重新选择文件，不触发下载、不 emit
+    // ③ 任务化返回（8s 竞速超时）：data 承载 taskId，提示转导入记录页；确认后仍 emit getData 尽力刷新
+    handleImportResult (res) {
+      if (!res || typeof res !== 'object') {
+        this.$message.error('文件上传失败');
+        return;
+      }
+      // 形态③：data 承载 taskId（完成结果/文案型返回时 data 为空）
+      if (isConfigured(res.data)) {
+        this.$confirm('导入任务创建成功，请等待系统处理，稍后在导入记录中查看结果', '提示', {
+          confirmButtonText: '前往导入记录',
+          cancelButtonText: '取消',
+          type: 'success'
+        }).then(() => {
+          window.open(IMPORT_TASK_PAGE_URL, '_blank');
+          this.$emit('getData');
+        }).catch(() => {
+          this.$emit('getData');
+        });
+        this.resetFile();
+        this.handleClose();
+        return;
+      }
+      // 形态②：文案型返回（failExcelUrl 非空且 successNum/failNum 均为 0）
+      if (res.failExcelUrl && !Number(res.failNum) && !Number(res.successNum)) {
+        this.$message.error(res.failExcelUrl);
+        return;
+      }
+      // 形态①：完成结果
+      const successNum = Number(res.successNum || 0);
+      const failNum = Number(res.failNum || 0);
+      if (failNum > 0) {
+        this.$message.warning(`成功 ${successNum} 行，失败 ${failNum} 行`);
+        setTimeout(() => {
+          // 失败文件命名：业务标识 + yyyyMMddHHmmss（downloadExcel 内部追加下载时刻时间戳）
+          downloadExcel(res?.failExcelUrl, this.templateInfo?.businessType || '导入失败数据');
+        }, 2000);
+      } else {
+        this.$message.success('导入成功');
+      }
+      this.$emit('getData');
+      this.resetFile();
+      this.handleClose();
     },
     // 执行导入请求：定制接口优先，否则走通用导入
     async importFile (formData) {
@@ -199,7 +347,7 @@ export default {
     async downloadTemplate () {
       const res = await getTemplateCode(this.id);
       downloadExcel(res?.excelModelUrl, res?.fileName || res?.businessType || '模板.xlsx');
-    },
+    }
   }
 };
 </script>
@@ -240,6 +388,20 @@ export default {
   .el-upload-dragger{
     width: 100%;
     height: 206px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // 外边框虚线恒为灰：Element 默认在悬停（:hover）、拖拽悬停（.is-dragover）时把 border-color
+    // 切成 $--color-primary（主题色），这里按状态逐条压回基础灰；层级高于 Element 默认规则，不依赖注入顺序
+    &:hover,
+    &.is-dragover {
+      border: 1px dashed #d9d9d9;
+    }
+  }
+  // 点选文件后 .el-upload（tabindex=0）会保持焦点，Element 的 :focus 规则会穿透改 dragger 边框色，
+  // 需单独压回（选择器层级 +1 高于 Element，保证生效）
+  .el-upload:focus .el-upload-dragger {
+    border: 1px dashed #d9d9d9;
   }
   .el-upload__tip{
     color: #9d9d9d;
@@ -250,6 +412,56 @@ export default {
   .upload-modal-link {
     color: var(--themColor);
     cursor: pointer;
+  }
+  // 已选文件卡片：渲染在拖拽选择区域内（替换上传提示），图标/文件名/操作纵向居中排列
+  .upload-file-card {
+    width: 100%;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // 卡片基础文字色：不显式指定会从 .el-upload 继承——它带 tabindex=0，点选文件后 :focus 一直保持，
+    // Element 的 .el-upload:focus{color:主题色} 就把文件名染成主题色（各宿主主题不同，可能是蓝字）
+    // fallback #3B3E3B 即宿主 --aisDefaultTextColor 的取值（partner_vue_cli3 未定义该变量，靠 fallback 兜底）
+    color: var(--aisDefaultTextColor, #3B3E3B);
+    i {
+      color: var(--themColor);
+      font-size: 48px;
+    }
+    // 已选文件图标（Excel 文件图标资源，assets/images/import-file-icon.svg）；
+    // 用 img 而非内联 svg：该图标依赖 SVG filter/mask，Vue2 isSVG 白名单不含 fe* 元素，内联会建到 HTML 命名空间导致滤镜失效
+    .upload-file-card-icon {
+      width: 48px;
+      height: 48px;
+    }
+    .upload-file-card-name {
+      max-width: 100%;
+      margin-top: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .upload-file-card-actions {
+      margin-top: 4px;
+      .el-button {
+        padding: 0 4px;
+      }
+      .upload-file-card-delete {
+        // !important：部分前端全局 base.css 用 .el-button--text{color:主题色!important} 强制覆盖 text 按钮，
+        // 双方均带 !important 时按选择器权重比较，此处层级更深可稳定生效
+        color: #F56C6C !important;
+        &:hover,
+        &:focus {
+          color: #F78989 !important;
+        }
+      }
+    }
+    .upload-file-card-uploading {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #9d9d9d;
+    }
   }
 }
 </style>
