@@ -800,3 +800,15 @@ export function validateAttachments ({
 
   return { valid: errors.length === 0, errors, details };
 }
+
+/**
+ * HTML 转义，防止不可信内容被拼接进 innerHTML 时造成结构破坏或 XSS
+ */
+export function escapeHtml (str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
