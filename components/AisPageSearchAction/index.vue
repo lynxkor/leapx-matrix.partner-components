@@ -1,7 +1,7 @@
 <template>
   <el-form-item label=" " class="form-item-action" :class="{'right': align === 'right'}">
-    <el-button v-if="isListPage" size="medium" class="btn-search" @click="openSaveDialog">另存为查询视图</el-button>
     <el-button :loading="Loading" size="medium" class="btn-search" @click="$emit('submit')">查询</el-button>
+    <el-button v-if="isListPage" size="medium" class="btn-search" @click="openSaveDialog">另存为查询视图</el-button>
     <el-button size="medium" class="btn-reset" @click="handleReset">重置</el-button>
     <span v-if="isExpandable" class="icon-expand curPoint" @click="$emit('input', !value)">
       {{ value ? "收起" : "展开"}}
