@@ -130,6 +130,19 @@ export default {
     bizKey: {
       type: String,
       required: true
+    },
+    /**
+     * 性能测试用的业务上下文标识。
+     *
+     * <p>视图对应的列表接口若必须带业务上下文才能定位数据(如单据明细表视图,
+     * 通用视图查询接口拿不到单据 ID),由宿主传入此参数,性能测试会一并带给后端,
+     * 后端再透传给被测接口。</p>
+     *
+     * <p>为空 = 沿用历史行为(只传视图 id)。</p>
+     */
+    perfTabCode: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -305,7 +318,11 @@ export default {
       this.errorSummary = [];
       this.perfTesting = true;
       try {
-        const data = await customQueryViewApi.perf(this.currentPresetId);
+        // 带业务上下文时传对象 { id, tabCode },否则沿用历史形态(裸 id 字符串)
+        const payload = this.perfTabCode
+          ? { id: this.currentPresetId, tabCode: this.perfTabCode }
+          : this.currentPresetId;
+        const data = await customQueryViewApi.perf(payload);
         const status = data && data.perfStatus;
         const dur = data && data.perfDurationMs;
         this.$message[status === 'passed' ? 'success' : 'error'](
