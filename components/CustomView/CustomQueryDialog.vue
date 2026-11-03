@@ -104,6 +104,7 @@ import {
   cloneTree,
   operatorNeedsValue
 } from './fieldMeta';
+import { resolveSortList } from './sortJson';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 
 export default {
@@ -142,7 +143,20 @@ export default {
       perfTesting: false,
       applying: false,
       fieldsMeta: getFields(),
-      fieldsLoading: false
+      fieldsLoading: false,
+      /**
+       * 批量排序列表(需求 LP262002 7.1.2.2 多字段排序)。
+       *
+       * <p>本组件自带的排序区仍是单字段的(workingSort),本字段承载
+       * 「多字段排序」能力:由外部(合并了多字段排序 UI 的弹窗)设置
+       * {@code presetSortJson} 后随视图一起保存。</p>
+       */
+      presetSortJson: '',
+      /**
+       * 从视图详情解析出来的排序项列表 [{field, order}]。
+       * 优先取 sortJson(多字段),历史数据回落到旧的 sortField / sortOrder。
+       */
+      presetSortList: []
     };
   },
   computed: {
@@ -156,6 +170,8 @@ export default {
       if (val) {
         this.workingTree = this.makeInitialTree();
         this.workingSort = this.makeInitialSort();
+        this.presetSortJson = '';
+        this.presetSortList = [];
         this.errorSummary = [];
         this.viewName = '';
         this.currentPresetId = this.activePresetId || null;
@@ -210,6 +226,9 @@ export default {
         this.workingSort = data.sortField
           ? { field: data.sortField, order: data.sortOrder }
           : this.makeInitialSort();
+        // 批量排序(多字段):优先 sortJson,历史数据回落到旧的 sortField / sortOrder。
+        // 外部的「多字段排序」UI 读这个列表来回填。
+        this.presetSortList = resolveSortList(data);
       } catch (e) {
         this.$message.error('加载视图详情失败');
       }
@@ -224,6 +243,13 @@ export default {
         sortField: this.workingSort.field || '',
         sortOrder: this.workingSort.field && this.workingSort.order ? this.workingSort.order : ''
       };
+      // 批量排序(多字段,需求 LP262002 7.1.2.2):外部设置了 presetSortJson 就走新字段,
+      // 并且不再带旧的单字段排序 —— 两套字段不并存,读取侧优先用 sortJson。
+      if (this.presetSortJson) {
+        payload.sortJson = this.presetSortJson;
+        payload.sortField = '';
+        payload.sortOrder = '';
+      }
       try {
         const res = await customQueryViewApi.addOrUpdate(payload);
         return res || id || '';

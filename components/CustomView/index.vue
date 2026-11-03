@@ -153,7 +153,7 @@
     </el-dropdown>
 
     <component
-      :is="dialogComponent || CustomQueryDialog"
+      :is="resolvedDialogComponent"
       v-bind="dialogProps"
       :visible.sync="dialogVisible"
       :active-preset-id="editingPresetId"
@@ -167,6 +167,7 @@
 <script>
 import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
+import { resolveSortList, toSortColumns } from './sortJson';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 import TextEllipsis from '@/libs/components/TextEllipsis';
 import draggable from 'vuedraggable';
@@ -227,6 +228,18 @@ export default {
     };
   },
   computed: {
+    /**
+     * 实际渲染的弹窗组件。
+     *
+     * <p>模板里不能写 {@code :is="dialogComponent || CustomQueryDialog"}:
+     * import 的组件注册在 components 选项里,并不是实例属性,运行时
+     * {@code this.CustomQueryDialog} 恒为 undefined —— 未传 dialogComponent
+     * 的页面(如保修申请单)弹窗根本渲染不出来,点「编辑/新增」无效。
+     * 这里显式兜底,不依赖实例属性解析。</p>
+     */
+    resolvedDialogComponent () {
+      return this.dialogComponent || CustomQueryDialog;
+    },
     activePresetName () {
       if (!this.activePresetId) return '';
       const preset = this.presets.find(p => p.id === this.activePresetId);
@@ -483,6 +496,13 @@ export default {
             payload.conditionTree = detail.conditionTree || payload.conditionTree;
             payload.sortField = detail.sortField || '';
             payload.sortOrder = detail.sortOrder || '';
+            // 批量排序(多字段):源视图用的是新字段就整份复制,
+            // 并且不再带旧的单字段排序(两套字段不并存)。
+            if (detail.sortJson) {
+              payload.sortJson = detail.sortJson;
+              payload.sortField = '';
+              payload.sortOrder = '';
+            }
           }
         } catch (e) {
           // 读不到详情时复制出一个空视图,不影响主流程
@@ -601,14 +621,18 @@ export default {
       await this.applyPreset(preset);
     },
     // 选中视图:同步条件/排序/选中态到外层,由 store 驱动业务页按视图查询
-    async applyPreset (preset) {
+    // options.silent = true 时不弹「已应用视图」提示
+    // (弹窗保存成功后会自动应用视图,那一步已有「保存成功/性能测试通过」提示,
+    //  再弹一次会变成连续三条 toast)
+    async applyPreset (preset, options) {
+      const silent = !!(options && options.silent);
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
         if (!data) return;
         const tree = data.conditionTree ? JSON.parse(data.conditionTree) : null;
-        const sortColumns = data.sortField
-          ? [{ column: data.sortField, sort: data.sortOrder.toUpperCase() }]
-          : [];
+        // 排序:优先 sortJson(多字段,需求 LP262002 7.1.2.2),
+        // 历史数据(无 sortJson)回落到旧的 sortField / sortOrder 单字段。
+        const sortColumns = toSortColumns(resolveSortList(data));
         this.$emit('update:activePresetId', preset.id);
         this.$emit('input', tree);
         this.$emit('update:sortColumns', sortColumns);
@@ -617,9 +641,11 @@ export default {
           sortColumns,
           activePresetId: preset.id
         });
-        this.$message.success(this.localApply
-          ? `已应用视图「${preset.name}」`
-          : `已使用视图「${preset.name}」,表单已锁定`);
+        if (!silent) {
+          this.$message.success(this.localApply
+            ? `已应用视图「${preset.name}」`
+            : `已使用视图「${preset.name}」,表单已锁定`);
+        }
       } catch (e) {
         this.$message.error('加载视图详情失败');
       }
@@ -633,7 +659,8 @@ export default {
         return;
       }
       const preset = this.presets.find(p => p.id === id);
-      if (preset) this.applyPreset(preset);
+      // 弹窗保存成功后自动应用视图:静默(提示语由保存流程自己给)
+      if (preset) this.applyPreset(preset, { silent: true });
     },
     /**
      * 弹窗保存成功时透传其 save 载荷(如表格列配置)。
