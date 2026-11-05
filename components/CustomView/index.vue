@@ -167,7 +167,7 @@
 <script>
 import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
-import { resolveSortList, toSortColumns } from './sortJson';
+import { resolveSortList, toSortColumns, toSortJson } from './sortJson';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 import TextEllipsis from '@/libs/components/TextEllipsis';
 import draggable from 'vuedraggable';
@@ -486,23 +486,18 @@ export default {
         bizKey: this.bizKey,
         viewName: `${sourceName}-复制`,
         conditionTree: JSON.stringify({ logic: 'AND', conditions: [] }),
-        sortField: '',
-        sortOrder: ''
+        // 排序:批量排序(需求 LP262002 7.1.2.2),只发新字段 sortJson,不双写旧的。
+        // 默认 "[]" = 复制出来的视图没有排序(系统视图没有排序配置)。
+        sortJson: '[]'
       };
       if (!isSystem) {
         try {
           const detail = await customQueryViewApi.getDetail(preset.id);
           if (detail) {
             payload.conditionTree = detail.conditionTree || payload.conditionTree;
-            payload.sortField = detail.sortField || '';
-            payload.sortOrder = detail.sortOrder || '';
-            // 批量排序(多字段):源视图用的是新字段就整份复制,
-            // 并且不再带旧的单字段排序(两套字段不并存)。
-            if (detail.sortJson) {
-              payload.sortJson = detail.sortJson;
-              payload.sortField = '';
-              payload.sortOrder = '';
-            }
+            // 排序整份复制:优先 sortJson(多字段),历史数据回落到旧的
+            // sortField / sortOrder(单字段),统一由 resolveSortList 归一后再序列化。
+            payload.sortJson = toSortJson(resolveSortList(detail));
           }
         } catch (e) {
           // 读不到详情时复制出一个空视图,不影响主流程

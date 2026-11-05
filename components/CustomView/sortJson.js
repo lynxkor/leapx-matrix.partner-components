@@ -93,17 +93,36 @@ export function parseSortJson (sortJson) {
 /**
  * 取出视图实际生效的排序项列表(兼容历史数据)。
  *
- * <p>{@code sortJson} 有值 → 以它为准;{@code sortJson} 为空(历史数据)→
- * 用旧的 {@code sortField} / {@code sortOrder} 拼出单字段排序项。</p>
+ * <p><b>口径与后端 {@code SortJsonSupport.resolve} 严格一致</b>:
+ * <ul>
+ *   <li>{@code sortJson} 非空 → 以它为准。<b>哪怕解析出来是空数组</b>
+ *       (即库里的 {@code "[]"},表示用户明确清空了排序),也不回落到旧字段 ——
+ *       否则「清空排序」会被旧字段顶回来,用户清不掉。</li>
+ *   <li>{@code sortJson} 为空 / 空白 → 历史数据,用旧的 {@code sortField} /
+ *       {@code sortOrder} 拼出单字段排序项。</li>
+ *   <li>{@code sortJson} 内容损坏(非法 JSON / 非数组)→ 同样回落到旧字段,
+ *       与后端「脏数据回落旧字段」的行为一致。</li>
+ * </ul></p>
  *
  * @param {Object} detail 视图详情(含 sortJson / sortField / sortOrder)
  * @returns {Array<Object>} [{field, order}] order 为 asc / desc
  */
 export function resolveSortList (detail) {
   if (!detail) return [];
-  const fromJson = parseSortJson(detail.sortJson);
-  if (fromJson.length) {
-    return fromJson.map(item => ({ field: item.sortField, order: item.sortOrder }));
+  const raw = typeof detail.sortJson === 'string' ? detail.sortJson.trim() : '';
+  if (raw) {
+    let parsedArray = null;
+    try {
+      const value = JSON.parse(raw);
+      if (Array.isArray(value)) parsedArray = value;
+    } catch (e) {
+      // 非法 JSON → parsedArray 保持 null,下面回落旧字段
+    }
+    // 合法 JSON 数组 → 以它为准(含空数组:用户明确清空过排序)
+    if (parsedArray) {
+      return parseSortJson(raw).map(item => ({ field: item.sortField, order: item.sortOrder }));
+    }
+    // 非法 JSON / 非数组 → 回落旧字段(与后端一致)
   }
   if (detail.sortField) {
     const rawOrder = String(detail.sortOrder || '').trim().toLowerCase();
@@ -119,7 +138,9 @@ export function resolveSortList (detail) {
  * 排序项列表 → sortJson(JSON 数组字符串)。
  *
  * <p>空列表返回 {@code "[]"} 而不是空串 —— 空串会被后端当成「没传 sortJson」
- * 而回落到旧字段,导致「清空排序」不生效。</p>
+ * 而回落到旧字段,导致「清空排序」不生效。后端 {@code SortJsonSupport.resolve}
+ * 对 {@code "[]"} 的处理是「以它为准」(解析出空列表,不回落旧字段),
+ * 与这里的行为一致。</p>
  *
  * @param {Array<Object>} list [{field, order}]
  * @returns {String}

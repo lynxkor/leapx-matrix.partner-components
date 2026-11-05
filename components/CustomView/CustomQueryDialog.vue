@@ -55,33 +55,19 @@
       </div>
 
       <el-divider></el-divider>
-      <!-- 排序(单字段 + 升/降) -->
+      <!--
+        排序(批量多字段,需求 LP262002 7.1.2.2 自定义排序)。
+        交互按 PRD:「＋添加排序字段」下拉 + 每行(手柄/字段名/升降序/删除),
+        行与行的先后即排序优先级,靠前的字段先排(可拖动手柄调整次序)。
+      -->
       <div class="c-cqd__sort">
         <div class="c-cqd__sort-content">
           <div class="c-cqd__sort-title">排序</div>
-          <div class="c-cqd__sort-row">
-            <el-select
-              v-model="workingSort.field"
-              placeholder="选择排序字段"
-              size="small"
-              filterable
-              clearable
-              class="c-cqd__sort-field"
-            >
-              <el-option
-                v-for="f in fields"
-                :key="f.key"
-                :value="f.key"
-                :label="f.label"
-              />
-            </el-select>
-            <el-radio-group v-model="workingSort.order" size="small" :disabled="!workingSort.field">
-              <el-radio-button label="asc">升序</el-radio-button>
-              <el-radio-button label="desc">降序</el-radio-button>
-            </el-radio-group>
-          </div>
+          <sort-field-editor
+            v-model="sortList"
+            :fields="fields"
+          />
         </div>
-        <div class="c-cqd__sort-hint">不选字段则按后端默认排序</div>
       </div>
     </div>
 
@@ -97,6 +83,7 @@
 
 <script>
 import CustomConditionGroup from './CustomConditionGroup.vue';
+import SortFieldEditor from './SortFieldEditor.vue';
 import {
   loadFields,
   getFields,
@@ -104,12 +91,12 @@ import {
   cloneTree,
   operatorNeedsValue
 } from './fieldMeta';
-import { resolveSortList } from './sortJson';
+import { resolveSortList, toSortJson } from './sortJson';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 
 export default {
   name: 'CustomQueryDialog',
-  components: { CustomConditionGroup },
+  components: { CustomConditionGroup, SortFieldEditor },
   props: {
     visible: {
       type: Boolean,
@@ -149,27 +136,23 @@ export default {
     return {
       dialogVisible: this.visible,
       workingTree: this.makeInitialTree(),
-      workingSort: this.makeInitialSort(),
+      /**
+       * 排序项列表 [{field, order}] —— 排序的唯一数据源。
+       *
+       * <p>需求 LP262002 7.1.2.2:排序由单字段改为批量多字段。
+       * 数组顺序即排序优先级(靠前的字段先排),可拖动手柄调整次序。</p>
+       *
+       * <p>历史兼容:读取时优先取 sortJson(多字段),没有才回落到旧的
+       * sortField / sortOrder 单字段,回填到本列表里 —— 见 {@link resolveSortList}。</p>
+       */
+      sortList: this.makeInitialSortList(),
       errorSummary: [],
       viewName: '',
       currentPresetId: null,
       perfTesting: false,
       applying: false,
       fieldsMeta: getFields(),
-      fieldsLoading: false,
-      /**
-       * 批量排序列表(需求 LP262002 7.1.2.2 多字段排序)。
-       *
-       * <p>本组件自带的排序区仍是单字段的(workingSort),本字段承载
-       * 「多字段排序」能力:由外部(合并了多字段排序 UI 的弹窗)设置
-       * {@code presetSortJson} 后随视图一起保存。</p>
-       */
-      presetSortJson: '',
-      /**
-       * 从视图详情解析出来的排序项列表 [{field, order}]。
-       * 优先取 sortJson(多字段),历史数据回落到旧的 sortField / sortOrder。
-       */
-      presetSortList: []
+      fieldsLoading: false
     };
   },
   computed: {
@@ -182,9 +165,7 @@ export default {
       this.dialogVisible = val;
       if (val) {
         this.workingTree = this.makeInitialTree();
-        this.workingSort = this.makeInitialSort();
-        this.presetSortJson = '';
-        this.presetSortList = [];
+        this.sortList = this.makeInitialSortList();
         this.errorSummary = [];
         this.viewName = '';
         this.currentPresetId = this.activePresetId || null;
@@ -219,11 +200,19 @@ export default {
         conditions: [createEmptyRow()]
       };
     },
-    makeInitialSort () {
+    /**
+     * 初始排序项列表。
+     *
+     * <p>宿主可通过 sort 入参传一个单字段排序 {field, order}(历史接口),
+     * 这里把它转成排序项列表形态,让批量与单字段共用同一套数据结构。</p>
+     *
+     * @returns {Array<Object>} [{field, order}]
+     */
+    makeInitialSortList () {
       if (this.sort && this.sort.field) {
-        return { field: this.sort.field, order: this.sort.order };
+        return [{ field: this.sort.field, order: this.sort.order || 'asc' }];
       }
-      return { field: null, order: null };
+      return [];
     },
     onTreeChange (newTree) {
       this.workingTree = newTree;
@@ -236,12 +225,8 @@ export default {
         this.viewName = data.viewName || '';
         const tree = data.conditionTree ? JSON.parse(data.conditionTree) : this.makeInitialTree();
         this.workingTree = cloneTree(tree);
-        this.workingSort = data.sortField
-          ? { field: data.sortField, order: data.sortOrder }
-          : this.makeInitialSort();
-        // 批量排序(多字段):优先 sortJson,历史数据回落到旧的 sortField / sortOrder。
-        // 外部的「多字段排序」UI 读这个列表来回填。
-        this.presetSortList = resolveSortList(data);
+        // 排序:优先 sortJson(多字段),历史数据回落到旧的 sortField / sortOrder。
+        this.sortList = resolveSortList(data);
       } catch (e) {
         this.$message.error('加载视图详情失败');
       }
@@ -253,16 +238,13 @@ export default {
         bizKey: this.bizKey,
         viewName: name,
         conditionTree: JSON.stringify(this.workingTree),
-        sortField: this.workingSort.field || '',
-        sortOrder: this.workingSort.field && this.workingSort.order ? this.workingSort.order : ''
+        // 批量排序(需求 LP262002 7.1.2.2):只发新字段 sortJson,不双写旧的
+        // sortField / sortOrder —— 两套字段不并存,读取侧优先用 sortJson,
+        // 历史数据(没有 sortJson)才回落到旧的单字段。
+        // 空列表序列化成 "[]" 而不是空串:空串会被后端当成「没传 sortJson」
+        // 而回落到旧字段,导致「清空排序」不生效。
+        sortJson: toSortJson(this.sortList)
       };
-      // 批量排序(多字段,需求 LP262002 7.1.2.2):外部设置了 presetSortJson 就走新字段,
-      // 并且不再带旧的单字段排序 —— 两套字段不并存,读取侧优先用 sortJson。
-      if (this.presetSortJson) {
-        payload.sortJson = this.presetSortJson;
-        payload.sortField = '';
-        payload.sortOrder = '';
-      }
       try {
         const res = await customQueryViewApi.addOrUpdate(payload);
         return res || id || '';
@@ -347,7 +329,8 @@ export default {
           logic: 'AND',
           conditions: [createEmptyRow()]
         };
-        this.workingSort = this.makeInitialSort();
+        // 排序一并清空(批量排序项列表)
+        this.sortList = [];
         this.errorSummary = [];
       }).catch(() => {});
     },
@@ -384,11 +367,20 @@ export default {
       });
       return { valid: summary.length === 0, summary };
     },
+    /**
+     * 校验排序项:每个排序字段都必须有排序方向。
+     *
+     * <p>批量排序(需求 LP262002 7.1.2.2):逐行校验,提示语带上行号。</p>
+     */
     validateSort () {
       const summary = [];
-      if (this.workingSort.field && !this.workingSort.order) {
-        summary.push('排序:请选择顺序');
-      }
+      (this.sortList || []).forEach((item, idx) => {
+        if (!item || !item.field) {
+          summary.push(`排序第 ${idx + 1} 行:请选择字段`);
+        } else if (!item.order) {
+          summary.push(`排序第 ${idx + 1} 行:请选择排序方向`);
+        }
+      });
       return { valid: summary.length === 0, summary };
     },
     countNodes (group) {
@@ -463,29 +455,13 @@ export default {
     padding: 0px 10px;
     border-radius: 4px;
     &-content {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: block;
     }
   }
   &__sort-title {
     color: #606266;
     font-size: 13px;
     margin-bottom: 6px;
-  }
-  &__sort-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 4px;
-  }
-  &__sort-field {
-    width: 240px;
-  }
-  &__sort-hint {
-    color: var(--leap-color-default-light-2);
-    font-size: 12px;
-    padding-left: 36px;
   }
 }
 .dialog-footer {
