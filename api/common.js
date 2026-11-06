@@ -123,10 +123,35 @@ export function repairItemType (data) {
 }
 
 /**
- * 省模糊搜索
- * @param {*}
+ * 大区列表查询（orgType=1020 即门店大区）
+ *
+ * 与主仓 api/common.js 的同名函数保持一致 —— libs 是独立子模块，
+ * 公共组件不能反向依赖主仓，只能各自封装一份同口径的接口。
+ * @param {*} data
+ */
+export function getRegion (data) {
+  return api.jsonPost('/accountService/orgInfo/findByReginType2R', {
+    ...data,
+    orgType: '1020'
+  });
+}
+
+/**
+ * 网发下拉字典批量查询（经营状态、门店等级等）
+ * 入参按需设置标记字段为 1，例如 { storeStatus: 1, storeLevel: 1 }
+ * 返回 Map<dictKey, DataDictDTO[]>
+ * @param {Object} data
+ */
+export function getDataDict (data) {
+  return api.get('/network/portal/DataDict/getSelectList', data);
+}
+
+/**
+ * 省市区树查询（省 / 市 / 区三级，节点形如 { name, code, child }）
+ * @param {}
  */
 export function getProvinceTree () {
+  // 省市区树（省 / 市 / 区三级，节点形如 { name, code, child }）
   return api.get('/area/tree');
 }
 

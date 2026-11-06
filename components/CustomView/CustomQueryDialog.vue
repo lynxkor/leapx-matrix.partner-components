@@ -23,6 +23,7 @@
           class="c-cqd__presets-input"
         />
         <el-button
+          v-if="!showTableSetting"
           size="small"
           icon="el-icon-cpu"
           :disabled="!currentPresetId || applying"
@@ -69,6 +70,24 @@
           />
         </div>
       </div>
+
+      <!--
+        自定义表格(合并模式)。
+        业务页面(如单据明细表的个人视图)需要把「表格设置」与「条件 + 排序」
+        放在同一个弹窗里,开启 showTableSetting 即可 —— 不必在业务项目内
+        再复制一份弹窗组件。
+      -->
+      <template v-if="showTableSetting">
+        <el-divider></el-divider>
+        <div class="c-cqd__table">
+          <div class="c-cqd__table-title">自定义表格</div>
+          <table-setting
+            ref="tableSetting"
+            :value="tableConfig"
+            :show-base-settings="showBaseSettings"
+          />
+        </div>
+      </template>
     </div>
 
     <template v-slot:footer>
@@ -84,6 +103,7 @@
 <script>
 import CustomConditionGroup from './CustomConditionGroup.vue';
 import SortFieldEditor from './SortFieldEditor.vue';
+import TableSetting from './TableSetting.vue';
 import {
   loadFields,
   getFields,
@@ -92,11 +112,18 @@ import {
   operatorNeedsValue
 } from './fieldMeta';
 import { resolveSortList, toSortJson } from './sortJson';
+import {
+  viewTableConfigCode,
+  buildTableConfig,
+  mergeTableConfig,
+  toTableConfigPayload
+} from './tableConfig';
+import { getTableConfig, tableAddOrUpdate } from '@/libs/api/common';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 
 export default {
   name: 'CustomQueryDialog',
-  components: { CustomConditionGroup, SortFieldEditor },
+  components: { CustomConditionGroup, SortFieldEditor, TableSetting },
   props: {
     visible: {
       type: Boolean,
@@ -130,6 +157,51 @@ export default {
     perfTabCode: {
       type: String,
       default: ''
+    },
+    /**
+     * 是否在弹窗里显示「自定义表格」区块(合并模式)。
+     *
+     * <p>业务页面(如单据明细表的个人视图)需要把「表格设置」与「条件 + 排序」
+     * 放在同一个弹窗里,开启本开关即可 —— 业务项目内不必再复制一份弹窗组件。</p>
+     *
+     * <p>默认 false = 保持原行为(纯条件查询弹窗),不影响既有页面。</p>
+     */
+    showTableSetting: {
+      type: Boolean,
+      default: false
+    },
+    /**
+     * 「自定义表格」区的列定义基准(页面当前的列配置)。
+     *
+     * <p>仅 showTableSetting 开启时生效。表格配置以它为基准:
+     * 页面新增的列不会被历史配置覆盖,列的显隐与顺序按视图保存的值回填。</p>
+     */
+    tableConfig: {
+      type: Object,
+      default: () => ({
+        autoWrap: false,
+        layout: 3,
+        columnConfig: [],
+        isOperateFixed: true
+      })
+    },
+    /**
+     * 是否显示「表格设置」里的基础设置区块(折行 / 紧凑度 / 操作列固定)。
+     *
+     * <p>底层表格组件若不支持这三项(如 EditTable 写死了 show-overflow 与行高),
+     * 传 false 隐藏该区块,避免出现「设了不生效」。</p>
+     */
+    showBaseSettings: {
+      type: Boolean,
+      default: true
+    },
+    /**
+     * 表格配置的存储键前缀。默认按「业务键 + 视图 id」生成,
+     * 需要与业务页本地读取表格配置时保持一致时才覆盖。
+     */
+    tableConfigCodePrefix: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -152,7 +224,9 @@ export default {
       perfTesting: false,
       applying: false,
       fieldsMeta: getFields(),
-      fieldsLoading: false
+      fieldsLoading: false,
+      // 「自定义表格」区的当前配置(合并模式)
+      tableConfigState: buildTableConfig(this.tableConfig)
     };
   },
   computed: {
@@ -169,9 +243,12 @@ export default {
         this.errorSummary = [];
         this.viewName = '';
         this.currentPresetId = this.activePresetId || null;
+        // 合并模式:表格配置以页面列定义为基准,再叠加该视图已保存的显隐与顺序
+        this.tableConfigState = buildTableConfig(this.tableConfig);
         this.fetchFields();
         if (this.currentPresetId) {
           this.loadPresetDetail(this.currentPresetId);
+          this.loadTableConfig(this.currentPresetId);
         }
       }
     },
@@ -232,6 +309,67 @@ export default {
       }
     },
 
+    /**
+     * 表格配置在服务端的存储键。
+     *
+     * @param {String} viewId 视图 id
+     * @returns {String}
+     */
+    tableConfigCode (viewId) {
+      return this.tableConfigCodePrefix
+        ? `${this.tableConfigCodePrefix}:${viewId}`
+        : viewTableConfigCode(this.bizKey, viewId);
+    },
+
+    /**
+     * 加载已保存视图的表格配置并回填到「自定义表格」区(合并模式)。
+     *
+     * <p>读不到 / 没有历史配置时保持页面列定义为基准,不影响弹窗使用。</p>
+     *
+     * @param {String} viewId 视图 id
+     */
+    async loadTableConfig (viewId) {
+      if (!this.showTableSetting || !viewId) return;
+      this.tableConfigState = buildTableConfig(this.tableConfig);
+      try {
+        const res = await getTableConfig(this.tableConfigCode(viewId));
+        const cfg = res && res.config;
+        if (!cfg || !Array.isArray(cfg.columnConfig) || cfg.columnConfig.length === 0) return;
+        this.tableConfigState = mergeTableConfig(cfg, this.tableConfig);
+      } catch (e) {
+        // 表格配置是增强能力,读取失败不阻断弹窗使用
+      }
+    },
+
+    /**
+     * 保存当前表格配置到服务端(按视图 id 关联)。
+     *
+     * @param {String} viewId 视图 id
+     * @param {Object} tableConfig 表格配置
+     */
+    async saveTableConfig (viewId, tableConfig) {
+      if (!this.showTableSetting || !viewId || !tableConfig) return;
+      try {
+        await tableAddOrUpdate({
+          tableCode: this.tableConfigCode(viewId),
+          config: toTableConfigPayload(tableConfig),
+          resizableData: {}
+        });
+      } catch (e) {
+        this.$message.error('保存表格配置失败');
+      }
+    },
+
+    /**
+     * 取当前「自定义表格」区的配置。
+     *
+     * @returns {Object}
+     */
+    getTableConfig () {
+      const ts = this.$refs.tableSetting;
+      return ts ? ts.getTableConfig() : this.tableConfigState;
+    },
+
     async buildAndSave (id, name) {
       const payload = {
         id: id || null,
@@ -274,6 +412,23 @@ export default {
           return;
         }
         this.currentPresetId = newId;
+
+        // 合并模式:表格配置按视图 id 单独存(与视图分表)
+        if (this.showTableSetting) {
+          await this.saveTableConfig(newId, this.getTableConfig());
+        }
+
+        // 合并模式(本地生效场景):不做性能测试,保存即生效。
+        // 明细表这类视图后端通用查询拿不到单据 id,性能测试必然失败,
+        // 走的是业务页面本地求值,没有「接口性能」可测。
+        if (this.showTableSetting) {
+          this.$message.success('保存成功');
+          this.$emit('save', this.buildSavePayload(newId, name));
+          this.$emit('update:visible', false);
+          this.$emit('update:active-preset-id', newId);
+          return;
+        }
+
         this.$message.success('保存成功,正在测试接口...');
         const passed = await this.onRunPerfTest();
         // 测试未通过:弹窗保持打开便于修改条件,不触发页面刷新
@@ -283,6 +438,28 @@ export default {
       } finally {
         this.applying = false;
       }
+    },
+
+    /**
+     * 组装保存成功后的 save 事件载荷。
+     *
+     * <p>合并模式下宿主页面需要它来应用视图(条件 / 排序 / 表格配置)。</p>
+     *
+     * @param {String} id 视图 id
+     * @param {String} name 视图名
+     * @returns {Object}
+     */
+    buildSavePayload (id, name) {
+      return {
+        id,
+        viewName: name,
+        conditionTree: this.workingTree,
+        sortFields: (this.sortList || []).map(item => ({
+          column: item.field,
+          sort: item.order ? item.order.toUpperCase() : ''
+        })),
+        tableConfig: this.showTableSetting ? this.getTableConfig() : null
+      };
     },
 
     /**
@@ -331,6 +508,10 @@ export default {
         };
         // 排序一并清空(批量排序项列表)
         this.sortList = [];
+        // 合并模式:表格配置一并回到页面列定义的基准
+        if (this.showTableSetting) {
+          this.tableConfigState = buildTableConfig(this.tableConfig);
+        }
         this.errorSummary = [];
       }).catch(() => {});
     },
@@ -462,6 +643,17 @@ export default {
     color: #606266;
     font-size: 13px;
     margin-bottom: 6px;
+  }
+  &__table {
+    margin-top: 24px;
+    padding: 0px 10px;
+    border-radius: 4px;
+    &-title {
+      color: #606266;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
   }
 }
 .dialog-footer {

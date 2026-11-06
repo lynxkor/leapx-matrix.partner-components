@@ -10,6 +10,91 @@
 
 import * as customViewFieldApi from '@/libs/api/customView/customViewField';
 
+/**
+ * 关联对象 JSON 的解析与「关联字段唯一运算符」放在本模块，
+ * **不放在 relationMeta.js**。
+ *
+ * 原因：relationMeta.js 会 import 公共接口(@/libs/api/common)，
+ * 那条依赖链一旦出问题(接口模块加载异常/循环依赖)，
+ * 连带把运算符下拉也一起打挂 —— el-select 的候选项由 el-option 的
+ * created() 注册，父组件渲染一抛异常就没有候选项，界面只显示「无数据」，
+ * 而用户看到的现象是「无法选择运算符」，极难定位。
+ *
+ * 运算符下拉是纯逻辑，不该依赖任何网络/接口模块，故解析口径收敛到本文件；
+ * relationMeta.js 再从这里转出同名导出，外部引用方无需改动。
+ */
+
+/** 关联字段唯一允许的运算符 */
+export const RELATION_OPERATOR = 'contains';
+
+/**
+ * 解析关联对象 JSON
+ * @param {String} value 如 '{"table":"dealer","column":"province"}'
+ * @returns {Object|null} { table, column }；非 JSON 格式或字段缺失返回 null
+ */
+export function parseRelationJson (value) {
+  if (!value || typeof value !== 'string') return null;
+  const raw = value.trim();
+  if (!raw || raw.charAt(0) !== '{') return null;
+  let obj;
+  try {
+    obj = JSON.parse(raw);
+  } catch (err) {
+    return null;
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+  const table = typeof obj.table === 'string' ? obj.table.trim() : '';
+  const column = typeof obj.column === 'string' ? obj.column.trim() : '';
+  if (!table || !column) return null;
+  return { table, column };
+}
+
+/**
+ * 字段的「唯一定位键」——field_name + field_relation。
+ *
+ * <p><b>为什么不能只用 field_name</b>:同一个字段可以声明多个关联对象,
+ * 例如门店编码字段 dealer_code 可以同时配「省 / 市 / 区 / 大区 / 经营状态(服务)」
+ * 五个关联对象 —— 它们在库里是 5 条记录,field_name 完全相同,只有 field_relation 不同。
+ * 若下拉的 option value 只用 field_name,5 个 option 的 value 相同,
+ * el-select 匹配选中态时会全部高亮(用户看到的「选中一个,其他几个也亮了」)。</p>
+ *
+ * <p><b>键的格式</b>:<code>fieldName|fieldRelation</code>。
+ * field_relation 为空(普通字段)时退化成只有 field_name。</p>
+ *
+ * @param {String} fieldName 字段名
+ * @param {String} fieldRelation 关联对象 JSON 字符串
+ * @returns {String}
+ */
+export function fieldUniqueKey (fieldName, fieldRelation) {
+  if (!fieldName) return '';
+  const relation = (fieldRelation || '').trim();
+  return relation ? `${fieldName}|${relation}` : fieldName;
+}
+
+/**
+ * 从唯一定位键里还原出字段名。
+ *
+ * @param {String} key 唯一定位键
+ * @returns {String}
+ */
+export function fieldNameFromKey (key) {
+  if (!key) return '';
+  const idx = String(key).indexOf('|');
+  return idx === -1 ? String(key) : String(key).slice(0, idx);
+}
+
+/**
+ * 从唯一定位键里还原出关联对象 JSON。
+ *
+ * @param {String} key 唯一定位键
+ * @returns {String} 关联对象 JSON;无关联对象返回空串
+ */
+export function fieldRelationFromKey (key) {
+  if (!key) return '';
+  const idx = String(key).indexOf('|');
+  return idx === -1 ? '' : String(key).slice(idx + 1);
+}
+
 // 当前生效的字段定义(key/label/type/enumCode,可选 options)
 //   初始为空,调用 setFields([]) 后再渲染界面;否则所有字段下拉为空。
 let fields = [];
@@ -26,7 +111,14 @@ export function setFields (list) {
     key: item.fieldName,
     label: item.fieldLabel,
     type: item.fieldType,
-    enumCode: item.fieldEnum || null
+    enumCode: item.fieldEnum || null,
+    // 关联对象声明（JSON 字符串，如 {"table":"dealer","column":"province"}）；
+    // 声明了关联对象的字段，运算符与值控件都跟普通字段不一样。
+    fieldRelation: item.fieldRelation || null,
+    // 唯一定位键（field_name + field_relation）：
+    // 同一个字段名可配多个关联对象（省/市/区/大区/经营状态），
+    // 下拉的选中态按它区分，否则选一个会全部高亮。
+    uniqueKey: fieldUniqueKey(item.fieldName, item.fieldRelation)
   }));
   return fields;
 }
@@ -116,11 +208,57 @@ export function getField (fieldKey) {
   return fields.find(item => item.key === fieldKey) || null;
 }
 
+/**
+ * 工具:按唯一定位键取字段定义。
+ *
+ * <p>同一个 field_name 可配多个关联对象(省/市/区/大区/经营状态),
+ * 要区分它们必须带上关联对象 —— 见 {@link fieldUniqueKey}。</p>
+ *
+ * @param {String} uniqueKey 唯一定位键
+ * @returns {Object|null}
+ */
+export function getFieldByUniqueKey (uniqueKey) {
+  if (!uniqueKey) return null;
+  return fields.find(item => item.uniqueKey === uniqueKey) || null;
+}
+
+// 工具:按字段类型取可用运算符定义列表
+export function getOperatorsByType (type) {
+  const allowed = OPERATOR_MATRIX[type];
+  if (!allowed) return [];
+  return allowed.map(opValue => OPERATORS[opValue]).filter(Boolean);
+}
+
 // 工具:取字段对应的可用运算符定义列表
+// 注意:这里按「模块内当前生效的字段列表」查,字段列表缺失时返回空数组;
+// 渲染层请优先用 getOperatorsForFieldDef(字段对象),避免全局状态与
+// 实际渲染的字段列表不一致(下拉会是空的,用户完全无从下手)。
 export function getOperatorsForField (fieldKey) {
-  const type = getFieldType(fieldKey);
-  if (!type) return [];
-  return OPERATOR_MATRIX[type].map(opValue => OPERATORS[opValue]);
+  const field = getField(fieldKey);
+  return field ? getOperatorsForFieldDef(field) : [];
+}
+
+// 工具:按字段对象取可用运算符定义列表
+//   关联字段 -> 只给「包含」
+//   普通字段 -> 按类型×运算符矩阵
+//   字段缺失/类型未知 -> 空数组(不抛异常,避免整个条件行渲染失败)
+export function getOperatorsForFieldDef (field) {
+  if (!field) return [];
+  // 关联字段:只允许「包含」
+  // 条件是作用在关联表上的（查关联对象的数据 → 结果集 → 主表 IN），
+  // 「包含」既覆盖精确匹配也能表达模糊筛选，其余运算符在关联对象场景下
+  // 要么语义重复、要么退化成查全量，不对用户开放。
+  if (parseRelationJson(field.fieldRelation)) {
+    return [OPERATORS[RELATION_OPERATOR]].filter(Boolean);
+  }
+  return getOperatorsByType(field.type);
+}
+
+// 工具:取字段声明的关联对象 { table, column }；没声明返回 null
+export function getFieldRelation (fieldKey) {
+  const f = getField(fieldKey);
+  if (!f || !f.fieldRelation) return null;
+  return parseRelationJson(f.fieldRelation);
 }
 
 // 工具:取运算符定义

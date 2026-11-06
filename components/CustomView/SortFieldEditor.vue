@@ -13,9 +13,11 @@
         不受「表格设置」的列显隐影响;
       - value  —— 排序项列表 [{field, order}],order 为 asc / desc。
 
-    候选字段会剔除两类:
+    候选字段会剔除三类:
       ① 已经参与排序的字段(PRD:添加排序字段时过滤掉已参与的字段);
-      ② 虚拟字段【序号】(前端虚拟列,没有对应的业务字段)。
+      ② 虚拟字段【序号】(前端虚拟列,没有对应的业务字段);
+      ③ field_relation 有值的关联对象字段(省/市/区/大区/经营状态(服务)等),
+         它们作用的是关联表维度,结果集里没有真实列可供 ORDER BY。
   -->
   <div class="c-sfe">
     <div class="c-sfe__list">
@@ -52,7 +54,7 @@
 
     <!--
       添加排序字段:下拉里的候选项取自后端字段元数据(不受表格设置影响),
-      已剔除「已参与排序的字段」与虚拟字段【序号】;字段多时可滚动。
+      已剔除「已参与排序」「虚拟字段【序号】」「关联对象字段」;字段多时可滚动。
     -->
     <el-dropdown
       trigger="click"
@@ -67,7 +69,7 @@
         <div class="c-sfe__candidates">
           <el-dropdown-item
             v-for="f in candidateFields"
-            :key="f.key"
+            :key="f.uniqueKey || f.key"
             :command="f.key"
           >{{ f.label }}</el-dropdown-item>
         </div>
@@ -124,13 +126,27 @@ export default {
       return this.localList;
     },
     /**
-     * 可参与排序的候选字段:剔除「已参与排序的字段」与虚拟字段【序号】。
+     * 可参与排序的候选字段:剔除「已参与排序」「虚拟字段【序号】」「关联对象字段」。
+     *
+     * <p><b>关联对象字段必须整条过滤</b>:custom_view_field 里同一个 field_name
+     * 会声明多个关联对象(dealer_code 的省/市/区/大区/经营状态(服务)),它们
+     * 在结果集里没有对应的真实列 —— 条件是改写关联表后 IN 进主表 WHERE 的,
+     * ORDER BY 却无法照做。展示出来只会让用户选到「经验状态（服务）」这类
+     * 排了也没意义(甚至 SQL 报错)的项,故 field_relation 有值即排除。</p>
+     *
+     * <p>剩下的字段仍按 key 去重,避免同名字段的重复声明撑出多个等价选项。</p>
      */
     candidateFields () {
       const used = this.innerList.map(item => item && item.field);
-      return this.fields.filter(f => (
-        f && f.key && used.indexOf(f.key) === -1 && !isVirtualSortField(f)
-      ));
+      const seen = new Set();
+      return this.fields.filter(f => {
+        if (!f || !f.key || used.indexOf(f.key) !== -1 || isVirtualSortField(f)) return false;
+        // 后端对无关联对象的字段返回 null / '' ;非空即为关联对象声明
+        if (f.fieldRelation && String(f.fieldRelation).trim()) return false;
+        if (seen.has(f.key)) return false;
+        seen.add(f.key);
+        return true;
+      });
     }
   },
   watch: {
@@ -154,12 +170,17 @@ export default {
     },
     /**
      * 排序字段的中文名(取不到时退回字段名本身)。
+     *
+     * <p>同名字段有多条声明时优先用「无关联对象」那条的 label ——
+     * 「门店编码」比「省」「大区」这类维度名更适合描述一个排序列。</p>
      * @param {String} fieldKey
      * @returns {String}
      */
     fieldLabel (fieldKey) {
-      const hit = this.fields.find(f => f && f.key === fieldKey);
-      return hit ? hit.label : fieldKey;
+      const hits = this.fields.filter(f => f && f.key === fieldKey);
+      if (hits.length === 0) return fieldKey;
+      const plain = hits.find(f => !f.fieldRelation);
+      return (plain || hits[0]).label || fieldKey;
     },
     /**
      * 把内部列表回传给父级。
