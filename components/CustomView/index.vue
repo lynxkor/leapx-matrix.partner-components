@@ -224,7 +224,11 @@ export default {
       presetFilterKeyword: '',
       editingPresetId: null,
       dialogVisible: false,
-      loading: false
+      loading: false,
+      // 已经自动套用过默认视图的业务键。
+      // 同一个业务键只在「首次进入该页面」时套用一次默认视图,
+      // 之后用户自己怎么选都以用户的选择为准(见 loadPresets)。
+      defaultAppliedBizKeys: []
     };
   },
   computed: {
@@ -323,9 +327,24 @@ export default {
       if (s === PERF_STATUS.FAILED) return 'danger';
       return 'warning';
     },
+    /**
+     * 加载视图列表,并解析本次的「生效视图」。
+     *
+     * <p>加载结束后统一抛 {@code ready} 事件,携带解析出的生效视图 id:
+     * <b>null = 系统视图</b>(没有默认个人视图),<b>非空 = 默认个人视图 id</b>。
+     * 宿主据此决定取数方式(系统视图走业务列表接口,个人视图走 executeQuery),
+     * 从而避免「先进页面就发一次业务列表请求,个人视图列表回来后又被视图刷新覆盖」。</p>
+     *
+     * <p>注意:{@code ready} 在每次加载视图列表后都会抛(打开下拉、复制/删除/设默认视图等),
+     * 宿主一般只在首屏消费一次,后续需按新默认视图重新取数的场景自行判断。</p>
+     */
     async loadPresets () {
       if (this.loading) return;
       this.loading = true;
+      // 本次解析出的「生效视图 id」:null = 系统视图。
+      // 用局部变量跟踪,不用 this.activePresetId —— 后者是 props,
+      // 本轮 emit(update:activePresetId) 后要等下一个渲染周期才回写,读到的是旧值。
+      let resolvedViewId = this.activePresetId || null;
       try {
         // 先取默认视图:进入页面要先用上默认视图,再展示列表
         // (page 传 defaultIs=1 + bizKey 即为查询默认视图)
@@ -359,18 +378,34 @@ export default {
           // 是否默认视图(后端 0 否 / 1 是)
           defaultIs: p.defaultIs === 1
         }));
-        if (this.activePresetId && !this.presets.some(p => p.id === this.activePresetId)) {
+        if (resolvedViewId && !this.presets.some(p => p.id === resolvedViewId)) {
+          // 选中的视图已不存在(被删除):清空选中态,回落系统视图
           this.handleClearPreset();
+          resolvedViewId = null;
         }
         // 未指定视图时,自动选中默认视图(需求 LP262002:每次打开详情页显示默认的个人视图)
-        if (this.enableDefaultView && !this.activePresetId && defaultViewId) {
-          this.applyPresetById(defaultViewId);
+        //
+        // <p><b>每个业务键只在首次进入时套用一次</b>:之后无论刷新多少次视图列表
+        // (打开下拉、复制/删除/设默认视图),都以用户当前选择的视图为准 ——
+        // 否则用户选了「系统视图」,一打开下拉就被默认视图顶回去,
+        // 视图被换掉还会多发一次查询请求。</p>
+        const firstEnter = !this.defaultAppliedBizKeys.includes(this.bizKey);
+        if (this.enableDefaultView && firstEnter && !resolvedViewId && defaultViewId) {
+          // 自动选中成功才算默认视图生效:
+          // 未通过性能测试的视图不会被自动应用,此时仍按系统视图处理
+          const applied = await this.applyPresetById(defaultViewId);
+          resolvedViewId = applied ? defaultViewId : null;
+          if (applied) this.defaultAppliedBizKeys.push(this.bizKey);
         }
       } catch (e) {
         this.presets = [];
         this.$message.error('加载视图列表失败');
+        // 视图列表加载失败:回落系统视图,宿主按业务列表接口取数,不至于白屏
+        resolvedViewId = null;
       } finally {
         this.loading = false;
+        // 视图列表与默认视图已就绪,通知宿主按「生效视图」决定取数方式
+        this.$emit('ready', { activePresetId: resolvedViewId });
       }
     },
     onDropdownVisibleChange (visible) {
@@ -552,16 +587,18 @@ export default {
     },
     /**
      * 按视图 id 应用视图(不经过下拉点击),用于自动选中默认视图。
+     *
      * @param {String} id
+     * @returns {Promise<Boolean>} 是否真的应用成功(视图不存在/未通过性能测试/详情加载失败 → false)
      */
     async applyPresetById (id) {
       const preset = this.presets.find(p => p.id === id);
-      if (!preset) return;
+      if (!preset) return false;
       if (!this.localApply && preset.perfStatus !== PERF_STATUS.PASSED) {
         // 未通过性能测试的视图不自动应用
-        return;
+        return false;
       }
-      await this.applyPreset(preset);
+      return await this.applyPreset(preset);
     },
     onEditView (preset) {
       this.editingPresetId = preset.id;
@@ -619,11 +656,12 @@ export default {
     // options.silent = true 时不弹「已应用视图」提示
     // (弹窗保存成功后会自动应用视图,那一步已有「保存成功/性能测试通过」提示,
     //  再弹一次会变成连续三条 toast)
+    // 返回值:是否真的应用成功(详情加载失败 → false)
     async applyPreset (preset, options) {
       const silent = !!(options && options.silent);
       try {
         const data = await customQueryViewApi.getDetail(preset.id);
-        if (!data) return;
+        if (!data) return false;
         const tree = data.conditionTree ? JSON.parse(data.conditionTree) : null;
         // 排序:优先 sortJson(多字段,需求 LP262002 7.1.2.2),
         // 历史数据(无 sortJson)回落到旧的 sortField / sortOrder 单字段。
@@ -641,8 +679,10 @@ export default {
             ? `已应用视图「${preset.name}」`
             : `已使用视图「${preset.name}」,表单已锁定`);
         }
+        return true;
       } catch (e) {
         this.$message.error('加载视图详情失败');
+        return false;
       }
     },
     // 保存弹窗测试通过后应用视图:刷新列表并选中;编辑的是当前已选中视图时走 refresh 通道
