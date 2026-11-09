@@ -205,6 +205,18 @@ export default {
      */
     localApply: { type: Boolean, default: false },
     /**
+     * 保存视图后是否自动应用该视图(即把它选中)。
+     *
+     * <p>true(默认) = 保存成功后立即应用,列表页行为:新存一个视图就直接用上;</p>
+     * <p>false = 保存后保持当前选择不变 —— 单据详情页行为:
+     * 正在用视图 A 时编辑了另一个视图 B,保存 B 不该把当前选择抢走,
+     * 视图是否生效由用户自己在下拉里点选决定。</p>
+     *
+     * <p>注意:保存的正是当前选中的视图时,一律走 refresh 通道强制刷新列表
+     * (条件可能变了),该行为不受本开关影响。</p>
+     */
+    autoApplyAfterSave: { type: Boolean, default: true },
+    /**
      * 下拉里「默认视图」那一项的文案。默认空 = 与 triggerText 保持一致。
      */
     defaultViewText: { type: String, default: '' },
@@ -385,17 +397,18 @@ export default {
         }
         // 未指定视图时,自动选中默认视图(需求 LP262002:每次打开详情页显示默认的个人视图)
         //
-        // <p><b>每个业务键只在首次进入时套用一次</b>:之后无论刷新多少次视图列表
-        // (打开下拉、复制/删除/设默认视图),都以用户当前选择的视图为准 ——
+        // <p><b>每个业务键只判定一次</b>:首次进入该页面(拿到视图列表)时判定要不要套用默认视图,
+        // 之后无论刷新多少次视图列表(打开下拉、复制/删除/设默认视图),
+        // 都以用户当前选择的视图为准 ——
         // 否则用户选了「系统视图」,一打开下拉就被默认视图顶回去,
         // 视图被换掉还会多发一次查询请求。</p>
         const firstEnter = !this.defaultAppliedBizKeys.includes(this.bizKey);
+        if (firstEnter) this.defaultAppliedBizKeys.push(this.bizKey);
         if (this.enableDefaultView && firstEnter && !resolvedViewId && defaultViewId) {
           // 自动选中成功才算默认视图生效:
           // 未通过性能测试的视图不会被自动应用,此时仍按系统视图处理
           const applied = await this.applyPresetById(defaultViewId);
           resolvedViewId = applied ? defaultViewId : null;
-          if (applied) this.defaultAppliedBizKeys.push(this.bizKey);
         }
       } catch (e) {
         this.presets = [];
@@ -693,6 +706,9 @@ export default {
         this.$emit('refresh');
         return;
       }
+      // 保存后不自动切换视图:autoApplyAfterSave = false 时保持用户当前选择,
+      // 刚保存的视图由用户自己在下拉里点选生效
+      if (!this.autoApplyAfterSave) return;
       const preset = this.presets.find(p => p.id === id);
       // 弹窗保存成功后自动应用视图:静默(提示语由保存流程自己给)
       if (preset) this.applyPreset(preset, { silent: true });

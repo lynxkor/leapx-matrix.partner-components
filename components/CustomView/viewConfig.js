@@ -15,6 +15,9 @@
  *   <li>{@code columns} —— 只有页面级挂载点拿得到表格列定义,传入后才开启
  *       弹窗的「自定义表格」合并模式。全局标题栏拿不到列定义,传空即保持
  *       「条件 + 排序」弹窗,不会出现一个空白的表格设置区。</li>
+ *   <li>{@code autoApplyAfterSave} —— 保存视图后是否自动应用该视图(选中它)。
+ *       列表页为 true(存完即用上);单据详情页为 false(正在用视图 A 时编辑了
+ *       视图 B,保存 B 不该把当前选择抢走)。</li>
  * </ul>
  *
  * <p><b>开启范围</b>:列表页需在路由 meta 配 {@code customViewStandard: true},
@@ -73,13 +76,16 @@ export function buildDialogProps (columns) {
  * @param {Object}  options
  * @param {Array}   options.columns    页面列定义;有值时开启「自定义表格」合并弹窗
  * @param {Boolean} options.localApply 是否前端本地生效(明细表 true / 列表页 false)
+ * @param {Boolean} options.autoApplyAfterSave 保存视图后是否自动应用该视图
+ *        (列表页 true / 单据详情页 false)
  * @returns {Object}
  */
-export function standardViewOptions ({ columns, localApply = false } = {}) {
+export function standardViewOptions ({ columns, localApply = false, autoApplyAfterSave = true } = {}) {
   const props = {
     'trigger-text': STANDARD_TRIGGER_TEXT,
     'enable-default-view': true,
-    'local-apply': localApply
+    'local-apply': localApply,
+    'auto-apply-after-save': autoApplyAfterSave
   };
   if (Array.isArray(columns) && columns.length) {
     props['dialog-props'] = buildDialogProps(columns);
