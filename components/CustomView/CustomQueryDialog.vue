@@ -6,6 +6,7 @@
     width="80%"
     :close-on-click-modal="false"
     @close="onClose"
+    @closed="onClosed"
   >
     <div class="c-cqd">
       <!-- 视图名称(必填) -->
@@ -253,6 +254,8 @@ export default {
     visible (val) {
       this.dialogVisible = val;
       if (val) {
+        // 兜底:每次打开都从干净的搜索态开始(即便上次隐藏时 closed 未触发)
+        this.resetTableSettingFilter();
         this.workingTree = this.makeInitialTree();
         this.sortList = this.makeInitialSortList();
         this.errorSummary = [];
@@ -532,6 +535,23 @@ export default {
     },
     onClose () {
       this.$emit('update:visible', false);
+    },
+    /**
+     * 弹窗隐藏(关闭动画结束)后,清空「自定义表格」区里输入的列搜索关键字。
+     *
+     * <p>覆盖全部隐藏路径:取消 / 右上角 X / ESC / 保存成功,它们最终都会让
+     * el-dialog 的 visible 变 false 并触发 closed。放在动画结束后而不是
+     * 关闭瞬间,避免弹窗还在淡出时看到列表因过滤解除而闪一下。</p>
+     */
+    onClosed () {
+      this.resetTableSettingFilter();
+    },
+    /**
+     * 复位「自定义表格」区的列搜索框(合并模式才有该组件)。
+     */
+    resetTableSettingFilter () {
+      const ts = this.$refs.tableSetting;
+      if (ts && typeof ts.resetFilter === 'function') ts.resetFilter();
     },
     validateTree (group, path = '第 1 组', rowIdxRef = { i: 0 }) {
       const summary = [];
