@@ -47,11 +47,13 @@ export function getFields () {
 }
 
 // 运算符定义(valueKind 决定值控件: single | multi | daterange | empty)
+// 包含 / 不包含定位为模糊匹配的单值运算符:多值输入的业务意图是「精确命中其中之一」,
+// 与模糊语义冲突,故只允许单值。需要多值精确匹配请用「等于」或「在...中」。
 export const OPERATORS = {
   equals: { value: 'equals', label: '等于', valueKind: 'multi' },
   notEquals: { value: 'notEquals', label: '不等于', valueKind: 'multi' },
-  contains: { value: 'contains', label: '包含', valueKind: 'multi' },
-  notContains: { value: 'notContains', label: '不包含', valueKind: 'multi' },
+  contains: { value: 'contains', label: '包含', valueKind: 'single' },
+  notContains: { value: 'notContains', label: '不包含', valueKind: 'single' },
   isEmpty: { value: 'isEmpty', label: '为空', valueKind: 'empty' },
   isNotEmpty: { value: 'isNotEmpty', label: '不为空', valueKind: 'empty' },
   startsWith: { value: 'startsWith', label: '以...开头', valueKind: 'multi' },
