@@ -81,9 +81,24 @@
         <el-divider></el-divider>
         <div class="c-cqd__table">
           <div class="c-cqd__table-title">自定义表格</div>
+          <!--
+            必须绑 tableConfigState(按视图 id 加载/合并后的当前配置),
+            不能绑 tableConfig(页面列定义基准)。
+
+            原因:el-dialog 的内容首次打开后不会销毁,TableSetting 只 mount 一次,
+            它靠 value 的深监听来重置内部 form。若绑的是 tableConfig(基准),
+            该 prop 由父页面的 computed 缓存、引用恒定,深监听永不触发 ——
+            上一个视图里勾掉的列会一直残留到下一个视图,
+            表现为「改了视图 A,打开视图 B 时 B 的表格也跟着变了」,
+            甚至把 A 的残留状态存进 B 的表格配置。
+
+            绑 tableConfigState 后:每次打开弹窗(visible 监听)与每次
+            loadTableConfig 都会重新赋值一个新对象 -> 深监听触发 -> 内部 form
+            按当前视图重建,视图之间互不串。
+          -->
           <table-setting
             ref="tableSetting"
-            :value="tableConfig"
+            :value="tableConfigState"
             :show-base-settings="showBaseSettings"
           />
         </div>

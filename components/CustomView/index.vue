@@ -80,16 +80,23 @@
             </span>
           </span>
         </el-dropdown-item>
+        <!--
+          列表数据源必须是 filteredPresets(而不是 presets):
+          presets 是全量视图,直接渲染它会让「搜索视图名称」输入框完全失效
+          (输入关键字后列表纹丝不动,只有「未找到匹配的视图」的提示会跟着变)。
+          空关键字时 filteredPresets === presets(同一份引用),拖拽排序写回的仍是 presets;
+          有关键字时 dragDisabled 为 true,拖拽本就被禁用,不影响整表排序语义。
+        -->
         <draggable
           class="m-custom-view__list"
-          :list="presets"
+          :list="filteredPresets"
           :disabled="dragDisabled"
           handle=".m-custom-view__handle"
           animation="150"
           @end="onDragEnd"
         >
           <div
-            v-for="p in presets"
+            v-for="p in filteredPresets"
             :key="p.id"
             class="m-custom-view__row"
           >
