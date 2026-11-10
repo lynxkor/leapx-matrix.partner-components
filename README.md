@@ -410,6 +410,7 @@ export default {
 ```
 
 - 接入前提：路由 meta 配 `customViewBizKey` + `customViewResourceTag`，宿主 store 注册 `customView` module；分页默认读写 `this.optionObj`，可用 `_cvPager` / `_cvSetResult` / `customViewListAdapter` 钩子适配；表单锁定由 mixin 自动 toggle `is-preset-locked` class，业务页无需逐字段 disabled。
+- 下拉样式**全局只有一套**：触发器文案固定「系统视图」，带「系 / 默」角标、复制、设为默认（组件默认 props 即标准配置，`viewConfig.js` 是同一份出口，不再有路由 meta 开关）；页面级差异只剩 `localApply`（明细表本地生效 vs 列表页走 executeQuery）与 `columns`（弹窗是否合并表格设置）。
 
 ## 公共能力
 

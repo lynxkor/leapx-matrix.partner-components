@@ -167,7 +167,7 @@
 <script>
 import CustomQueryDialog from './CustomQueryDialog.vue';
 import { PERF_STATUS } from './perfStatus';
-import { resolveSortList, toSortColumns, toSortJson } from './sortJson';
+import { resolveSortList, toSortColumns } from './sortJson';
 import * as customQueryViewApi from '@/libs/api/customView/customQueryView';
 import TextEllipsis from '@/libs/components/TextEllipsis';
 import draggable from 'vuedraggable';
@@ -179,7 +179,7 @@ export default {
     value: { type: [Object, null], default: null },
     sortColumns: { type: Array, default: () => [] },
     activePresetId: { type: String, default: null },
-    triggerText: { type: String, default: '默认视图' },
+    triggerText: { type: String, default: '系统视图' },
     bizKey: { type: String, required: true },
     /**
      * 「新增/编辑视图」弹窗组件 —— 默认用内置的 CustomQueryDialog(仅自定义条件查询)。
@@ -226,9 +226,10 @@ export default {
      * <p>开启后:①下拉项显示「系 / 默」标识;②支持「复制」与「设为默认」操作;
      * ③打开页面时自动选中默认视图。</p>
      *
-     * <p>默认 false = 保持原行为,不影响既有页面(如保修申请单)。</p>
+     * <p><b>默认 true</b>:全局只有一套样式 —— 无论挂在全局标题栏还是业务页内联,
+     * 这个下拉的文案、角标、复制 / 设为默认能力都完全一致。</p>
      */
-    enableDefaultView: { type: Boolean, default: false }
+    enableDefaultView: { type: Boolean, default: true }
   },
   data () {
     return {
@@ -472,18 +473,6 @@ export default {
       }
     },
     /**
-     * 去掉视图名末尾的创建人后缀(后端追加的「(昵称)」)。
-     * @param {String} name
-     * @param {String} creatorName
-     * @returns {String}
-     */
-    stripOwnerSuffix (name, creatorName) {
-      if (!name) return '';
-      if (!creatorName) return name;
-      const suffix = `(${creatorName})`;
-      return name.endsWith(suffix) ? name.slice(0, -suffix.length) : name;
-    },
-    /**
      * 该视图是否为默认视图。
      * @param {Object} preset
      */
@@ -511,8 +500,9 @@ export default {
     /**
      * 复制视图(需求 LP262002 7.1.2.2)。
      *
-     * <p>复制出的视图名为「原视图名称-复制」;系统视图复制则得到一个空的同名用户视图。
-     * 用户视图复制会连同条件树与排序一起复制。</p>
+     * <p>复制逻辑在后端:前端只把被复制的视图 id 传过去,条件树 / 排序 / 视图名
+     * 全部由后端生成 —— 后端按「原名 + -复制」命名,重名就继续往后拼,
+     * 不用前端自己拼名字(自己拼会撞唯一索引,也会出现名字越堆越长)。</p>
      *
      * <p>复制成功后抛 copy 事件,由宿主页面负责复制该视图的表格配置
      * (表格配置存在 userDefineTable,按视图 id 关联,不在本组件的职责内)。</p>
@@ -525,37 +515,20 @@ export default {
      */
     async onCopyView (preset) {
       const isSystem = !preset;
-      // 后端会自动给视图名追加创建人后缀(如「XX(超级管理员)」),
-      // 复制时先去掉原名里的后缀,再拼「-复制」,最终展示为「XX-复制(超级管理员)」
-      const sourceName = isSystem
-        ? this.defaultLabel
-        : this.stripOwnerSuffix(preset.name, preset.creatorName);
-      const payload = {
-        bizKey: this.bizKey,
-        viewName: `${sourceName}-复制`,
-        conditionTree: JSON.stringify({ logic: 'AND', conditions: [] }),
-        // 排序:批量排序(需求 LP262002 7.1.2.2),只发新字段 sortJson,不双写旧的。
-        // 默认 "[]" = 复制出来的视图没有排序(系统视图没有排序配置)。
-        sortJson: '[]'
-      };
-      if (!isSystem) {
-        try {
-          const detail = await customQueryViewApi.getDetail(preset.id);
-          if (detail) {
-            payload.conditionTree = detail.conditionTree || payload.conditionTree;
-            // 排序整份复制:优先 sortJson(多字段),历史数据回落到旧的
-            // sortField / sortOrder(单字段),统一由 resolveSortList 归一后再序列化。
-            payload.sortJson = toSortJson(resolveSortList(detail));
-          }
-        } catch (e) {
-          // 读不到详情时复制出一个空视图,不影响主流程
-        }
-      }
       try {
-        const newId = await customQueryViewApi.addOrUpdate(payload);
+        // 复制逻辑在后端:只传被复制的视图 id。
+        // 复制「系统视图」时系统视图没有落库记录,后端新建一个空视图,
+        // 名称以系统视图文案为基础(后端统一追加「-复制」,重名继续往后拼)。
+        const res = await customQueryViewApi.copy({
+          id: preset ? preset.id : null,
+          viewName: isSystem ? this.defaultLabel : null,
+          bizKey: this.bizKey
+        });
+        const newId = res && res.id;
+        const newName = (res && res.viewName) || '';
         // 刷新下拉内容,不关闭下拉(复制不涉及弹窗,菜单可以一直开着)
         await this.loadPresets();
-        this.$message.success(`已复制为视图「${payload.viewName}」`);
+        this.$message.success(`已复制为视图「${newName}」`);
         this.$emit('copy', {
           sourceId: preset ? preset.id : null,
           newId: newId || null,

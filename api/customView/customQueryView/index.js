@@ -63,6 +63,22 @@ export function setDefault (data) {
 }
 
 /**
+ * 复制视图(需求 LP262002 7.1.2.2)
+ *
+ * <p>复制逻辑在后端:前端只传被复制视图的 id,条件树 / 排序 / 视图名都由后端生成
+ * (视图名重名时后端会继续往后拼「-复制」),复制出的视图归属当前登录用户。</p>
+ *
+ * @param {Object} data { id, viewName, bizKey }
+ *   id:被复制的视图 id;复制「系统视图」时为空
+ *   viewName:复制「系统视图」时用的基础名称(系统视图文案),复制用户视图时不用传
+ *   bizKey:复制「系统视图」时的业务场景 key,复制用户视图时不用传
+ * @returns {Promise<Object>} { id, viewName } 新视图的 id 与名称
+ */
+export function copy (data) {
+  return api.jsonPost(prefix + 'copy', data);
+}
+
+/**
  * 按视图统一执行查询(后端根据 viewId 解析 bizKey 与查询条件)
  * @param {Object} data { viewId, pageNum, pageSize }
  */

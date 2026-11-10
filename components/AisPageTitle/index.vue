@@ -35,7 +35,7 @@
 <script>
 import CustomView from '@/libs/components/CustomView/index.vue';
 import GenericView from '@/libs/components/GenericView/index.vue';
-import { useStandardView, standardViewOptions } from '@/libs/components/CustomView/viewConfig';
+import { standardViewOptions } from '@/libs/components/CustomView/viewConfig';
 import {
   state as personalQueryViewState,
   resolveTableCode,
@@ -85,12 +85,12 @@ export default {
      * 标准个人视图配置:与业务页内联的 CustomView 共用 lib 同一份出口,
      * 避免「全局标题栏一套 props、页面内联另一套」看起来像两个组件。
      *
-     * <p>按路由 meta.customViewStandard 白名单开启,未配置的列表页保持历史行为。
+     * <p><b>全局只有一套样式</b>:不再由路由 meta 的开关决定走哪一套 ——
+     * 所有接了个人视图的页面,下拉文案 / 角标 / 复制 / 设为默认完全一致。
      * 标题栏拿不到页面级表格列定义,故不传 columns —— 弹窗仍是
      * 「条件 + 排序」形态(批量排序能力已内置,与页面内联实例完全一致)。</p>
      */
     viewStandardProps () {
-      if (!useStandardView(this.$route?.meta)) return {};
       return standardViewOptions({ localApply: false });
     },
     pqvTableCode () {

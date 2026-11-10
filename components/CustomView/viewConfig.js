@@ -8,6 +8,11 @@
  * 都不一致,看起来像「两个不同组件」。这里把标准配置收敛成唯一出口,
  * 两个挂载点都通过 {@link standardViewOptions} 取 props。</p>
  *
+ * <p><b>全局只有一套样式</b>:组件自身的默认 props(触发器文案「系统视图」、
+ * 默认视图能力开启)与本文件的 {@link standardViewOptions} 保持一致,
+ * 所以无论挂在全局标题栏还是业务页内联,下拉的文案、角标、复制 / 设为默认
+ * 都完全一样 —— 不再由路由 meta 的开关决定走哪一套。</p>
+ *
  * <p>唯一允许的差异是 <b>页面能力</b>:</p>
  * <ul>
  *   <li>{@code localApply} —— 明细表走前端本地过滤/排序(后端通用查询不可用),
@@ -19,22 +24,10 @@
  *       列表页为 true(存完即用上);单据详情页为 false(正在用视图 A 时编辑了
  *       视图 B,保存 B 不该把当前选择抢走)。</li>
  * </ul>
- *
- * <p><b>开启范围</b>:列表页需在路由 meta 配 {@code customViewStandard: true},
- * 未配置的页面(如保修申请单)保持历史行为,不受影响。</p>
  */
 
 /** 标准触发器文案 —— 与「系统视图」这一行下拉项保持一致 */
 export const STANDARD_TRIGGER_TEXT = '系统视图';
-
-/**
- * 该路由是否启用标准个人视图配置。
- * @param {Object} meta 路由 meta
- * @returns {Boolean}
- */
-export function useStandardView (meta) {
-  return !!(meta && meta.customViewStandard);
-}
 
 /**
  * 由页面表格列定义生成「合并弹窗」所需的 props。
