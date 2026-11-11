@@ -72,10 +72,10 @@
       :class="{ 'is-error': errors.value }"
     />
 
-    <!-- 值控件:单值文本 -->
+    <!-- 值控件:单值文本(包含 / 不包含走这里) -->
     <el-input
       v-if="valueKind === 'single' && fieldMeta && fieldMeta.type === 'text' "
-      v-model="localRow.value"
+      v-model.trim="localRow.value"
       :placeholder="valuePlaceholder"
       size="small"
       clearable
@@ -148,6 +148,13 @@
       class="c-cr__value"
     />
 
+    <!-- 存量多值条件降级提示:该条件原本是多个值,回填时只保留了第一个 -->
+    <span
+      v-if="legacyMultiDropped"
+      class="c-cr__tip"
+      title="该条件原本包含多个值，现只允许单值，已保留第一个"
+    >原含多值，已取第一个</span>
+
     <!-- 删除按钮 -->
     <el-button
       v-if="!disabled"
@@ -168,6 +175,28 @@ import {
 import ValueTagInput from './ValueTagInput.vue';
 import FetchSelect from '@/libs/components/FetchSelect';
 import { getEnum } from '../../../api/common';
+
+/**
+ * 把「存量多值」的单值运算符条件归一化为单值。
+ *
+ * 背景:包含 / 不包含 已改为单值运算符,但历史数据里存在多值数组。若把数组直接绑到
+ * el-input,编辑后会被拼成 "A,B" 这样一个字符串,查询变成 LIKE '%A,B%',比原状更错。
+ * 这里取首值,并把「丢弃了其余值」这一事实返回给调用方用于提示用户。
+ *
+ * @param {Object} row 条件行
+ * @returns {{row: Object, dropped: boolean}} 归一化后的行 + 是否丢弃了多余值
+ */
+function normalizeLegacySingleRow (row) {
+  if (!row) return { row: {}, dropped: false };
+  const op = row.operator ? getOperator(row.operator) : null;
+  if (!op || op.valueKind !== 'single' || !Array.isArray(row.value)) {
+    return { row: { ...row }, dropped: false };
+  }
+  return {
+    row: { ...row, value: row.value.length ? row.value[0] : null },
+    dropped: row.value.length > 1
+  };
+}
 
 export default {
   name: 'CustomConditionRow',
@@ -191,8 +220,11 @@ export default {
     }
   },
   data () {
+    const normalized = normalizeLegacySingleRow(this.row);
     return {
-      localRow: { ...this.row }
+      localRow: normalized.row,
+      // 仅回填时置真:提示「原条件含多个值,已保留第一个」,用户一改动值即消失
+      legacyMultiDropped: normalized.dropped
     };
   },
   computed: {
@@ -225,19 +257,31 @@ export default {
   watch: {
     row: {
       handler (val) {
+        const normalized = normalizeLegacySingleRow(val);
         // Guard against re-emit loop: parent splices the row in after our
         // emit, so row prop comes back as a new reference with same content.
         // Skip if content already matches localRow.
-        if (JSON.stringify(val) === JSON.stringify(this.localRow)) return;
-        this.localRow = { ...val };
+        if (JSON.stringify(normalized.row) === JSON.stringify(this.localRow)) return;
+        this.localRow = normalized.row;
+        this.legacyMultiDropped = normalized.dropped;
       },
       deep: true
     },
     localRow: {
       handler (val) {
+        // 用户改动值后不再是数组,存量提示随之消失
+        if (this.legacyMultiDropped && !Array.isArray(val.value)) {
+          this.legacyMultiDropped = false;
+        }
         this.$emit('change', { ...val });
       },
       deep: true
+    }
+  },
+  created () {
+    // 归一化把数组换成了首元素,必须回传父级,否则父级仍持有旧的多值数组并原样落库
+    if (this.legacyMultiDropped) {
+      this.$emit('change', { ...this.localRow });
     }
   },
   methods: {
@@ -277,6 +321,16 @@ export default {
   &__field { width: 180px; }
   &__op { width: 130px; height: 32px; }
   &__value { flex: 1; width: 300px; }
+  &__tip {
+    flex-shrink: 0;
+    padding: 0 6px;
+    font-size: 12px;
+    line-height: 20px;
+    white-space: nowrap;
+    color: #E6A23C;
+    background: rgba(230, 162, 60, 0.1);
+    border-radius: 2px;
+  }
   &__remove { padding: 4px; color: var(--leap-color-default-light-2); }
   ::v-deep .is-error .el-input__inner,
   ::v-deep .is-error .el-input__wrapper,
