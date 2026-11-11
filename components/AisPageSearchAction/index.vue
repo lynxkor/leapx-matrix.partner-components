@@ -236,17 +236,22 @@ export default {
       if (payload.id === null || payload.id === undefined) {
         // 默认查询视图:交给页面原有重置逻辑(恢复默认值、回到第 1 页并刷新)。
         // 启用了 CustomView 的页面在 onReset 里会自行 resetCustomView,这里不再重复处理。
-        this.$emit('reset');
+        this._emitViewRefresh('reset');
         return;
       }
       // 页面 reset 时可能整体替换 this.form,必须操作时现读
       const model = this._listFormVm && this._listFormVm.model;
       if (!model) return;
       const condition = payload.queryCondition || {};
-      // 快照里没有的字段必须清空,否则上一次查询条件会混入本次结果
+      // 快照里没有的字段必须清空,否则上一次查询条件会混入本次结果。
+      // 绝不能置 undefined:多数列表页 getFormData 里有 data[key].length,
+      // 会在 getData 里同步抛 TypeError,而 loading 已置 true、复位的 .finally
+      // 挂在尚未建立的 Promise 链上 -> 请求发不出去且整页遮罩卡死。
+      // 用类型化空值(数组 -> [],其余 -> '')既保留字段与响应式,又会被
+      // 各页 getFormData 的 ''/[] 过滤掉,不会污染请求参数。
       Object.keys(model).forEach(key => {
         if (!Object.prototype.hasOwnProperty.call(condition, key)) {
-          this.$set(model, key, Array.isArray(model[key]) ? [] : undefined);
+          this.$set(model, key, Array.isArray(model[key]) ? [] : '');
         }
       });
       Object.keys(condition).forEach(key => {
@@ -258,8 +263,24 @@ export default {
       // 清空动作会触发 mixin 的 onViewChange -> getData(此时表单已写好),无需再 submit。
       if (this._resetCustomViewSelection()) return;
       this.$nextTick(() => {
-        if (!this._isDestroyed && this._pqvActive) this.$emit('submit');
+        if (!this._isDestroyed && this._pqvActive) this._emitViewRefresh('submit');
       });
+    },
+    /**
+     * 触发页面取数并兜住同步异常。
+     * 列表页普遍是「loading=true -> 同步构造参数 -> 请求.finally 复位」,
+     * 参数构造抛错时 .finally 永远到不了,这里把 loading 复位避免遮罩卡死。
+     */
+    _emitViewRefresh (event) {
+      try {
+        this.$emit(event);
+      } catch (e) {
+        let vm = this.$parent;
+        while (vm && typeof vm.loading !== 'boolean') vm = vm.$parent;
+        if (vm) vm.loading = false;
+        console.error('[查询视图] 页面取数失败:', e);
+        this.$message.error('查询失败,请检查查询条件');
+      }
     },
     /**
      * 清掉当前页 CustomView 的选中态。
@@ -275,7 +296,7 @@ export default {
     },
     handleReset () {
       clearSelection(this.pqvTableCode);
-      this.$emit('reset');
+      this._emitViewRefresh('reset');
     },
     openSaveDialog () {
       const model = this._listFormVm && this._listFormVm.model;
@@ -315,7 +336,16 @@ export default {
       const isUpdate = this.pqvUpdateType === 2 && !!this.pqvSelectedId;
       let queryCondition;
       try {
-        queryCondition = JSON.parse(JSON.stringify(model));
+        // JSON.stringify 会静默丢弃值为 undefined 的字段,导致快照字段集合
+        // 少于当前表单;应用视图时这些「缺失字段」只能靠猜类型清空,历史视图
+        // 尤其容易踩到。保存前先把 undefined 规范化成空串(万能空值:各页
+        // getFormData 都会过滤 '',数组类控件也能容忍),让快照字段集合完整。
+        const normalized = {};
+        Object.keys(model).forEach(key => {
+          const value = model[key];
+          normalized[key] = value === undefined ? '' : value;
+        });
+        queryCondition = JSON.parse(JSON.stringify(normalized));
       } catch (e) {
         this.$message.error('查询条件无法保存,请检查表单数据');
         return;
