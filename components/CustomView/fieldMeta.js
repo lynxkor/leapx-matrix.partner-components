@@ -296,3 +296,48 @@ export function createEmptyGroup (logic = 'AND') {
 export function cloneTree (tree) {
   return JSON.parse(JSON.stringify(tree));
 }
+
+/**
+ * 条件树里是否还有「已配置」的条件行(选了字段的行)。
+ *
+ * @param {Object} tree 条件树
+ * @returns {Boolean}
+ */
+export function hasConfiguredCondition (tree) {
+  if (!tree || !Array.isArray(tree.conditions)) return false;
+  return tree.conditions.some(item => {
+    if (!item || typeof item !== 'object') return false;
+    // 分组:递归看子组里有没有配好的行
+    if (Array.isArray(item.conditions)) return hasConfiguredCondition(item);
+    return !!item.field;
+  });
+}
+
+/**
+ * 去掉条件树里「没选字段」的条件行(未配置的行),以及因此变空的分组。
+ *
+ * <p>需求:条件查询支持「一个字段都不选」—— 未配置的条件行不参与过滤,
+ * 落库前先剔掉,后端才不会把它当成「缺少 field 的脏数据」拦下。</p>
+ *
+ * <p>不修改入参,返回新的条件树。</p>
+ *
+ * @param {Object} tree 条件树
+ * @returns {Object}
+ */
+export function pruneEmptyRows (tree) {
+  if (!tree || typeof tree !== 'object') return { logic: 'AND', conditions: [] };
+  const conditions = Array.isArray(tree.conditions) ? tree.conditions : [];
+  const kept = [];
+  conditions.forEach(item => {
+    if (!item || typeof item !== 'object') return;
+    if (Array.isArray(item.conditions)) {
+      // 分组:递归剔除后仍有条件才保留(空分组没有过滤语义,直接丢掉)
+      const sub = pruneEmptyRows(item);
+      if (sub.conditions.length > 0) kept.push(sub);
+      return;
+    }
+    // 叶子:没选字段 = 未配置,直接丢掉
+    if (item.field) kept.push(item);
+  });
+  return { ...tree, logic: tree.logic || 'AND', conditions: kept };
+}

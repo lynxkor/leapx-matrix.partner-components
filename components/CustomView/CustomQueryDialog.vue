@@ -54,6 +54,13 @@
           @change="onTreeChange"
         />
         <div v-else class="c-cqd__tree-placeholder">字段元数据加载中...</div>
+        <!--
+          一个条件都没配时的说明:条件查询支持「一个字段都不选」,
+          这种视图保存后不做条件过滤(只按下方排序展示),先说清楚避免误解。
+        -->
+        <div v-if="!fieldsLoading && !hasAnyCondition" class="c-cqd__tree-tip">
+          未选择任何条件字段:保存后该视图不做条件过滤(仅按下方排序展示)。
+        </div>
       </div>
 
       <el-divider></el-divider>
@@ -125,7 +132,9 @@ import {
   getFields,
   createEmptyRow,
   cloneTree,
-  operatorNeedsValue
+  operatorNeedsValue,
+  pruneEmptyRows,
+  hasConfiguredCondition as treeHasCondition
 } from './fieldMeta';
 import { resolveSortList, toSortJson } from './sortJson';
 import {
@@ -248,6 +257,14 @@ export default {
   computed: {
     fields () {
       return this.fieldsMeta;
+    },
+    /**
+     * 当前条件树里是否还有「已配置」的条件行(选了字段的行)。
+     *
+     * <p>一个都没配 → 允许保存,保存后该视图不做条件过滤。</p>
+     */
+    hasAnyCondition () {
+      return treeHasCondition(this.workingTree);
     }
   },
   watch: {
@@ -290,6 +307,15 @@ export default {
       if (this.value && this.value.conditions && this.value.conditions.length > 0) {
         return cloneTree(this.value);
       }
+      return this.makeEmptyTree();
+    },
+    /**
+     * 空白条件树:一行未配置的条件(弹窗打开 / 清空后的默认形态)。
+     *
+     * <p>与「保存时一个字段都没选」的空条件树({@link pruneEmptyRows} 的结果)
+     * 区分开:这里是界面上可见的一行空条件,存库前会被剔除。</p>
+     */
+    makeEmptyTree () {
       return {
         logic: 'AND',
         conditions: [createEmptyRow()]
@@ -318,8 +344,12 @@ export default {
         const data = await customQueryViewApi.getDetail(id);
         if (!data) return;
         this.viewName = data.viewName || '';
-        const tree = data.conditionTree ? JSON.parse(data.conditionTree) : this.makeInitialTree();
-        this.workingTree = cloneTree(tree);
+        const tree = data.conditionTree ? JSON.parse(data.conditionTree) : null;
+        // 空条件树(该视图一个字段都没选过)回填成「一行空白条件」,
+        // 与新建视图的形态一致 —— 否则打开编辑时条件区是空的,用户不知道能加条件。
+        this.workingTree = tree && tree.conditions && tree.conditions.length > 0
+          ? cloneTree(tree)
+          : this.makeEmptyTree();
         // 排序:优先 sortJson(多字段),历史数据回落到旧的 sortField / sortOrder。
         this.sortList = resolveSortList(data);
       } catch (e) {
@@ -393,7 +423,9 @@ export default {
         id: id || null,
         bizKey: this.bizKey,
         viewName: name,
-        conditionTree: JSON.stringify(this.workingTree),
+        // 条件树:存库前剔掉「没选字段」的条件行(未配置的行)。
+        // 一个字段都没选时存空条件树,后端渲染出的 WHERE 为空 —— 即不做条件过滤。
+        conditionTree: JSON.stringify(pruneEmptyRows(this.workingTree)),
         // 批量排序(需求 LP262002 7.1.2.2):只发新字段 sortJson,不双写旧的
         // sortField / sortOrder —— 两套字段不并存,读取侧优先用 sortJson,
         // 历史数据(没有 sortJson)才回落到旧的单字段。
@@ -471,7 +503,8 @@ export default {
       return {
         id,
         viewName: name,
-        conditionTree: this.workingTree,
+        // 与落库口径一致:剔掉未配置(没选字段)的条件行
+        conditionTree: pruneEmptyRows(this.workingTree),
         sortFields: (this.sortList || []).map(item => ({
           column: item.field,
           sort: item.order ? item.order.toUpperCase() : ''
@@ -520,10 +553,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.workingTree = {
-          logic: 'AND',
-          conditions: [createEmptyRow()]
-        };
+        this.workingTree = this.makeEmptyTree();
         // 排序一并清空(批量排序项列表)
         this.sortList = [];
         // 合并模式:表格配置一并回到页面列定义的基准
@@ -553,9 +583,20 @@ export default {
       const ts = this.$refs.tableSetting;
       if (ts && typeof ts.resetFilter === 'function') ts.resetFilter();
     },
+    /**
+     * 校验条件树。
+     *
+     * <p><b>没选字段的条件行不参与校验</b>:条件查询支持「一个字段都不选」,
+     * 这种行视为「未配置」,不参与过滤,也不报错 —— 存库前由
+     * {@link pruneEmptyRows} 剔掉。</p>
+     *
+     * <p>选了字段但没选运算符/没填值的行仍要报错:那是配了一半的条件,
+     * 静默丢掉会让用户拿到与预期不符的结果集。</p>
+     */
     validateTree (group, path = '第 1 组', rowIdxRef = { i: 0 }) {
       const summary = [];
-      group.conditions.forEach((item) => {
+      const conditions = (group && group.conditions) || [];
+      conditions.forEach((item) => {
         rowIdxRef.i += 1;
         const rowLabel = `${path}第 ${rowIdxRef.i} 行`;
         if (item.type === 'group') {
@@ -563,9 +604,8 @@ export default {
           summary.push(...sub.summary);
           return;
         }
-        if (!item.field) {
-          summary.push(`${rowLabel}:请选择字段`);
-        }
+        // 一个字段都没选 = 该行未配置,跳过(行号照常递增,与界面上的行号对得上)
+        if (!item.field) return;
         if (!item.operator) {
           summary.push(`${rowLabel}:请选择运算符`);
         }
@@ -639,6 +679,11 @@ export default {
     text-align: center;
     color: var(--leap-color-default-light-2);
     font-size: 13px;
+  }
+  &__tree-tip {
+    margin-top: 8px;
+    color: var(--leap-color-default-light-2);
+    font-size: 12px;
   }
   &__presets {
     display: flex;
