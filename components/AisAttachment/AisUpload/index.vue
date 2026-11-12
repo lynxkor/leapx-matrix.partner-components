@@ -462,8 +462,11 @@ export default {
         if (this.beforeUpload(file)) {
           this.httpRequest({
             file,
-            onSuccess: () => {
-              this.$message.success('上传成功');
+            // OCR 识别失败时 httpRequest 已弹出警告，此处不再重复提示上传成功，避免两个提示重叠
+            onSuccess: (hasOcrWarning) => {
+              if (!hasOcrWarning) {
+                this.$message.success('上传成功');
+              }
             },
             onError: (err) => {
               console.error('拖拽上传失败:', err);
@@ -519,15 +522,18 @@ export default {
           file,
         };
         // 是否需要关联到单据
+        let hasOcrWarning = false;
         if (this.isAttached) {
           const attachRes = await this.apiConfig.addOrUpdateFileApi?.(addOrUpdateParams);
           // 后端OCR识别失败时，data中带有ocrWarningMsg，但附件已保存成功
           if (attachRes && attachRes.ocrWarningMsg) {
+            hasOcrWarning = true;
             this.$message.warning(attachRes.ocrWarningMsg);
           }
         }
         this.$emit('addParam', param);
-        onSuccess();
+        // el-upload 自带的 onSuccess 不感知该参数，多传无副作用
+        onSuccess(hasOcrWarning);
       } catch (error) {
         console.error('上传失败:', error);
         onError(error);
