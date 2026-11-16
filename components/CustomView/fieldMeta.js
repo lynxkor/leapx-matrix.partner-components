@@ -28,6 +28,23 @@ import * as customViewFieldApi from '@/libs/api/customView/customViewField';
 export const RELATION_OPERATOR = 'contains';
 
 /**
+ * 关联对象专用的「包含」运算符定义。
+ *
+ * <p>普通字段的「包含」已定位为<b>模糊匹配的单值</b>运算符(OPERATORS.contains
+ * 的 valueKind 为 single),但关联对象的「包含」语义不同:
+ * 条件作用在关联表(门店表)上,值是一组维度编码(省/市/区/大区/经营状态),
+ * 允许同时勾选多个,各维度取并集后整体 IN 进主表 WHERE。</p>
+ *
+ * <p>两者运算符 value 同为 'contains',但值形态一个单值一个多值,不能共用同一份定义。
+ * 故这里单独定义一个 valueKind 为 multi 的版本,仅在关联字段场景下使用。</p>
+ */
+export const RELATION_OPERATOR_DEF = {
+  value: RELATION_OPERATOR,
+  label: '包含',
+  valueKind: 'multi'
+};
+
+/**
  * 解析关联对象 JSON
  * @param {String} value 如 '{"table":"dealer","column":"province"}'
  * @returns {Object|null} { table, column }；非 JSON 格式或字段缺失返回 null
@@ -139,11 +156,13 @@ export function getFields () {
 }
 
 // 运算符定义(valueKind 决定值控件: single | multi | daterange | empty)
+// 包含 / 不包含定位为模糊匹配的单值运算符:多值输入的业务意图是「精确命中其中之一」,
+// 与模糊语义冲突,故只允许单值。需要多值精确匹配请用「等于」或「在...中」。
 export const OPERATORS = {
   equals: { value: 'equals', label: '等于', valueKind: 'multi' },
   notEquals: { value: 'notEquals', label: '不等于', valueKind: 'multi' },
-  contains: { value: 'contains', label: '包含', valueKind: 'multi' },
-  notContains: { value: 'notContains', label: '不包含', valueKind: 'multi' },
+  contains: { value: 'contains', label: '包含', valueKind: 'single' },
+  notContains: { value: 'notContains', label: '不包含', valueKind: 'single' },
   isEmpty: { value: 'isEmpty', label: '为空', valueKind: 'empty' },
   isNotEmpty: { value: 'isNotEmpty', label: '不为空', valueKind: 'empty' },
   startsWith: { value: 'startsWith', label: '以...开头', valueKind: 'multi' },
@@ -249,7 +268,8 @@ export function getOperatorsForFieldDef (field) {
   // 「包含」既覆盖精确匹配也能表达模糊筛选，其余运算符在关联对象场景下
   // 要么语义重复、要么退化成查全量，不对用户开放。
   if (parseRelationJson(field.fieldRelation)) {
-    return [OPERATORS[RELATION_OPERATOR]].filter(Boolean);
+    // 关联对象用独立的多值定义(见 RELATION_OPERATOR_DEF 注释)
+    return [RELATION_OPERATOR_DEF];
   }
   return getOperatorsByType(field.type);
 }

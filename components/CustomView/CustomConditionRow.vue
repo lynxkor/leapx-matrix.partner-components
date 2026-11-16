@@ -87,10 +87,10 @@
       :class="{ 'is-error': errors.value }"
     />
 
-    <!-- 值控件:单值文本 -->
+    <!-- 值控件:单值文本(包含 / 不包含走这里) -->
     <el-input
       v-if="valueKind === 'single' && fieldMeta && fieldMeta.type === 'text' "
-      v-model="localRow.value"
+      v-model.trim="localRow.value"
       :placeholder="valuePlaceholder"
       size="small"
       clearable
@@ -163,6 +163,13 @@
       class="c-cr__value"
     />
 
+    <!-- 存量多值条件降级提示:该条件原本是多个值,回填时只保留了第一个 -->
+    <span
+      v-if="legacyMultiDropped"
+      class="c-cr__tip"
+      title="该条件原本包含多个值，现只允许单值，已保留第一个"
+    >原含多值，已取第一个</span>
+
     <!-- 删除按钮 -->
     <el-button
       v-if="!disabled"
@@ -197,6 +204,48 @@ import { getEnum } from '../../../api/common';
  */
 const warnedMissingFields = new Set();
 
+/**
+ * 判断条件行是不是「关联对象」条件。
+ *
+ * 关联对象的条件值是一组维度编码(省/市/区/大区/经营状态),允许同时选多个,
+ * 与普通字段「包含 = 模糊匹配单值」的语义完全不同,不能被单值化处理。
+ *
+ * 两种携带方式都要认:
+ *   1. row.fieldRelation 单独存关联对象 JSON;
+ *   2. row.field 是组合键 `字段名|关联对象JSON`(老数据 / 手工构造)。
+ */
+function isRelationRow (row) {
+  if (!row) return false;
+  if (row.fieldRelation) return true;
+  return String(row.field || '').indexOf('|') !== -1;
+}
+
+/**
+ * 把「存量多值」的单值运算符条件归一化为单值。
+ *
+ * 背景:包含 / 不包含 已改为单值运算符,但历史数据里存在多值数组。若把数组直接绑到
+ * el-input,编辑后会被拼成 "A,B" 这样一个字符串,查询变成 LIKE '%A,B%',比原状更错。
+ * 这里取首值,并把「丢弃了其余值」这一事实返回给调用方用于提示用户。
+ *
+ * <p><b>关联对象例外</b>:关联对象的「包含」虽同名为 contains,值却是多选维度编码,
+ * 必须保持数组,否则会丢掉用户已选的其它维度,关联查询直接失真。</p>
+ *
+ * @param {Object} row 条件行
+ * @returns {{row: Object, dropped: boolean}} 归一化后的行 + 是否丢弃了多余值
+ */
+function normalizeLegacySingleRow (row) {
+  if (!row) return { row: {}, dropped: false };
+  if (isRelationRow(row)) return { row: { ...row }, dropped: false };
+  const op = row.operator ? getOperator(row.operator) : null;
+  if (!op || op.valueKind !== 'single' || !Array.isArray(row.value)) {
+    return { row: { ...row }, dropped: false };
+  }
+  return {
+    row: { ...row, value: row.value.length ? row.value[0] : null },
+    dropped: row.value.length > 1
+  };
+}
+
 export default {
   name: 'CustomConditionRow',
   components: { ValueTagInput, RelationValueSelect, FetchSelect },
@@ -219,8 +268,13 @@ export default {
     }
   },
   data () {
+    // buildLocalRow 负责对齐组合键(fieldKey);normalizeLegacySingleRow 负责把
+    // 存量多值条件降级成单值,两者都要过,顺序不能反(先对齐字段,再判运算符)。
+    const normalized = normalizeLegacySingleRow(this.buildLocalRow(this.row));
     return {
-      localRow: this.buildLocalRow(this.row)
+      localRow: normalized.row,
+      // 仅回填时置真:提示「原条件含多个值,已保留第一个」,用户一改动值即消失
+      legacyMultiDropped: normalized.dropped
     };
   },
   computed: {
@@ -270,7 +324,15 @@ export default {
     },
     valueKind () {
       const op = this.localRow.operator ? getOperator(this.localRow.operator) : null;
-      return op ? op.valueKind : null;
+      if (!op) return null;
+      // 关联对象的「包含」与普通字段同名但语义不同:
+      //   普通字段 = 模糊匹配单值(develop 侧已把 contains 改成 single);
+      //   关联对象 = 一组维度编码的多选,值必须是数组。
+      // 这里按场景分流,否则关联对象的多选下拉会被判成单值而整个不渲染。
+      if (this.relationInfo && this.localRow.operator === RELATION_OPERATOR) {
+        return 'multi';
+      }
+      return op.valueKind;
     },
     hideValue () {
       return this.valueKind === 'empty';
@@ -293,17 +355,30 @@ export default {
       handler (val) {
         // 归一化后再比较:props.row 回流时不带 fieldKey(下面 toRowPayload 剥掉了),
         // 直接比 JSON 会永远不等,导致 emit → splice → prop → 重置 的死循环。
-        const normalized = this.buildLocalRow(val);
-        if (JSON.stringify(normalized) === JSON.stringify(this.localRow)) return;
-        this.localRow = normalized;
+        const normalized = normalizeLegacySingleRow(this.buildLocalRow(val));
+        // 内容一致时直接返回,存量多值提示(legacyMultiDropped)保持不变。
+        if (JSON.stringify(normalized.row) === JSON.stringify(this.localRow)) return;
+        this.localRow = normalized.row;
+        this.legacyMultiDropped = normalized.dropped;
       },
       deep: true
     },
     localRow: {
       handler (val) {
+        // 用户改动值后不再是数组,存量提示随之消失
+        if (this.legacyMultiDropped && !Array.isArray(val.value)) {
+          this.legacyMultiDropped = false;
+        }
         this.$emit('change', this.toRowPayload(val));
       },
       deep: true
+    }
+  },
+  created () {
+    // 归一化把数组换成了首元素,必须回传父级,否则父级仍持有旧的多值数组并原样落库
+    if (this.legacyMultiDropped) {
+      // 走 toRowPayload:fieldKey 只是 el-select 的选中态,不能落进条件树
+      this.$emit('change', this.toRowPayload(this.localRow));
     }
   },
   methods: {
@@ -380,6 +455,16 @@ export default {
   &__field { width: 180px; }
   &__op { width: 130px; height: 32px; }
   &__value { flex: 1; width: 300px; }
+  &__tip {
+    flex-shrink: 0;
+    padding: 0 6px;
+    font-size: 12px;
+    line-height: 20px;
+    white-space: nowrap;
+    color: #E6A23C;
+    background: rgba(230, 162, 60, 0.1);
+    border-radius: 2px;
+  }
   &__remove { padding: 4px; color: var(--leap-color-default-light-2); }
   ::v-deep .is-error .el-input__inner,
   ::v-deep .is-error .el-input__wrapper,
