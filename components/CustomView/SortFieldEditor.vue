@@ -61,17 +61,36 @@
       placement="bottom-start"
       class="c-sfe__add"
       @command="addField"
+      @visible-change="onDropdownVisible"
     >
       <el-button size="mini" icon="el-icon-plus" :disabled="!candidateFields.length">
         添加排序字段<template v-if="innerList.length">（{{ innerList.length }}）</template>
       </el-button>
       <el-dropdown-menu slot="dropdown">
+        <!--
+          候选字段取自后端字段元数据,动辄几十上百个,
+          顶部提供搜索框按名称过滤(交互对齐「自定义表格」的列搜索)。
+
+          放在 el-dropdown-menu 内部是安全的:el-dropdown 的 v-clickoutside
+          判定时会检查 popperElm.contains(target),输入框在菜单 DOM 内,
+          点击它不会触发「点击外部关闭下拉」。
+        -->
+        <div class="c-sfe__search" @click.stop>
+          <el-input
+            v-model="keyword"
+            size="mini"
+            clearable
+            prefix-icon="el-icon-search"
+            placeholder="搜索字段名称"
+          />
+        </div>
         <div class="c-sfe__candidates">
           <el-dropdown-item
-            v-for="f in candidateFields"
+            v-for="f in filteredCandidateFields"
             :key="f.uniqueKey || f.key"
             :command="f.key"
           >{{ f.label }}</el-dropdown-item>
+          <div v-if="!filteredCandidateFields.length" class="c-sfe__empty">未找到匹配的字段</div>
         </div>
       </el-dropdown-menu>
     </el-dropdown>
@@ -115,7 +134,15 @@ export default {
        * 若直接用 props 引用就等于「子组件改父级的 props 数组」。
        * 这里持一份副本,改动后通过 input 事件把新数组回传给父级。</p>
        */
-      localList: this.copyList(this.value)
+      localList: this.copyList(this.value),
+      /**
+       * 「添加排序字段」下拉里的搜索关键字。
+       *
+       * <p>候选字段来自后端元数据,数量多到没法靠滚动找,
+       * 需要按名称过滤 —— 这里存关键字,过滤逻辑见
+       * {@link filteredCandidateFields}。</p>
+       */
+      keyword: ''
     };
   },
   computed: {
@@ -146,6 +173,25 @@ export default {
         if (seen.has(f.key)) return false;
         seen.add(f.key);
         return true;
+      });
+    },
+    /**
+     * 按搜索关键字过滤后的候选字段(下拉里真正渲染的那批)。
+     *
+     * <p>关键字同时匹配字段中文名与字段名(后者是后端的 key,
+     * 用户按英文列名搜也能命中);大小写不敏感,首尾空格忽略。</p>
+     *
+     * <p>过滤对象是 {@link candidateFields} —— 也就是说
+     * 「已参与排序」「虚拟字段【序号】」「关联对象字段」依然被先剔除,
+     * 搜索只是在这批可排字段里再筛一层,不会把不该出现的字段搜出来。</p>
+     */
+    filteredCandidateFields () {
+      const kw = (this.keyword || '').trim().toLowerCase();
+      if (!kw) return this.candidateFields;
+      return this.candidateFields.filter(f => {
+        const label = String(f.label || '').toLowerCase();
+        const key = String(f.key || '').toLowerCase();
+        return label.indexOf(kw) !== -1 || key.indexOf(kw) !== -1;
       });
     }
   },
@@ -188,6 +234,17 @@ export default {
     syncOut () {
       this.$emit('input', this.localList);
       this.$emit('change', this.localList);
+    },
+    /**
+     * 下拉展开/收起。
+     *
+     * <p>每次展开都从干净的搜索态开始 —— 上次残留的关键字会让用户
+     * 以为「字段不见了」(实际是被关键字过滤掉了)。</p>
+     *
+     * @param {Boolean} visible 下拉是否展开
+     */
+    onDropdownVisible (visible) {
+      if (visible) this.keyword = '';
     },
     /**
      * 添加排序字段(PRD:默认升序)。
@@ -262,6 +319,18 @@ export default {
     &:hover {
       color: var(--leap-color-danger);
     }
+  }
+  // 下拉顶部的字段搜索框:候选字段几十上百个,只靠滚动条找不动
+  &__search {
+    padding: 6px 10px 8px;
+    border-bottom: 1px solid #ebeef5;
+  }
+  // 搜索无结果时的占位提示
+  &__empty {
+    padding: 10px 0;
+    color: var(--leap-color-default-light-2);
+    font-size: 12px;
+    text-align: center;
   }
   // 候选字段下拉:字段多时需要滚动条(PRD)
   // el-dropdown-menu 自身没有 max-height,滚动由这层包裹 div 承担
