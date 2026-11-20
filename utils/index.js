@@ -347,7 +347,7 @@ export function formatDateTime (val, type) {
     date = new Date(val);
   } else {
     date = new Date();
-  };
+  }
   var Y = date.getFullYear();
   var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1);
   var D = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
@@ -355,7 +355,7 @@ export function formatDateTime (val, type) {
   var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
   var s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
   return type === 'data' ? Y + '-' + M + '-' + D : type === 'time' ? h + ':' + m + ':' + s : Y + '-' + M + '-' + D + ' ' + h + ':' + m + ':' + s;
-};
+}
 
 /**
  * 获取dom宽度 （不受缩放影响）
@@ -433,7 +433,7 @@ export function generateTitleMap (columns) {
     }
     return acc;
   }, {});
-};
+}
 
 /**
  * 通用表格导出处理函数

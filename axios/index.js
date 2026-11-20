@@ -1,7 +1,7 @@
 import axios from 'axios';
 import qs from 'qs';
-import { paramsFilter, decrypt } from '../utils/crypto';
-import { Message } from 'element-ui';
+import {decrypt, paramsFilter} from '../utils/crypto';
+import {Message} from 'element-ui';
 import store from '@/store';
 
 // 运行时网关配置，每次请求时惰性解析：宿主入口 setWebConfig 注入 > APP_AIS_WEB_CONFIG > process.env
@@ -41,7 +41,7 @@ instance.interceptors.request.use(config => {
   if (store.state.user.token) {
     config.headers.Authorization = 'Bearer ' + store.state.user.token;
     config.headers['X-CROSS-NODE-ID'] = localStorage.getItem('token');
-  };
+  }
   config.headers.Accepte = 'application/vnd.leapx.v2+json';
   return config;
 }, error => {
@@ -175,7 +175,7 @@ export function fetch (url, params, method, sign, userResponse, config) {
   if (url === '/userCenter/user/v1/api/sso/getRedirectUrl') {
     console.log('单点跳转登录:/userCenter/user/v1/api/sso/getRedirectUrl');
     instance.defaults.withCredentials = true;
-  };
+  }
   // 自定义拦截器
   if (userResponse) {
     instance.interceptors.response.eject(myInterceptorsResponse);
@@ -203,7 +203,7 @@ export function fetch (url, params, method, sign, userResponse, config) {
   if (method === 'delete') {
     return instance.delete(url, { ...reqConfig, params }).then(res => res.data);
   }
-};
+}
 
 export default {
   // post方法
@@ -212,7 +212,7 @@ export default {
     if (params) {
       temp = JSON.stringify(params);
       temp = JSON.parse(temp);
-    };
+    }
     return fetch(url, paramsFilter(temp), 'post', sign, userResponse);
   },
   // postJSON方法
@@ -221,7 +221,7 @@ export default {
     if (params) {
       temp = JSON.stringify(params);
       temp = JSON.parse(temp);
-    };
+    }
     return fetch(url, temp, 'postJson', sign, userResponse);
   },
   // postJSON方法--文件流
@@ -235,7 +235,7 @@ export default {
     if (params) {
       temp = JSON.stringify(params);
       temp = JSON.parse(temp);
-    };
+    }
     return fetch(url, paramsFilter(temp), 'get', sign, userResponse);
   },
   // delete方法
@@ -244,7 +244,7 @@ export default {
     if (params) {
       temp = JSON.stringify(params);
       temp = JSON.parse(temp);
-    };
+    }
     return fetch(url, temp, 'delete', sign);
   },
   // delete方法 -JSON

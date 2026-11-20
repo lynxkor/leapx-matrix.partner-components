@@ -19,10 +19,10 @@ export function paramsFilter (params) {
       obj[key] = params[key];
     } else if (params[key] === 0) {
       obj[key] = params[key];
-    };
-  };
+    }
+  }
   return obj;
-};
+}
 
 /**
  * 解密

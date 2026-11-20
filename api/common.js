@@ -9,7 +9,7 @@ const prefix = '/datacenter/web/common/';
  */
 export function getTableConfig (tableCode) {
   return api.get(prefix + 'userDefineTable/get', { tableCode });
-};
+}
 
 /**
  * 新增或修改Table配置
